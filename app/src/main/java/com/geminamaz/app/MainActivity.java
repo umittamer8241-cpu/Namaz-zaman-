@@ -3,6 +3,8 @@ package com.geminamaz.app;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.GeomagneticField;
@@ -10,6 +12,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.view.Surface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -69,6 +72,9 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private int fallbackSensorAccuracy = SensorManager.SENSOR_STATUS_UNRELIABLE;
     private double compassLat = Double.NaN;
     private double compassLon = Double.NaN;
+    private long lastFusedDiagnosticMs;
+    private long lastPlatformDiagnosticMs;
+    private double lastDeclination=Double.NaN;
     private FusedLocationProviderClient fusedClient;
     private LocationCallback fusedCallback;
     private CancellationTokenSource currentToken;
@@ -124,6 +130,14 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
     public class Bridge {
         @JavascriptInterface public void requestLocation(){runOnUiThread(()->beginLocation());}
+        @JavascriptInterface public void copyCompassReport(String report){
+            runOnUiThread(()->{
+                if(report==null||report.length()>8192)return;
+                ClipboardManager clipboard=(ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+                if(clipboard!=null)clipboard.setPrimaryClip(
+                    ClipData.newPlainText("Namaz Zamanı pusula tanı raporu",report));
+            });
+        }
         @JavascriptInterface public void setCompassLocation(double latitude,double longitude){
             runOnUiThread(()->{
                 if(Double.isFinite(latitude)&&Double.isFinite(longitude)&&Math.abs(latitude)<=90&&Math.abs(longitude)<=180){
@@ -403,6 +417,32 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     // north when it has local magnetic declination and reports a heading error envelope.
     // Fallback: Android rotation vector only when FOP is absent or has stalled.
     // Never claim a trustworthy heading when the error is high or unreported.
+    private int currentScreenRotation(){
+        try{return getWindowManager().getDefaultDisplay().getRotation();}
+        catch(Exception ignored){return Surface.ROTATION_0;}
+    }
+    // Measured directions from the two Android algorithms are sent separately for
+    // comparison; they are not automatically averaged or substituted.
+    private void sendCompassDiagnostic(double heading,double accuracy,String source,
+            double pitch,double roll,double declination){
+        if(!Double.isFinite(heading))return;
+        long now=SystemClock.elapsedRealtime();
+        if("fused".equals(source)){
+            if(now-lastFusedDiagnosticMs<650L)return;
+            lastFusedDiagnosticMs=now;
+        }else{
+            if(now-lastPlatformDiagnosticMs<650L)return;
+            lastPlatformDiagnosticMs=now;
+        }
+        double azimuth=((heading%360d)+360d)%360d;
+        String p=Double.isFinite(pitch)?String.format(Locale.US,"%.1f",pitch):"null";
+        String rr=Double.isFinite(roll)?String.format(Locale.US,"%.1f",roll):"null";
+        String dec=Double.isFinite(declination)?String.format(Locale.US,"%.1f",declination):"null";
+        js(String.format(Locale.US,
+          "window.nativeCompassDiagnostic(%.2f,%.1f,%s,%s,%s,%s,%d);",
+          azimuth,Double.isFinite(accuracy)?accuracy:180d,
+          JSONObject.quote(source),p,rr,dec,currentScreenRotation()));
+    }
     private void sendCompassHeading(double heading,double error,String source,boolean trusted){
         if(!Double.isFinite(heading))return;
         double normalized=((heading%360d)+360d)%360d;
@@ -434,6 +474,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                     :orientation.getHeadingErrorDegrees();
                 lastFusedOrientationMs=SystemClock.elapsedRealtime();
                 sendCompassHeading(heading,error,"fused",Double.isFinite(error)&&error<=25d);
+                sendCompassDiagnostic(heading,error,"fused",Double.NaN,Double.NaN,lastDeclination);
             };
             DeviceOrientationRequest request=new DeviceOrientationRequest.Builder(100000L).build();
             fusedOrientationClient.requestOrientationUpdates(request,(Runnable command)->{handler.post(command);},fusedOrientationListener)
@@ -457,18 +498,39 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         if(!orientationRunning)return;
         if(event.sensor.getType()!=Sensor.TYPE_ROTATION_VECTOR &&
            event.sensor.getType()!=Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)return;
-        if(lastFusedOrientationMs>0 &&
-           SystemClock.elapsedRealtime()-lastFusedOrientationMs<5000L)return;
-        float[] matrix=new float[9],orientation=new float[3];
+        float[] matrix=new float[9],screenMatrix=new float[9],orientation=new float[3];
         SensorManager.getRotationMatrixFromVector(matrix,event.values);
-        SensorManager.getOrientation(matrix,orientation);
+        // Unlike Google FOP, the platform rotation-vector is tied to the
+        // sensor's natural axes. Remap to the currently displayed screen top.
+        boolean remapped;
+        switch(currentScreenRotation()){
+            case Surface.ROTATION_90:
+                remapped=SensorManager.remapCoordinateSystem(matrix,
+                    SensorManager.AXIS_Y,SensorManager.AXIS_MINUS_X,screenMatrix);break;
+            case Surface.ROTATION_180:
+                remapped=SensorManager.remapCoordinateSystem(matrix,
+                    SensorManager.AXIS_MINUS_X,SensorManager.AXIS_MINUS_Y,screenMatrix);break;
+            case Surface.ROTATION_270:
+                remapped=SensorManager.remapCoordinateSystem(matrix,
+                    SensorManager.AXIS_MINUS_Y,SensorManager.AXIS_X,screenMatrix);break;
+            default:
+                System.arraycopy(matrix,0,screenMatrix,0,matrix.length);
+                remapped=true;
+        }
+        if(!remapped)return;
+        SensorManager.getOrientation(screenMatrix,orientation);
         double heading=Math.toDegrees(orientation[0]);
+        double pitch=Math.toDegrees(orientation[1]);
+        double roll=Math.toDegrees(orientation[2]);
         // The platform rotation vector is magnetic-north based. Add the local
         // declination only here; FOP already includes it when available.
+        double declination=Double.NaN;
         if(Double.isFinite(compassLat)&&Double.isFinite(compassLon)){
             GeomagneticField field=new GeomagneticField(
                 (float)compassLat,(float)compassLon,0f,System.currentTimeMillis());
-            heading+=field.getDeclination();
+            declination=field.getDeclination();
+            lastDeclination=declination;
+            heading+=declination;
         }
         // Rotation-vector accuracy quality is vendor-dependent: display the
         // source as a fallback and require HIGH before permitting an arrow.
@@ -476,6 +538,11 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         if(accuracy<0||accuracy>SensorManager.SENSOR_STATUS_ACCURACY_HIGH)
             accuracy=fallbackSensorAccuracy;
         boolean trusted=accuracy==SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+        sendCompassDiagnostic(heading,trusted?25d:180d,"android",pitch,roll,declination);
+        // Allow the fallback to drive the arrow only when FOP is unavailable
+        // or has not sent usable updates for at least five seconds.
+        if(lastFusedOrientationMs>0 &&
+           SystemClock.elapsedRealtime()-lastFusedOrientationMs<5000L)return;
         sendCompassHeading(heading,trusted?25d:180d,"android",trusted);
     }
     @Override public void onAccuracyChanged(Sensor sensor,int accuracy){

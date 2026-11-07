@@ -7,8 +7,8 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 16
-        versionName '0.15-verified-heading-compass-preview'
+        versionCode 17
+        versionName '0.16-dual-heading-diagnostic-preview'
     }
     buildTypes {
         debug {

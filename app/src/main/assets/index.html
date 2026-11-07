@@ -116,6 +116,12 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       <div class="compass-quality" id="compass-quality" aria-live="polite">Sensör doğruluğu kontrol ediliyor…</div>
       <button type="button" id="compass-calibrate" class="secondary">Pusulayı kalibre et</button>
       <div id="compass-calibration-guide" class="compass-calibration-guide" hidden></div>
+      <details id="compass-diagnostics" class="compass-diagnostics">
+        <summary id="compass-diagnostics-title">İki telefon karşılaştırma raporu</summary>
+        <div class="compass-debug-data" id="compass-diagnostics-data" aria-live="polite">Sensör verisi bekleniyor…</div>
+        <button type="button" class="secondary" id="compass-diagnostics-copy">Tanı raporunu kopyala</button>
+        <div id="compass-diagnostics-copy-status" class="loc-sub"></div>
+      </details>
       <button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button>
     </div>
   </section>
@@ -405,7 +411,8 @@ function updateNeedle(){
  const hasLocation=validLocation();
  const h=state.heading;
  const fresh=state.headingUpdatedAt>0&&Date.now()-state.headingUpdatedAt<7500;
- const trusted=hasLocation&&fresh&&state.headingTrusted&&Number.isFinite(h);
+ const mismatch=compassHeadingDisagreement();
+ const trusted=hasLocation&&fresh&&state.headingTrusted&&Number.isFinite(h)&&!mismatch;
  const needle=$('needle');
  if(needle)needle.classList.toggle('compass-unreliable',!trusted);
  if(!hasLocation){
@@ -427,7 +434,7 @@ function updateNeedle(){
  }
  const source=state.headingSource==='fused'?q.fused:q.fallback;
  if(!trusted){
-   $('compass-status').textContent=q.calibrate;
+   $('compass-status').textContent=mismatch?diagText().warning:q.calibrate;
    if(quality)quality.textContent=source+' · '+q.notReady;
    return;
  }
@@ -436,6 +443,81 @@ function updateNeedle(){
  if(quality){
    quality.textContent=source+' · '+(state.headingSource==='fused'?q.reliable+' ±'+Math.round(state.headingError)+'°':q.approx);
  }
+}
+const COMPASS_DIAGNOSTICS_TEXT={
+ tr:{title:'İki telefonu karşılaştır',copy:'Tanı raporunu kopyala',copied:'Rapor panoya kopyalandı.',failed:'Kopyalama engellendi; ekran görüntüsü al.',waiting:'İki sensörden ölçüm bekleniyor',target:'Kıble açısı',fused:'Google yönü',android:'Android yönü',gap:'Sensörler arası fark',accuracy:'Tahmini hata',rotation:'Ekran dönüşü',pitch:'Eğim',roll:'Yana yatma',declination:'Manyetik sapma',active:'Etkin ok kaynağı',status:'Ok durumu',visible:'Gösteriliyor',hidden:'Gizli (güvensiz ölçüm)',warning:'İki yöntem uyuşmuyor. Metal/mıknatıstan uzaklaş; kalibrasyonu tekrarla.',stale:'Henüz ölçülmedi'},
+ en:{title:'Compare two phones',copy:'Copy diagnostic report',copied:'Report copied.',failed:'Copy unavailable; capture a screenshot.',waiting:'Waiting for measurements',target:'Qibla bearing',fused:'Google heading',android:'Android heading',gap:'Sensor disagreement',accuracy:'Estimated error',rotation:'Screen rotation',pitch:'Pitch',roll:'Roll',declination:'Magnetic declination',active:'Active source',status:'Arrow status',visible:'Visible',hidden:'Hidden (unreliable)',warning:'Sensors disagree. Move away from metal and magnets and calibrate.',stale:'Not measured'}
+};
+function diagText(){return COMPASS_DIAGNOSTICS_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||COMPASS_DIAGNOSTICS_TEXT.en;}
+const compassDebug={fused:null,android:null};
+function compassHeadingDisagreement(){
+ const f=compassDebug.fused,a=compassDebug.android,now=Date.now();
+ return !!(f&&a&&now-f.time<9000&&now-a.time<9000&&
+     f.accuracy<=25&&a.accuracy<=25&&
+     Math.abs(wrap(f.heading-a.heading+180,360)-180)>30);
+}
+function diagnosticValue(v,unit='°'){
+ return Number.isFinite(v)?Number(v).toFixed(1)+unit:'—';
+}
+function renderCompassDiagnostics(){
+ const panel=$('compass-diagnostics-data');if(!panel)return;
+ const q=diagText(),title=$('compass-diagnostics-title'),copy=$('compass-diagnostics-copy');
+ if(title)title.textContent=q.title;
+ if(copy)copy.textContent=q.copy;
+ const recent=key=>{
+   const x=compassDebug[key];
+   return x&&Date.now()-x.time<9000?x:null;
+ };
+ const fused=recent('fused'),android=recent('android');
+ const target=validLocation()?qibla(state.lat,state.lon):null;
+ const disagreement=fused&&android?
+     Math.abs(wrap(fused.heading-android.heading+180,360)-180):null;
+ const rows=[
+   ['App','Namaz Zamanı v0.16'],
+   [q.target,diagnosticValue(target)],
+   [q.fused,diagnosticValue(fused?.heading)],
+   [q.android,diagnosticValue(android?.heading)],
+   [q.gap,diagnosticValue(disagreement)],
+   [q.accuracy,diagnosticValue(fused?.accuracy)],
+   [q.rotation,android?String(android.rotation*90)+'°':'—'],
+   [q.pitch,diagnosticValue(android?.pitch)],
+   [q.roll,diagnosticValue(android?.roll)],
+   [q.declination,diagnosticValue(android?.declination)],
+   [q.active,state.headingSource||q.stale],
+   [q.status,!$('needle')?.classList.contains('compass-unreliable')?q.visible:q.hidden]
+ ];
+ panel.replaceChildren();
+ for(const [key,value] of rows){
+   const line=document.createElement('div');line.className='compass-debug-row';
+   const left=document.createElement('span');left.textContent=key;
+   const right=document.createElement('strong');right.textContent=value;
+   line.append(left,right);panel.appendChild(line);
+ }
+ if(disagreement!==null&&disagreement>30&&fused.accuracy<=25&&android.accuracy<=25){
+   const warn=document.createElement('p');warn.className='compass-debug-warning';warn.textContent=q.warning;
+   panel.appendChild(warn);
+ }
+}
+function nativeCompassDiagnostic(heading,accuracy,source,pitch,roll,declination,rotation){
+ if(!Number.isFinite(heading)||!['fused','android'].includes(source))return;
+ compassDebug[source]={heading:wrap(heading,360),accuracy:Number(accuracy),
+    pitch:Number.isFinite(pitch)?pitch:null,roll:Number.isFinite(roll)?roll:null,
+    declination:Number.isFinite(declination)?declination:null,
+    rotation:Number.isFinite(rotation)?rotation:0,time:Date.now()};
+ renderCompassDiagnostics();
+ updateNeedle();
+}
+function copyCompassDiagnostics(){
+ const q=diagText(),el=$('compass-diagnostics-data'),status=$('compass-diagnostics-copy-status');
+ const content=[...el.querySelectorAll('.compass-debug-row')].map(row=>
+    [...row.children].map(node=>node.textContent).join(': ')).join('\n');
+ if(window.GemiNative?.copyCompassReport){
+   window.GemiNative.copyCompassReport(content);if(status)status.textContent=q.copied;return;
+ }
+ const input=document.createElement('textarea');input.value=content;
+ document.body.appendChild(input);input.select();
+ const done=document.execCommand('copy');input.remove();
+ if(status)status.textContent=done?q.copied:q.failed;
 }
 function nativeHeadingData(degrees,error,source,trusted){
  if(!Number.isFinite(degrees))return;
@@ -461,7 +543,7 @@ function nativeHeading(degrees){
 function nativeLocation(lat,lon,accuracy,cached,timestamp,provider){if(state.manual)return;state.gpsMessage='';setLocation(lat,lon,accuracy,cached?'previous':'native',timestamp||Date.now(),!cached,provider||'gps');}
 function nativeError(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
 function nativeSearching(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
-window.nativeHeading=nativeHeading;window.nativeHeadingData=nativeHeadingData;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;
+window.nativeHeading=nativeHeading;window.nativeHeadingData=nativeHeadingData;window.nativeCompassDiagnostic=nativeCompassDiagnostic;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;
 function onPosition(pos){if(state.manual)return;setLocation(pos.coords.latitude,pos.coords.longitude,pos.coords.accuracy,'gps',pos.timestamp||Date.now(),true);}
 function onGpsError(error){state.gpsMessage='@noFix';updateLocationPanel();}
 function startGPS(){
@@ -541,6 +623,7 @@ function init(){
   $('asr-method').addEventListener('change',e=>{state.asr=Number(e.target.value);store('asr',state.asr);state.calcKey='';renderAll();});
   $('timezone-mode').addEventListener('change',e=>{state.tzMode=e.target.value;store('tzMode',state.tzMode);state.calcKey='';renderAll();});
   $('utc-offset').addEventListener('change',e=>{state.utcOffset=Number(e.target.value);store('utcOffset',state.utcOffset);state.calcKey='';renderAll();});
+  $('compass-diagnostics-copy').addEventListener('click',copyCompassDiagnostics);
   $('compass-calibrate').addEventListener('click',()=>{
     const panel=$('compass-calibration-guide');
     if(panel)panel.hidden=!panel.hidden;
@@ -550,7 +633,7 @@ function init(){
     catch(e){$('compass-status').textContent=tr('denied');}
   });
   startCompass();startGPS();renderClock();setInterval(renderClock,1000);
-  setInterval(()=>{if(state.headingUpdatedAt>0)updateNeedle();},2000);
+  setInterval(()=>{if(state.headingUpdatedAt>0)updateNeedle();renderCompassDiagnostics();},2000);
   setInterval(updateLocationPanel,30000);
 }
 init();

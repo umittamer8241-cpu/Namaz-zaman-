@@ -66,3 +66,11 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Ekranda uygulama adı “Namaz Zamanı Pusula Test” olarak görünür.
 - Release AAB paket adı değiştirilmedi: `com.geminamaz.app`.
 - Test: İki telefonu yan yana düz ve aynı doğrultuda tut. Uygulamadan “Telefon yönü”, “Kâbe farkı”, sensör kaynağı/doğruluk bilgisinin ekran görüntülerini karşılaştır. Yalnızca Kâbe açısı eşitliği sensör uyuşmasını garanti etmez.
+
+
+### v0.16 — İki cihazın pusula farklılığı için tanı
+- Android yedek rotation-vector sensör matrisi, doğal ekran rotasyonu 0/90/180/270 derecelerine göre uygun koordinatlarla yeniden eşlenir. Google FOP ekran yönünü zaten hesaba kattığından ikinci düzeltme uygulanmaz.
+- Aynı cihazda Google FOP ile Android rotation-vector başlıkları bağımsız debug satırlarında yer alır. Her ikisi de yüksek doğruluk bildirirken 30° üstü uyuşmazlık varsa kıble oku geçici olarak gizlenir, kalibrasyon uyarısı verilir.
+- Tanı paneli: Kâbe sabit yönü, Google açı, Android açı, fark, tahmini hata, ekran dönüşü, eğim, yana yatma ve manyetik sapma. Yalnızca kullanıcı düğmeye basarsa kopyalanır; tam enlem-boylam rapora yazılmaz.
+- Bu, **gerçek cihaz doğruluk testi yerine geçmez**. Aynı yönde tutulan iki cihazın sonuçlarını karşılaştırmak ve metal parazit sorunu araştırmak içindir.
+- Yan yana kurulan Debug uygulamanın adı “Namaz Zamanı Pusula Test”; asıl Namaz Zamanı veya onun kayıtları kaldırılmaz.

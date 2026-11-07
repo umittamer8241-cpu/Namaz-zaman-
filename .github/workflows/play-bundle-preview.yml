@@ -47,6 +47,7 @@ jobs:
           node tools/validate_royal_compass.js
           node tools/validate_compass_heading.js
           node tools/validate_test_installer.js
+          node tools/validate_v016_diagnostics.js
       - name: Play önizleme APK ve AAB derle
         run: gradle --no-daemon --stacktrace :app:assembleDebug :app:bundleRelease
       - name: Debug APK test paket adını doğrula
