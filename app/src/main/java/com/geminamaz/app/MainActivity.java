@@ -51,6 +51,11 @@ import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import org.json.JSONObject;
 import java.util.Locale;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends Activity implements LocationListener, SensorEventListener {
     private static final int REQ_LOCATION = 24;
@@ -92,6 +97,9 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private Runnable warningRunnable;
     private boolean working = false;
     private boolean settingsPromptShown = false;
+    private boolean waitingSatellitePermission;
+    private boolean satelliteOnlyActive;
+    private long lastOnlineQiblaRequestMs=0L;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,8 +130,8 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 nativeReady=true;
                 sendStatus(pendingStatus);
                 if(latest!=null)sendLocation(latest,true,latestSource);
-                // JS may have requested location before onPageFinished; check again after UI initialization.
-                if(hasAnyPermission()&&!working)beginLocation();
+                // UI restores last saved coordinates from localStorage.
+                // Do NOT refresh GPS/Google after reload or screen wake without user action.
             }
         });
         setContentView(webView);
@@ -131,9 +139,22 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     }
 
     public class Bridge {
-        @JavascriptInterface public void requestLocation(){runOnUiThread(()->beginLocation());}
+        @JavascriptInterface public void requestLocation(){runOnUiThread(()->{
+            waitingSatellitePermission=false;
+            beginLocation();
+        });}
+        @JavascriptInterface public void requestSatelliteLocation(){runOnUiThread(()->{
+            if(!hasFine()){
+                waitingSatellitePermission=true;
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION},REQ_LOCATION);
+            }else{
+                waitingSatellitePermission=false;startSatelliteOnly();
+            }
+        });}
         @JavascriptInterface public void requestPreciseLocation(){runOnUiThread(()->{
-            if(hasFine()){beginLocation();return;}
+            if(hasFine()){startSatelliteOnly();return;}
+            waitingSatellitePermission=true;
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION},REQ_LOCATION);
         });}
@@ -146,6 +167,40 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 }catch(Exception ignored){
                     sendError("Uygulama izinleri açılamadı. Ayarlar > Uygulamalar > Namaz Zamanı > İzinler bölümünü aç.");
                 }
+            });
+        }
+        @JavascriptInterface public void verifyQiblaOnline(double latitude,double longitude){
+            runOnUiThread(()->{
+                if(!Double.isFinite(latitude)||!Double.isFinite(longitude)||
+                    Math.abs(latitude)>90||Math.abs(longitude)>180){
+                    sendOnlineQiblaResult(false,null,null,
+                        "Konum geçersiz. İnternet sorgusu yapılmadı.",latitude,longitude);
+                    return;
+                }
+                long time=SystemClock.elapsedRealtime();
+                if(time-lastOnlineQiblaRequestMs<30000L){
+                    sendOnlineQiblaResult(false,null,null,
+                        "Ağ kotasını korumak için 30 saniye bekle.",latitude,longitude);
+                    return;
+                }
+                lastOnlineQiblaRequestMs=time;
+                // No automatic network requests. Only an explicit button press
+                // invokes this method; work runs off the UI thread.
+                new Thread(()->{
+                    Double sourceA=fetchQiblaDirection(
+                        "https://api.aladhan.com/v1/qibla/"+
+                        String.format(Locale.US,"%.5f/%.5f",latitude,longitude),false);
+                    Double sourceB=fetchQiblaDirection(
+                        "https://api.myquran.com/v3/qibla/"+
+                        String.format(Locale.US,"%.5f,%.5f",latitude,longitude),true);
+                    boolean complete=sourceA!=null&&sourceB!=null;
+                    String message=complete?"İki bağımsız çevrim içi kaynak yanıtladı.":
+                        sourceA!=null||sourceB!=null?
+                            "Yalnız bir çevrim içi kaynak yanıtladı. Tam çapraz doğrulama yapılamadı.":
+                            "İnternet yanıtı alınamadı. Çevrim dışı hesaplama korunuyor.";
+                    runOnUiThread(()->sendOnlineQiblaResult(
+                        complete,sourceA,sourceB,message,latitude,longitude));
+                },"namaz-qibla-verify").start();
             });
         }
         @JavascriptInterface public void copyCompassReport(String report){
@@ -175,6 +230,53 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         });}
     }
 
+    // Fetch only a fixed allowlist of documented Qibla endpoints over HTTPS.
+    // Strict timeouts and maximum response size protect ship data quota.
+    private Double fetchQiblaDirection(String endpoint,boolean myQuran){
+        HttpURLConnection conn=null;
+        try{
+            URL url=new URL(endpoint);
+            String host=url.getHost();
+            if(!"https".equalsIgnoreCase(url.getProtocol()))return null;
+            if(!("api.aladhan.com".equals(host)||"api.myquran.com".equals(host)))return null;
+            conn=(HttpURLConnection)url.openConnection();
+            conn.setInstanceFollowRedirects(false);
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(4500);
+            conn.setReadTimeout(4500);
+            conn.setRequestProperty("Accept","application/json");
+            conn.setRequestProperty("Accept-Encoding","identity");
+            conn.setRequestProperty("User-Agent","NamazZamani-Qibla-Compare/0.19");
+            if(conn.getResponseCode()!=HttpURLConnection.HTTP_OK)return null;
+            StringBuilder text=new StringBuilder();
+            try(BufferedReader rd=new BufferedReader(new InputStreamReader(
+                conn.getInputStream(),StandardCharsets.UTF_8))){
+                char[] buffer=new char[1024];int len;
+                while((len=rd.read(buffer))!=-1){
+                    if(text.length()+len>8192)return null;
+                    text.append(buffer,0,len);
+                }
+            }
+            JSONObject outer=new JSONObject(text.toString());
+            if(myQuran){
+                if(!outer.optBoolean("status",false))return null;
+            }else if(outer.optInt("code",0)!=200)return null;
+            JSONObject data=outer.optJSONObject("data");
+            if(data==null)return null;
+            double result=data.optDouble("direction",Double.NaN);
+            if(!Double.isFinite(result)||result<0||result>=360)return null;
+            return result;
+        }catch(Exception ignored){return null;}
+        finally{if(conn!=null)conn.disconnect();}
+    }
+    private void sendOnlineQiblaResult(boolean complete,Double a,Double b,
+        String message,double lat,double lon){
+        String aa=a!=null?String.format(Locale.US,"%.7f",a):"null";
+        String bb=b!=null?String.format(Locale.US,"%.7f",b):"null";
+        js(String.format(Locale.US,
+            "window.nativeQiblaOnlineResult(%s,%s,%s,%s,%.7f,%.7f);",
+            complete?"true":"false",aa,bb,JSONObject.quote(message),lat,lon));
+    }
     private boolean openExternalLink(String address){
         if(address!=null&&address.startsWith("file:///android_asset/"))return false;
         try {
@@ -276,7 +378,28 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             loc.getTime(),JSONObject.quote(source)));
     }
 
+    private void startSatelliteOnly(){
+        if(!hasFine()){
+            sendError("İnternetsiz uydu GPS için Kesin Konum iznini aç.");
+            return;
+        }
+        if(!locationEnabled()||!providerAvailable(LocationManager.GPS_PROVIDER)){
+            sendError("Uydu GPS kapalı. Telefonun Konum ayarını aç.");
+            return;
+        }
+        stopSources();
+        satelliteOnlyActive=true;
+        working=true;freshFix=false;
+        sendStatus("Uydu GPS aranıyor (mobil veri/Wi-Fi konum sorgusu yapılmıyor). Açık gökyüzü gerekli...");
+        startGpsFallback();
+        warningRunnable=()->{
+            if(!freshFix&&(latest==null||!recent(latest)))
+                sendError("Uydu konumu hâlâ alınamadı. Açık gökyüzünde deneyin veya koordinatları elle girin.");
+        };
+        handler.postDelayed(warningRunnable,60000L);
+    }
     private void beginLocation(){
+        satelliteOnlyActive=false;
         if(!hasAnyPermission()){
             sendError("Konum izni gerekiyor. İzin ekranında 'Kesin konum'u seç.");
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
@@ -429,7 +552,11 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         accept(loc,false,LocationManager.GPS_PROVIDER.equals(loc.getProvider())?"gps":"network");
     }
     @Override public void onProviderEnabled(String provider){
-        if(nativeReady)beginLocation();
+        // Provider toggles must not trigger network calls while offline.
+        if(working){
+            if(satelliteOnlyActive)startSatelliteOnly();
+            else beginLocation();
+        }
     }
     @Override public void onProviderDisabled(String provider){
         sendStatus("Konum kaynağı kapatıldı. Konumu aç veya GPS'i tekrar dene.");
@@ -574,7 +701,8 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         super.onResume();
         startOrientationTracking();
         if(webView!=null)webView.onResume();
-        if(nativeReady)beginLocation();
+        // Never start a fresh location search just because the screen wakes.
+        // User-initiated satellite or network mode remains explicit.
     }
     @Override protected void onPause(){
         stopSources();
@@ -596,7 +724,11 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     @Override public void onRequestPermissionsResult(int code,String[] permissions,int[] results){
         super.onRequestPermissionsResult(code,permissions,results);
         if(code==REQ_LOCATION){
-            if(hasAnyPermission())beginLocation();
+            if(waitingSatellitePermission){
+                waitingSatellitePermission=false;
+                if(hasFine())startSatelliteOnly();
+                else sendError("Uydu GPS için Kesin Konum iznini aç veya koordinatları elle gir.");
+            }else if(hasAnyPermission())beginLocation();
             else sendError("Konum izni reddedildi. Ayarlar > Uygulamalar > Namaz Zamanı > İzinler > Konum bölümünden izin ver veya koordinatları elle gir.");
         }
     }

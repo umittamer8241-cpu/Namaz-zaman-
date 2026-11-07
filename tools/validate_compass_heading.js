@@ -12,7 +12,7 @@ assert(java.includes('Double.isFinite(error)&&error<=25d'));
 assert(java.includes('getDeclination()')&&java.includes('Only fallback')===false);
 assert(html.includes('function nativeHeadingData(')&&html.includes('headingTrusted'));
 assert(html.includes('if(window.GemiNative)return;'),'Android must not accept browser orientation');
-assert(html.includes('if(needle)needle.classList.toggle(\'compass-unreliable\',!trusted)'));
+assert(html.includes('if(needle)needle.classList.toggle(\'compass-unreliable\',!trusted&&!byShadow&&!byManual)'));
 assert(html.includes("trusted?wrap(bearing-h,360):0"),'Arrow should not move on untrusted heading');
 assert(html.includes('compass-calibration-guide')&&html.includes('compass-quality'));
 assert(css.includes('needle-wrap.compass-unreliable{opacity:0!important'));

@@ -97,3 +97,14 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Konum araması başarısız olduğu söylense dahi arama bitmez; Android konum callback'leri daha sonra gelirse kabul edilir. Son iki dakikalık geçerli önbellek düzeltme önerisine engel olmaz.
 - Gemi Wi-Fi bağlantısının konumu vermesi garanti değildir. Metal gemi gövdesi ve kapalı kabin uydu sinyalini etkileyebilir. Gerçek Android cihazında ve gerçek GPS izniyle saha testi henüz yapılmadı.
 - Bu sürüm tam Namaz Zamanı APK'sıdır; aylık takvim, dualar, sure sesleri, Royal Qibla, 12 dil ve Esmaül Hüsna korunur.
+
+## v0.19 — Ekran kapanınca sıfırlanmayan ve çok yöntemli kıble sistemi
+
+- Kaydedilmiş enlem-boylam ve ayarlar 10 dakika sonra silinmez; uygulama açıldığında tamamen çevrim dışı olarak vakitleri yeniden hesaplar. Uyuyan ekran veya `onPageFinished` otomatik Google/ağ sorgusu başlatmaz.
+- Uydu GPS ve isteğe bağlı ağ konumu ayrıdır. Kullanıcı internet bağlantısı olmadan kıble/vakit ekranını görebilir. Gemi hareket edince önceki konum “eski” olarak işaretlenir; konumun güncel ve doğru olduğu iddia edilmez.
+- Gölge yöntemine ek **gerçek kuzey referansı**, **doğrulanmış true heading** ve **görünen, koordinatı bilinen kara işareti** seçenekleri eklendi. Kullanıcı referansa fiziksel olarak hizalar ve onay verir. Geminin COG değeri true heading olarak kullanılmaz. Hizalama 2 dakika içinde sona erer.
+- **Kullanıcı düğmesine bağlı çevrim içi kıble karşılaştırması:** HTTPS üzerinden AlAdhan ve MyQuran Qibla v3 API kaynaklarından iki küçük yanıt alınır. Tamamlanmış 2 kaynaktan gelen açılar ile yerel hesap ayrı gösterilir. Farklar yüksekse uyarılır, otomatik yön değişikliği yapılmaz. Ağ bağlantısı olmadan özellik diğerlerini etkilemez.
+- Kullanıcı istemeden otomatik kıble API çağrısı yoktur. Çağrı tekrarında 30 saniye koruma vardır; her yanıt en fazla 8 KB ve istekler kısa zaman aşımlı.
+- Çevrim içi servisler **coğrafi kıble azimutunu** doğrular, telefonun fiziksel dönüklüğünü veya gemideki güncel koordinatın doğruluğunu tek başına doğrulayamaz. Fiziksel hizalama/sensör testi gerekir.
+- Kaynaklar: https://aladhan.com/qibla-api ; https://api.myquran.com/doc
+- Android Play yayını yapılmaz; APK debug anahtarıyla imzalanmış test önizlemesidir. Gerçek gemi/telefon testi bekleniyor.

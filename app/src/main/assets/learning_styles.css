@@ -337,3 +337,62 @@
 .location-rescue-actions button:first-child{border-color:#d7ae6e;background:#3b4f45;color:#fff0ca}
 #manual-location-details[open]{scroll-margin:20px}
 @media(max-width:350px){.location-rescue-actions{grid-template-columns:1fr}}
+
+/* v0.19 — safe solar-shadow alternative, independent of magnetic heading */
+.sun-shadow-method{margin:14px 0 8px;padding:13px;border:1px solid #b79653;background:
+ linear-gradient(135deg,#30423d,#152e37 55%,#112631);border-radius:15px;box-shadow:inset 0 1px 0 #fff1bd33}
+.sun-shadow-method summary{font-size:13px;line-height:1.5;font-weight:850;color:#ffe4aa;cursor:pointer}
+.sun-shadow-method p{font-size:12px;line-height:1.6;color:#d6e7de;margin:9px 0}
+.sun-shadow-status{margin:10px 0;padding:9px 10px;border-radius:10px;
+ border:1px solid #6997818a;background:#0b2826;color:#d6f1cb;font-size:12px;line-height:1.55}
+.sun-shadow-actions{display:flex;flex-wrap:wrap;gap:8px}
+.sun-shadow-actions button{flex:1 1 125px;min-width:0;border-color:#d8b46b;
+ background:linear-gradient(145deg,#8b602d,#614926);color:#fff4cf;
+ font-weight:800;font-size:12px;line-height:1.4;white-space:normal}
+.sun-shadow-actions button.secondary{border-color:#627c74;background:#1b3743;color:#d9f1ed}
+.sun-shadow-actions button:disabled{opacity:.4;cursor:not-allowed}
+#sun-shadow-caution{color:#f3d7b5;font-size:11px}
+
+/* v0.19 independent, offline reference methods; explicitly user aligned */
+.manual-reference-methods{margin:13px 0 9px;border:1px solid #8f9e87;border-radius:15px;padding:13px;background:
+ linear-gradient(145deg,#173f40,#112c36 70%,#162b2c);box-shadow:inset 0 1px 0 #d5e8ac32}
+.manual-reference-methods>summary{color:#cdeabc;font-size:14px;font-weight:850;line-height:1.5;cursor:pointer}
+.manual-reference-methods p{font-size:12px;line-height:1.6;color:#d3e4de;margin:7px 0 10px}
+.manual-reference-choice{padding:12px;border:1px solid #55756e;border-radius:12px;background:#0e2934b3;margin:10px 0}
+.manual-reference-choice strong{font-size:13px;color:#f5dba5}
+.manual-reference-choice button{display:block;border:1px solid #b3a272;border-radius:10px;
+ background:linear-gradient(140deg,#456655,#26484b);color:#fff2cc;padding:10px 12px;
+ font-weight:750;line-height:1.3;white-space:normal;width:100%;font-size:12px}
+.manual-reference-field{display:flex;flex-direction:column;gap:6px;margin:8px 0 10px}
+.manual-reference-field span,.manual-reference-coords span{font-size:11px;color:#b8d0c5}
+.manual-reference-field input,.manual-reference-coords input{width:100%;max-width:100%;
+ box-sizing:border-box;background:#102e35;color:#ecf5da;border:1px solid #66867a;
+ padding:9px 10px;border-radius:8px;font-size:14px}
+.manual-reference-coords{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.manual-reference-coords label{min-width:0;display:flex;flex-direction:column;gap:6px}
+.manual-reference-confirm{display:flex;gap:10px;align-items:flex-start;line-height:1.5;
+ font-size:12px;color:#ffe2b1;border:1px solid #c9a46977;padding:11px;border-radius:10px;background:#42341f42}
+.manual-reference-confirm input{height:20px;width:20px;flex:none;margin:0;accent-color:#c9c374}
+.manual-reference-message{font-size:12px;line-height:1.55;color:#fff0bf;min-height:12px}
+#manual-reference-reset{padding:9px 11px;border:1px solid #81927b;background:#193943;
+ border-radius:10px;font-size:12px;color:#dee7d2;line-height:1.3}
+#manual-reference-reset:disabled{opacity:.45}
+@media(max-width:340px){.manual-reference-coords{grid-template-columns:1fr}}
+
+/* v0.19 – bandwidth-controlled, on-demand online Qibla bearing verification */
+.qibla-online-verify{margin:13px 0 9px;padding:13px;border:1px solid #8bb6b0;
+ background:linear-gradient(145deg,#12383c,#102532 70%,#193732);border-radius:15px;
+ box-shadow:inset 0 1px 0 #d2eaba40}
+.qibla-online-verify summary{font-size:13px;color:#baf0e0;font-weight:850;cursor:pointer}
+.qibla-online-verify p{font-size:12px;color:#cddfda;line-height:1.6;margin:9px 0}
+#qibla-online-button{border:1px solid #b8dca9;background:linear-gradient(145deg,#2f6153,#1b4b4b);
+ color:#efffd6;font-weight:800;font-size:12px;line-height:1.4;padding:12px;width:100%;white-space:normal}
+#qibla-online-button:disabled{opacity:.45}
+.qibla-online-status{margin-top:10px;border:1px solid #657f87;background:#0a242b;padding:10px;
+ color:#e8f0d5;border-radius:10px;font-size:12px;line-height:1.5}
+.qibla-online-status.verified{border-color:#68d1a9;color:#d3ffe8;background:#174139}
+.qibla-online-status.warning{border-color:#cda365;color:#f7ddb1;background:#373022}
+.qibla-online-results{display:grid;gap:4px;margin-top:8px}
+.qibla-online-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #5c8b7c44;
+ font-size:12px;padding:5px 2px;color:#cfe3d5}
+.qibla-online-row strong{color:#ffe9bd;font-variant-numeric:tabular-nums}
