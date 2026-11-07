@@ -20,12 +20,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Android SDK kontrol et
-        run: |
-          SDKMANAGER="$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager"
-          test -x "$SDKMANAGER"
-          echo "$(dirname "$SDKMANAGER")" >> "$GITHUB_PATH"
-          "$SDKMANAGER" --version
+      - name: Android SDK kur
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+          log-accepted-android-sdk-licenses: 'false'
       - name: SDK 35 paketlerini kur
         run: |
           sdkmanager --install 'platforms;android-35' 'build-tools;35.0.0'
