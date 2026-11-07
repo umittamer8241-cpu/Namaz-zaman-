@@ -1,0 +1,48 @@
+name: Play Bundle Önizleme
+
+on:
+  push:
+    branches: [play-prep]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android-play:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Kaynak kodunu al
+        uses: actions/checkout@v4
+      - name: Java 17 kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Android SDK kur
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+          log-accepted-android-sdk-licenses: 'false'
+      - name: Android API 36 kur
+        run: |
+          sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Gradle 8.13 kur
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Play önizleme APK ve AAB derle
+        run: gradle --no-daemon --stacktrace :app:assembleDebug :app:bundleRelease
+      - name: İç test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Namaz-Zamani-Play-Preview-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - name: İmzasız AAB önizleme
+        uses: actions/upload-artifact@v4
+        with:
+          name: Namaz-Zamani-Play-Preview-UNSIGNED-AAB
+          path: app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

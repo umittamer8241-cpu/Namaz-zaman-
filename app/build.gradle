@@ -2,13 +2,13 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'com.geminamaz.app'
-    compileSdk 35
+    compileSdk 36
     defaultConfig {
         applicationId 'com.geminamaz.app'
         minSdk 24
-        targetSdk 34
-        versionCode 7
-        versionName '0.7'
+        targetSdk 36
+        versionCode 8
+        versionName '0.8-play-preview'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
