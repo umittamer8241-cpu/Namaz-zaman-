@@ -61,6 +61,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       </div><p class="loc-sub">Gemi saati, telefon saat dilimi ve boylama göre otomatik deniz saati farklı olabilir. Geminin kullandığı saat için UTC farkını ayarla. Bu ayar namaz vakitlerinin gösterimini de değiştirir.</p>
     </details>
   </section>
+  <section class="panel location" id="adhan-settings-container" aria-label="Adhan sound settings"></section>
   <section class="wisdom-stack" aria-label="Daily Quran verse and related hadith">
     <div class="wisdom-box" id="verse-card">
       <div class="wisdom-head"><strong id="verse-heading">Günün Ayeti</strong><span id="verse-ref">Kur'an</span></div>
@@ -77,6 +78,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 <p style="text-align:center;margin:12px 0 26px"><a id="privacy-policy-link" href="privacy-policy.html" style="color:#bcd8d7;text-decoration:underline">Gizlilik Politikası</a></p></main>
 <script src="daily_i18n.js"></script>
 <script src="full_ui_i18n.js"></script>
+<script src="adhan_settings.js"></script>
 <script>
 'use strict';
 // This file intentionally has NO network calls, external imports, or remote dependencies.
@@ -333,9 +335,10 @@ function startCompass(){
   if(typeof DeviceOrientationEvent.requestPermission==='function')$('compass-permission').style.display='inline-block';
 }
 function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();updateNeedle();}
-window.NamazApp={refreshLocale:function(){updateLocationPanel();updateTimeStatus(new Date());updateNeedle();}};
+window.NamazApp={refreshLocale:function(){updateLocationPanel();updateTimeStatus(new Date());updateNeedle();if(window.NamazAdhan)window.NamazAdhan.refreshLocale();}};
 function init(){
   if(window.NamazI18n)window.NamazI18n.init();
+  if(window.NamazAdhan)window.NamazAdhan.init();
   const cached=saved('location',null);
   state.method=METHODS[saved('method','MWL')]?saved('method','MWL'):'MWL';
   state.asr=saved('asr',1)===2?2:1;

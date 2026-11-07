@@ -2,7 +2,7 @@ name: Play Bundle Önizleme
 
 on:
   push:
-    branches: [play-prep]
+    branches: [play-prep, v0.9-adhan-library]
   workflow_dispatch:
 
 permissions:

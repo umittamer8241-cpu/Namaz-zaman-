@@ -7,8 +7,8 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 8
-        versionName '0.8-play-preview'
+        versionCode 9
+        versionName '0.9-adhan-preview'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
