@@ -7,8 +7,8 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 14
-        versionName '0.13-prayer-calendar-compass-pro-preview'
+        versionCode 15
+        versionName '0.14-royal-single-arrow-compass-preview'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

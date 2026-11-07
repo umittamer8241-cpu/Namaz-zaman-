@@ -171,3 +171,102 @@
  .pro-compass-data strong{font-size:14px}
 }
 @media(max-width:342px){.compass-card.compass-proplus{grid-template-columns:1fr;gap:20px}.premium-dial.pro-dial{max-width:210px}}
+
+/* v0.14 Royal Qibla: one live needle, raised engraved solid-gold rim. */
+.compass-card.compass-proplus.compass-royal,
+.compass-card.compass-proplus:has(.ornate-compass-dial){
+ border:2px solid #d0a157;
+ border-radius:29px;
+ background:radial-gradient(ellipse at 50% -18%,#aa743c26,transparent 47%),
+ radial-gradient(ellipse at 11% 16%,#2781833d,transparent 58%),
+ linear-gradient(145deg,#081c27,#0d2831 47%,#071821 100%);
+ box-shadow:inset 0 2px 0 #fff3c16c,inset 0 -2px 0 #54330a,
+ 0 0 0 3px #0a1720,0 15px 35px #0009,0 4px 26px #c6963320;
+ overflow:visible;
+ padding:25px;
+}
+.compass-card.compass-proplus:has(.ornate-compass-dial):before{
+ inset:7px;border:1px solid #b48d4b90;border-radius:22px;
+ box-shadow:inset 0 1px #fff2b337;
+}
+.pro-compass-shell:has(.ornate-compass-dial){gap:9px}
+.premium-dial.pro-dial.ornate-compass-dial{
+ max-width:370px;width:100%;height:auto;aspect-ratio:1;border:none;
+ isolation:isolate;position:relative;border-radius:50%;overflow:visible;
+ background:radial-gradient(circle at 43% 30%,#215961 0%,#0d303a 48%,#04151f 76%,#061b25 100%);
+ box-shadow:0 0 0 1px #e9bc72,0 0 0 3px #744518,
+ 0 5px 12px #000a,0 18px 46px #0008,0 0 52px #d5a6521c;
+}
+.ornate-compass-dial .ornate-compass-frame{
+ position:absolute;inset:0;width:100%;height:100%;
+ border-radius:50%;z-index:2;object-fit:contain;
+ pointer-events:none;user-select:none;
+ filter:drop-shadow(0 3px 3px #000b) drop-shadow(0 -1px 1px #ffe2a24f);
+}
+.ornate-compass-silk{
+ position:absolute;inset:19%;z-index:1;border-radius:50%;
+ background:repeating-conic-gradient(from 22.5deg,#e7ba6230 0deg 2deg,transparent 3deg 44deg),
+ radial-gradient(circle,transparent 55%,#f1ce6c0b 56%,transparent 62%);
+ border:1px solid #d5ab523d;opacity:.46;pointer-events:none;
+}
+.ornate-compass-rose{
+ position:absolute;inset:31%;z-index:1;border-radius:50%;
+ background:repeating-conic-gradient(from 0deg,#c9974f44 0deg 13deg,transparent 14deg 44deg);
+ -webkit-mask:radial-gradient(circle,transparent 0 25%,#000 27% 86%,transparent 90%);
+ mask:radial-gradient(circle,transparent 0 25%,#000 27% 86%,transparent 90%);
+ opacity:.63;pointer-events:none;
+}
+.ornate-compass-dial .tick{
+ position:absolute;z-index:4!important;font-family:Georgia,'Times New Roman',serif;
+ color:#ffe9ad!important;text-shadow:0 1px 2px #271200,0 0 7px #efc05e66;
+ font-size:clamp(17px,4vw,25px)!important;letter-spacing:.3px;
+}
+.ornate-compass-dial .tick.n{top:17.5%!important;left:50%;transform:translateX(-50%)}
+.ornate-compass-dial .tick.s{bottom:17%!important;left:50%;transform:translateX(-50%)}
+.ornate-compass-dial .tick.e{right:17%!important;top:50%;transform:translateY(-50%)}
+.ornate-compass-dial .tick.w{left:17%!important;top:50%;transform:translateY(-50%)}
+.premium-dial.pro-dial .needle-wrap.ornate-single-needle{
+ position:absolute;inset:22.5%;z-index:5;
+ filter:drop-shadow(0 4px 3px #000d) drop-shadow(0 0 6px #fff2b953);
+ transition:transform .38s cubic-bezier(.22,.7,.2,1);
+ transform-origin:50% 50%;
+}
+.ornate-single-needle svg{display:block;width:100%;height:100%;overflow:visible}
+.pro-compass-center.ornate-compass-center{
+ z-index:7;width:32px;height:32px;border:2px solid #f1cc7e;
+ background:radial-gradient(circle at 34% 22%,#895621,#25190e 66%);
+ box-shadow:0 0 0 4px #050f18,0 0 0 5px #ad8039,0 3px 8px #000b,0 0 16px #ffd27966;
+}
+.pro-compass-center.ornate-compass-center svg{width:25px;height:25px}
+.pro-compass-caption{font-family:Georgia,serif;font-weight:900;letter-spacing:4px;font-size:12px;
+ color:#eac87e;text-shadow:0 2px 7px #b67d3b70}
+.pro-compass-readout .pro-accuracy-tag{
+ border-color:#c49a5a99;background:linear-gradient(140deg,#1d3e3e,#0e3039);color:#f6dc9f
+}
+.compass-card.compass-proplus:has(.ornate-compass-dial) .qval{
+ background:linear-gradient(160deg,#fff7d9,#fbd686 45%,#b7802d 85%);
+ background-clip:text;-webkit-background-clip:text;color:transparent;
+ filter:drop-shadow(0 2px 9px #c5974b40);
+}
+@media (max-width:759px){
+ .compass-card.compass-proplus:has(.ornate-compass-dial){
+  display:flex;flex-direction:column;align-items:stretch;
+  gap:19px;padding:23px 18px 21px;
+ }
+ .pro-compass-shell:has(.ornate-compass-dial){width:100%;gap:12px}
+ .premium-dial.pro-dial.ornate-compass-dial{
+  width:min(100%,330px);max-width:330px;margin:2px auto 0;
+ }
+ .compass-card.compass-proplus:has(.ornate-compass-dial) .pro-compass-readout{
+  width:100%;text-align:center;padding:0 7px;
+ }
+ .pro-accuracy-tag{justify-content:center}
+ .pro-compass-data{text-align:left;justify-content:stretch}
+ .pro-compass-caption{letter-spacing:3px}
+}
+@media (max-width:380px){
+ .compass-card.compass-proplus:has(.ornate-compass-dial){padding:20px 12px 19px}
+ .premium-dial.pro-dial.ornate-compass-dial{width:min(100%,300px)}
+ .ornate-compass-dial .tick{font-size:17px!important}
+}
+@media (prefers-reduced-motion:reduce){.ornate-single-needle{transition:none!important}}

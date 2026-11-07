@@ -60,31 +60,46 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
   </section>
   <section class="panel compass-card compass-proplus" aria-label="Kıble pusulası">
     <div class="pro-compass-shell">
-      <div class="dial premium-dial pro-dial" aria-label="Kâbe yönüne dönen pusula iğnesi">
-        <div class="pro-dial-metal" aria-hidden="true"></div>
-        <div class="pro-dial-degree-ring" aria-hidden="true"></div>
-        <div class="compass-halo" aria-hidden="true"></div>
-        <div class="compass-face" aria-hidden="true"></div>
+      <div class="dial premium-dial pro-dial ornate-compass-dial" aria-label="Canlı kıble yönünü gösteren tek ok">
+        <img class="ornate-compass-frame" src="compass_ornate_frame.svg" alt="" aria-hidden="true" />
+        <div class="ornate-compass-silk" aria-hidden="true"></div>
+        <div class="ornate-compass-rose" aria-hidden="true"></div>
         <span class="tick n">K</span><span class="tick s">G</span><span class="tick e">D</span><span class="tick w">B</span>
-        <span class="pro-diagonal ne" aria-hidden="true">•</span>
-        <span class="pro-diagonal nw" aria-hidden="true">•</span>
-        <span class="pro-diagonal se" aria-hidden="true">•</span>
-        <span class="pro-diagonal sw" aria-hidden="true">•</span>
-        <div class="needle-wrap" id="needle">
+        <div class="needle-wrap ornate-single-needle" id="needle">
           <svg class="premium-needle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <defs>
-              <linearGradient id="needleGold" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fff5d8"/><stop offset=".5" stop-color="#efc776"/><stop offset="1" stop-color="#93612e"/></linearGradient>
-              <linearGradient id="needleTeal" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#b2fff4"/><stop offset="1" stop-color="#257b79"/></linearGradient>
+              <linearGradient id="needleGold" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#7e4216"/>
+                <stop offset=".18" stop-color="#dca650"/>
+                <stop offset=".47" stop-color="#fff7d7"/>
+                <stop offset=".65" stop-color="#f9cd72"/>
+                <stop offset="1" stop-color="#87551c"/>
+              </linearGradient>
+              <linearGradient id="needleSpine" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#f4d08d"/>
+                <stop offset=".52" stop-color="#fff6ce"/>
+                <stop offset="1" stop-color="#b47c2f"/>
+              </linearGradient>
             </defs>
-            <path d="M50 1L66 52L50 43L34 52Z" fill="url(#needleGold)" stroke="#fff4cb" stroke-width="1.2"/>
-            <path d="M50 1L50 43L34 52Z" fill="#fff5cc" opacity=".89"/>
-            <path d="M50 99L64 49L50 57L36 49Z" fill="url(#needleTeal)" stroke="#84eee1" stroke-width=".9"/>
-            <path d="M50 99L50 57L36 49Z" fill="#0d595e" opacity=".66"/>
-            <circle cx="50" cy="50" r="9.5" fill="#061725" stroke="#d7b16c" stroke-width="2"/>
-            <circle cx="50" cy="50" r="4" fill="#fff0b9"/>
+            <path d="M50 3 L68 49 L56 47 L56 87 Q50 95 44 87 L44 47 L32 49 Z"
+                  fill="#4b270c" stroke="#0b0f13" stroke-width="2.6" stroke-linejoin="round"/>
+            <path d="M50 3 L68 49 L56 47 L56 87 Q50 95 44 87 L44 47 L32 49 Z"
+                  fill="url(#needleGold)" stroke="#ffe6a2" stroke-width="1.15" stroke-linejoin="round"/>
+            <path d="M50 4 L50 85" stroke="url(#needleSpine)" stroke-width="1.75" stroke-linecap="round"/>
+            <path d="M50 9 L55.7 42 L50 40 Z" fill="#fff5ce" opacity=".58"/>
+            <path d="M50 9 L44.3 42 L50 40 Z" fill="#6e3c13" opacity=".54"/>
+            <path d="M46 58 L54 58 M46 65 L54 65 M46 72 L54 72" stroke="#8a541d" stroke-width=".65" opacity=".65"/>
+            <circle cx="50" cy="50" r="5.7" fill="#6d4017" stroke="#fff4c3" stroke-width="1.2"/>
+            <circle cx="50" cy="50" r="3.6" fill="#e3b45e"/>
           </svg>
         </div>
-        <div class="pro-compass-center" aria-hidden="true"><svg viewBox="0 0 36 36"><path fill="#090d14" stroke="#ebc783" stroke-width="1.2" d="M9 12L19 7L28 12L28 26L18 31L9 26Z"/><path d="M9 12L18 17L28 12M18 17V31" fill="none" stroke="#deb86a" stroke-width="1.1"/><path d="M9 17L18 22L28 17" fill="none" stroke="#f4da9c" stroke-width="2"/></svg></div>
+        <div class="pro-compass-center ornate-compass-center" aria-hidden="true">
+          <svg viewBox="0 0 36 36">
+            <path fill="#101219" stroke="#ffe5a3" stroke-width="1.2" d="M9 12L19 7L28 12L28 26L18 31L9 26Z"/>
+            <path d="M9 12L18 17L28 12M18 17V31" fill="none" stroke="#eabf6a" stroke-width="1.1"/>
+            <path d="M9 17L18 22L28 17" fill="none" stroke="#fff0ba" stroke-width="2"/>
+          </svg>
+        </div>
       </div>
       <div class="pro-compass-caption">Q I B L A <span>•</span> 360°</div>
     </div>

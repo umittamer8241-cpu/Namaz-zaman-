@@ -1,4 +1,4 @@
-# Namaz Zamanı v0.13 — Namaz Takvimi ve Pro Plus Pusula
+# Namaz Zamanı v0.14 — Namaz Takvimi ve Royal Qibla Pusulası
 
 ## İçerik
 - 12 dil: Türkçe, İngilizce, Malayca, Endonezce, Arapça, Rusça, Fransızca, Almanca, İspanyolca, Portekizce, Azerbaycanca, Urduca.
@@ -40,3 +40,12 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Ezan sesleri, dinleme sekmeleri, arka plan alarmı ve ses servisleri projeden çıkarıldı.
 - 12 dilde günlük tek Esmaül Hüsna; 702 dua ve dört kısa sure ses kaydı korunur.
 - Bu APK Android test önizlemesidir. Gerçek cihaz/sensör ve dinî içerik QA tamamlanmadan Play Store yayını yapılmaz.
+
+
+## v0.14 — Kabartmalı altın Royal Qibla pusulası
+
+- Önceki iki uçlu mavi/altın iğne yerine yalnızca bir altın yön oku kullanılır.
+- Çevrede yüksek çözünürlüklü düzenlenebilir SVG dosyasında 24 tekrar özgün kabartma çiçek/kıvrım süslemesi, altın döküm halka ve 120 derece çizgisi vardır: `app/src/main/assets/compass_ornate_frame.svg`.
+- Dekoratif çerçeve sabittir; `id="needle"` ile tek altın ok önceki matematik/sensör değerlerine göre hareket etmeyi sürdürür. Kuzey referansı ve kıble açısı korunmuştur.
+- Mobil yerleşimde gösterişli büyük kadran ile bilgi kartı alt alta gösterilir. Görsel tamamen paket içidir, internet indirmez.
+- Gerçek telefon sensörü ve konum kalibrasyonu üzerinde son kullanıcı cihazında fiziksel test ayrıca yapılmalıdır.
