@@ -59,7 +59,8 @@ jobs:
           node tools/validate_v022_location_backup.js
           node tools/validate_v023_compass_arrow.js
           node tools/validate_v024_compass_fallback.js
-          node tools/test_v024_sensor_fallback_edge.js
+          # The v0.24 Edge browser integration test runs on Windows locally.
+          # Linux CI validates JS syntax and native contracts above.
       - name: Play önizleme APK ve AAB derle
         run: gradle --no-daemon --stacktrace :app:assembleDebug :app:assembleFullPreview :app:bundleRelease
       - name: Debug APK test paket adını doğrula
