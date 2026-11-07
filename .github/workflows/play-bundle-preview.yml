@@ -54,6 +54,7 @@ jobs:
           node tools/validate_v019_offline_sun.js
           node tools/validate_v019_qibla_reference.js
           node tools/validate_v019_online.js
+          node tools/validate_v020_location_diagnostics.js
       - name: Play önizleme APK ve AAB derle
         run: gradle --no-daemon --stacktrace :app:assembleDebug :app:assembleFullPreview :app:bundleRelease
       - name: Debug APK test paket adını doğrula
@@ -71,7 +72,7 @@ jobs:
       - name: Normal uygulama adıyla tam Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: Namaz-Zamani-v0.19-Offline-Online-Kible-Tam-APK
+          name: Namaz-Zamani-v0.20-Akilli-Konum-Tam-APK
           path: app/build/outputs/apk/fullPreview/app-fullPreview.apk
           if-no-files-found: error
       - name: İmzasız AAB önizleme

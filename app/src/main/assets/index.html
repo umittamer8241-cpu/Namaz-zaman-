@@ -60,6 +60,16 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       <button type="button" id="location-last-known" class="secondary" hidden>Son Kaydedilen Konumu Kullan</button>
     </div>
   </section>
+  <details class="nz-location-diagnostic-panel" id="nz-location-diagnostic-panel" open>
+    <summary id="nz-location-diagnostic-title">Konum tanılama ve onarım</summary>
+    <p id="nz-location-diagnostic-intro">GPS ve izin durumunu telefondan kontrol et.</p>
+    <button id="nz-location-smart" type="button">Akıllı konum bul (GPS + ağ)</button>
+    <button id="nz-location-diagnostic-refresh" class="secondary" type="button">Telefon konum durumunu kontrol et</button>
+    <div id="nz-location-diagnostic-results"></div>
+    <p id="nz-location-diagnostic-hint" aria-live="polite">Konum izinleri kontrol ediliyor…</p>
+    <button id="nz-location-diagnostic-copy" class="secondary" type="button">Konum raporunu kopyala</button>
+    <span id="nz-location-diagnostic-copy-status" aria-live="polite"></span>
+  </details>
   <div class="sectionhead">Bugünün vakitleri <span>Yalnızca günlük</span></div>
   <div id="nz-prayer-tracker" class="nz-prayer-inline" aria-label="Bugünün vakitleri ve namaz takibi">
     <div class="nz-prayer-today-head"><span id="nz-prayer-summary-label">✓ Namaz takibi · Kıldığın vakti işaretle</span><strong id="nz-prayer-progress">Kılınan: 0/5</strong></div>
@@ -212,6 +222,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 <p style="text-align:center;margin:12px 0 26px"><a id="privacy-policy-link" href="privacy-policy.html" style="color:#bcd8d7;text-decoration:underline">Gizlilik Politikası</a></p></main>
 <script src="daily_i18n.js"></script>
 <script src="full_ui_i18n.js"></script>
+<script src="location_diagnostics.js"></script>
 <script src="daily_dua_library.js"></script>
 <script src="learning_content.js"></script>
 <script src="esma_i18n.js"></script>
@@ -929,6 +940,12 @@ function startCompass(){
 function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();updateNeedle();renderSunShadow();renderManualReference();renderQiblaOnline();}
 window.NamazApp={
  activeDayKey:function(){return localDateKey(displayDateParts(new Date()));},
+ prepareLocationSearch:function(){
+  // Allow real GPS to replace an earlier manually entered fallback coordinate.
+  state.manual=false;
+  state.gpsMessage='@googleSearching';
+  updateLocationPanel();
+ },
  prayerMarkGate:function(id,stamp=Date.now()){
   const day=localDateKey(displayDateParts(new Date(stamp)));
   if(!PRAYERS.some(([prayer])=>prayer===id))return {allowed:false,reason:'unknown'};
@@ -1024,12 +1041,14 @@ function init(){
     catch(e){$('compass-status').textContent=tr('denied');}
   });
   startCompass();
-  // A fresh install tries offline satellite GPS once. Screen wakes and app
-  // relaunches NEVER trigger automatic network positioning.
-  if(!hasCached&&!saved('initialGpsAttempted',false)){
-     store('initialGpsAttempted',true);startGPS('satellite');
-  }else if(!hasCached){
+  // If no location has ever been saved, reattempt offline satellite GPS
+  // at every app launch when precise permission is already available.
+  // No automatic Google/network requests and no repeated permission popup.
+  if(!hasCached){
      state.gpsMessage='@noFix';updateLocationPanel();
+     if(window.GemiNative?.retryOfflineGpsWhenPermitted){
+       window.GemiNative.retryOfflineGpsWhenPermitted();
+     }else if(!window.GemiNative)startGPS('satellite');
   }
   renderClock();setInterval(renderClock,1000);
   // Always refresh confidence/alignment expiry, including devices with no sensor.\n  setInterval(()=>{updateNeedle();renderCompassDiagnostics();},2000);

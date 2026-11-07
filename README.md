@@ -108,3 +108,11 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Çevrim içi servisler **coğrafi kıble azimutunu** doğrular, telefonun fiziksel dönüklüğünü veya gemideki güncel koordinatın doğruluğunu tek başına doğrulayamaz. Fiziksel hizalama/sensör testi gerekir.
 - Kaynaklar: https://aladhan.com/qibla-api ; https://api.myquran.com/doc
 - Android Play yayını yapılmaz; APK debug anahtarıyla imzalanmış test önizlemesidir. Gerçek gemi/telefon testi bekleniyor.
+
+## v0.20 — Konum bulma teşhisi, akıllı arama ve her açılışta GPS yeniden denemesi
+- Android konum tanısı: Kesin/Yaklaşık/İzin Yok; telefon konum anahtarı; GPS_PROVIDER; NETWORK_PROVIDER; Google Play konum servisi; arama durumu; son ölçüm kaynağı, yaşı ve hassasiyet. Tam koordinatlar rapora dahil edilmez; herhangi bir rapor yalnız kullanıcı düğmeye bastığında panoya kopyalanır.
+- **Akıllı Konum Bul** kullanıcı isteğiyle Google Fused, Android ağ ve izin verilmişse uydu GPS kaynaklarını paralel dener. Yalnız yaklaşık izin varsa Android ağ/Google kaynağını yine deneyebilir; uydu GPS'in neden başlamadığı ekranda belli olur.
+- **İnternetsiz ilk açılış düzeltmesi:** Daha önce hiç konum kaydedilememiş olsa bile sonraki uygulama açılışlarında, kesin izin zaten verilmişse uydu GPS otomatik yeniden denenir. Daha önce \`initialGpsAttempted\` bayrağı bu tekrarları engelliyordu. Bu otomatik tekrar Google/ağ sorgusu yapmaz ve izin penceresi tekrar tekrar açmaz.
+- Eski koordinatlar ve namaz vakitleri korunur; ekranın kilitlenmesi konumu silmez. Kullanıcı özellikle arama yapmadıkça ekran açılışı Google/ağ sorgusu tetiklemez.
+- Android'in tam izin ve gerçek GPS durumu ancak kullanıcının cihazında görülebilir; testlerin geçmesi dışarıda GPS'in mutlaka konum bulacağını garanti etmez.
+- Aylık namaz çizelgesi, Esma, dua, sure sesleri, 12 dil ve çok yöntemli kıble sistemleri korunur. Google Play'e yayın yapılmaz.

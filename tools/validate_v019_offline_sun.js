@@ -22,7 +22,7 @@ assert(!night.usable,'Night must not enable shadow');
 const js=html.match(/<script>\s*'use strict';([\s\S]*?)<\/script>/);
 assert(js,'Missing inline runtime');
 new vm.Script("'use strict';"+js[1]);
-assert(html.includes("if(!hasCached&&!saved('initialGpsAttempted',false))"));
+assert(html.includes('if(!hasCached){')&&html.includes('retryOfflineGpsWhenPermitted()'));
 assert(html.includes("if(hasCached){")&&html.includes("state.manual=manualSaved"));
 assert(html.includes('function locationFresh(')&&html.includes('function validLocation()'));
 assert(html.includes('function shadowActive()')&&html.includes('function alignToShadow()'));

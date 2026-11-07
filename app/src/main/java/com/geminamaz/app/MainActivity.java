@@ -130,6 +130,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 nativeReady=true;
                 sendStatus(pendingStatus);
                 if(latest!=null)sendLocation(latest,true,latestSource);
+                sendLocationDiagnostics();
                 // UI restores last saved coordinates from localStorage.
                 // Do NOT refresh GPS/Google after reload or screen wake without user action.
             }
@@ -143,6 +144,38 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             waitingSatellitePermission=false;
             beginLocation();
         });}
+        @JavascriptInterface public void requestSmartLocation(){
+            runOnUiThread(()->{
+                waitingSatellitePermission=false;
+                beginLocation();
+                sendLocationDiagnostics();
+            });
+        }
+        @JavascriptInterface public void retryOfflineGpsWhenPermitted(){
+            runOnUiThread(()->{
+                // Silent bootstrap on each app open ONLY if the app already
+                // has precise permission. No dialog, no network calls.
+                if(hasFine()&&locationEnabled()&&providerAvailable(LocationManager.GPS_PROVIDER)){
+                    startSatelliteOnly();
+                }else{
+                    sendStatus(hasAnyPermission()
+                        ?"Konum iznini kontrol et: uydu GPS için Kesin Konum gerekli. Akıllı konum araması ağ üzerinden de denenebilir."
+                        :"Konum izni yok. Akıllı Konum Bul düğmesine basarak izin verebilirsin.");
+                }
+                sendLocationDiagnostics();
+            });
+        }
+        @JavascriptInterface public void getLocationDiagnostics(){
+            runOnUiThread(()->sendLocationDiagnostics());
+        }
+        @JavascriptInterface public void copyLocationReport(String report){
+            runOnUiThread(()->{
+                if(report==null||report.length()>4096)return;
+                ClipboardManager c=(ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
+                if(c!=null)c.setPrimaryClip(
+                    ClipData.newPlainText("Namaz Zamanı konum tanı raporu",report));
+            });
+        }
         @JavascriptInterface public void requestSatelliteLocation(){runOnUiThread(()->{
             if(!hasFine()){
                 waitingSatellitePermission=true;
@@ -321,6 +354,33 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         pendingStatus=message;
         js("window.nativeError("+JSONObject.quote(message)+");");
     }
+    private void sendLocationDiagnostics(){
+        if(!nativeReady||webView==null)return;
+        try{
+            JSONObject result=new JSONObject();
+            result.put("fine",hasFine());
+            result.put("coarse",hasCoarse());
+            result.put("systemEnabled",locationEnabled());
+            result.put("gpsEnabled",providerAvailable(LocationManager.GPS_PROVIDER));
+            result.put("networkEnabled",providerAvailable(LocationManager.NETWORK_PROVIDER));
+            boolean google=false;
+            try{
+                google=GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
+                    ==ConnectionResult.SUCCESS;
+            }catch(Exception ignored){}
+            result.put("googleReady",google);
+            result.put("searching",working);
+            result.put("mode",satelliteOnlyActive?"satellite":working?"smart":"idle");
+            result.put("source",latestSource);
+            result.put("ageSeconds",latest==null?-1:
+                Math.max(0,(System.currentTimeMillis()-latest.getTime())/1000));
+            result.put("accuracyMeters",latest!=null&&latest.hasAccuracy()
+                ?Math.round(latest.getAccuracy()):-1);
+            result.put("latestValid",recent(latest));
+            // Never include latitude, longitude or other precise location.
+            js("window.nativeLocationDiagnostics("+result.toString()+");");
+        }catch(Exception ignored){}
+    }
     private boolean hasFine(){
         return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED;
     }
@@ -369,6 +429,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             sendStatus("Yalnızca yaklaşık konum alındı (±"+
                 Math.round(location.getAccuracy()/1000f)+" km). Namaz vakitleri ve kıble yaklaşık olabilir. Kesin konumu aç.");
         else if(!cached)sendStatus("Güncel GPS/ağ konumu alındı.");
+        sendLocationDiagnostics();
     }
     private void sendLocation(Location loc,boolean cached,String source){
         double lat=loc.getLatitude(),lon=loc.getLongitude();
@@ -391,6 +452,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         satelliteOnlyActive=true;
         working=true;freshFix=false;
         sendStatus("Uydu GPS aranıyor (mobil veri/Wi-Fi konum sorgusu yapılmıyor). Açık gökyüzü gerekli...");
+        sendLocationDiagnostics();
         startGpsFallback();
         warningRunnable=()->{
             if(!freshFix&&(latest==null||!recent(latest)))
@@ -402,17 +464,20 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         satelliteOnlyActive=false;
         if(!hasAnyPermission()){
             sendError("Konum izni gerekiyor. İzin ekranında 'Kesin konum'u seç.");
+            sendLocationDiagnostics();
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION},REQ_LOCATION);
             return;
         }
         if(!locationEnabled()){
             sendError("Telefon konumu kapalı. Alttaki 'Konum ayarları' ile aç.");
+            sendLocationDiagnostics();
             return;
         }
         stopSources();
         working=true;freshFix=false;
-        sendStatus("Google, ağ ve uydu kaynakları aynı anda aranıyor...");
+        sendStatus("Akıllı arama: Google, ağ ve izin varsa uydu GPS deneniyor...");
+        sendLocationDiagnostics();
         // On a ship, Wi-Fi may not reveal a geolocation. Start GNSS
         // immediately instead of waiting 28 seconds for Google to fail.
         if(hasFine())startGpsFallback();
@@ -701,6 +766,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         super.onResume();
         startOrientationTracking();
         if(webView!=null)webView.onResume();
+        sendLocationDiagnostics();
         // Never start a fresh location search just because the screen wakes.
         // User-initiated satellite or network mode remains explicit.
     }
@@ -730,6 +796,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 else sendError("Uydu GPS için Kesin Konum iznini aç veya koordinatları elle gir.");
             }else if(hasAnyPermission())beginLocation();
             else sendError("Konum izni reddedildi. Ayarlar > Uygulamalar > Namaz Zamanı > İzinler > Konum bölümünden izin ver veya koordinatları elle gir.");
+            sendLocationDiagnostics();
         }
     }
     @Override public void onBackPressed(){

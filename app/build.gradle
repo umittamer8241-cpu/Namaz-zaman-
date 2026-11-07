@@ -7,8 +7,8 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 20
-        versionName '0.19-offline-online-qibla-preview'
+        versionCode 21
+        versionName '0.20-smart-location-diagnostics-preview'
     }
     buildTypes {
         debug {
