@@ -72,16 +72,16 @@ function localeUpdate(){
  setText("#gps-button",text("gps"));
  setText("#reset-button",text("refresh"));
  setText("#location-settings-button",text("settings"));
- setText(".location details:not([open]) summary",text("manual"));
+ setText(".location details:first-of-type summary",text("manual"));
  // Preserve coordinate input nodes while localizing their visible labels.
  const labels=document.querySelectorAll(".manual label");
  if(labels.length>1){firstLabel(labels[0],text("lat"));firstLabel(labels[1],text("lon"));}
  setText("#manual-button",text("use"));
  firstLabel(document.querySelector(".location > .settings label:first-child"),text("method"));
  firstLabel(document.querySelector(".location > .settings label:nth-child(2)"),text("asr"));
- setText(".location details[open] summary",text("tz"));
- firstLabel(document.querySelector(".location details[open] .settings label:first-child"),text("timezone"));
- firstLabel(document.querySelector(".location details[open] .settings label:nth-child(2)"),text("utc"));
+ setText(".location details:last-of-type summary",text("tz"));
+ firstLabel(document.querySelector(".location details:last-of-type .settings label:first-child"),text("timezone"));
+ firstLabel(document.querySelector(".location details:last-of-type .settings label:nth-child(2)"),text("utc"));
  const options={phone:text("phone"),sea:text("sea"),manual:text("ship")};
  for(const [id,value] of Object.entries(options)){const item=document.querySelector('#timezone-mode option[value="'+id+'"]');if(item)item.textContent=value;}
  const langSelect=el("app-language");
@@ -98,6 +98,7 @@ function localeUpdate(){
  const nextName=el("next-name");
  if(nextName){const index=prayerIds.indexOf(nextName.dataset.prayer||"");if(index>=0)nextName.textContent=LOCALES[active].prayers[index];}
  lastDay="";renderWisdom(true);
+ if(window.NamazUI)window.NamazUI.apply();
 }
 function firstLabel(n,value){if(n && n.firstChild&&n.firstChild.nodeType===3)n.firstChild.textContent=value;}
 function setLocale(code,save=true){
@@ -138,7 +139,7 @@ function renderWisdom(force=false){
  el("verse-arabic").textContent=entry.qArabic;
  el("verse-body").textContent=v;
  el("hadith-body").textContent=h;
- el("verse-ref").textContent="Kur'an "+entry.q;
+ el("verse-ref").textContent=(window.NamazUI?window.NamazUI.t("quran"):"Kur'an")+" "+entry.q;
  el("hadith-ref").textContent=entry.h;
  el("verse-body").dir=["ar","ur"].includes(active)?"rtl":"auto";
  el("hadith-body").dir=["ar","ur"].includes(active)?"rtl":"auto";

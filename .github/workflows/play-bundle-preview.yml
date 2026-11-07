@@ -32,6 +32,8 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
+      - name: 12 dil ve metin tamlığı testi
+        run: node tools/validate_localization.js
       - name: Play önizleme APK ve AAB derle
         run: gradle --no-daemon --stacktrace :app:assembleDebug :app:bundleRelease
       - name: İç test APK
