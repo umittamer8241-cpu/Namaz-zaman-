@@ -13,7 +13,7 @@ android {
     buildTypes {
         debug {
             // Standalone QA app: never overwrite the user's existing prayer records.
-            applicationIdSuffix '.pusulatest'
+            applicationIdSuffix '.pusulatest23'
             versionNameSuffix '-side-by-side'
         }
         fullPreview {
