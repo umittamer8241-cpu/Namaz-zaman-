@@ -1,8 +1,9 @@
 'use strict';
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const ui=fs.readFileSync(path.join(__dirname,'..','app','src','main','assets','learning_ui.js'),'utf8');
-const pieces=/function dayOrdinal\(key\)\{[\s\S]*?\n\}\nfunction dailyIndex\(day,n\)\{[\s\S]*?\n\}/.exec(ui);
-if(!pieces)throw new Error('Date sequence functions not found');
+const begin=ui.indexOf('function dayOrdinal('),end=ui.indexOf('function stopAudio(');
+if(begin<0||end<=begin)throw new Error('Date sequence functions not found');
+const pieces=[ui.slice(begin,end)];
 const storage=new Map();
 const context={
  localStorage:{getItem:k=>storage.has(k)?storage.get(k):null,setItem:(k,v)=>storage.set(k,String(v))},

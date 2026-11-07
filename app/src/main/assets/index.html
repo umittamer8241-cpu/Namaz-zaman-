@@ -50,9 +50,35 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
   <div class="topline"><span id="today">Tarih alınıyor…</span><span id="clock">--:--:--</span></div>
   <div class="loc-sub" id="time-status" style="margin-bottom:12px;color:var(--mint)">Saat dilimi kontrol ediliyor...</div>
   <section class="panel hero" aria-label="Sıradaki namaz vakti"><div class="small-label">Sıradaki namaz vakti</div><div class="nextname" id="next-name">Konum bekleniyor</div><div class="bigtime" id="next-time">--:--</div><div class="subtext">Kalan süre: <span class="countdown" id="countdown">--:--:--</span></div><div id="hero-location-status" class="hero-loc-status">Google konumu aranıyor (Wi-Fi / ağ)...</div></section>
-  <div class="sectionhead">Bugünün vakitleri <span>Yalnızca günlük</span></div><section class="schedule" id="schedule" aria-label="Günlük namaz vakitleri"></section>
-  <section class="panel location" id="nz-prayer-tracker" aria-label="Prayer completion tracking"></section>
-  <section class="panel compass-card" aria-label="Kıble yönü"><div class="dial" aria-label="Kıble pusulası"><span class="tick n">K</span><span class="tick s">G</span><span class="tick e">D</span><span class="tick w">B</span><div class="needle-wrap" id="needle"><div class="needle"><svg viewBox="0 0 28 150" aria-hidden="true"><path d="M14 0 L28 80 L14 68 L0 80 Z" fill="#f4d48c"/><path d="M14 0L14 68L0 80Z" fill="#fff6d9"/><path d="M14 68 L23 112 L14 102 L5 112Z" fill="#77d9cb" opacity=".7" /></svg></div></div></div><div><div class="small-label">Kıble yönü</div><div class="qval" id="bearing">---°</div><div class="qsub" id="bearing-note">GPS ile Kâbe yönü hesaplanıyor.</div><div class="compass-status" id="compass-status">Pusula sensörü bekleniyor…</div><button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button></div></section>
+  <div class="sectionhead">Bugünün vakitleri <span>Yalnızca günlük</span></div>
+  <div id="nz-prayer-tracker" class="nz-prayer-inline" aria-label="Bugünün vakitleri ve namaz takibi">
+    <div class="nz-prayer-today-head"><span id="nz-prayer-summary-label">✓ Namaz takibi · Kıldığın vakti işaretle</span><strong id="nz-prayer-progress">Kılınan: 0/5</strong></div>
+    <section class="schedule" id="schedule" aria-label="Günlük namaz vakitleri ve namaz takibi"></section>
+  </div>
+  <section class="panel compass-card compass-luxe" aria-label="Kıble yönü">
+    <div class="dial premium-dial" aria-label="Kıble pusulası">
+      <div class="compass-halo" aria-hidden="true"></div>
+      <div class="compass-face" aria-hidden="true"></div>
+      <span class="tick n">K</span><span class="tick s">G</span><span class="tick e">D</span><span class="tick w">B</span>
+      <span class="compass-point ne">•</span><span class="compass-point nw">•</span>
+      <span class="compass-point se">•</span><span class="compass-point sw">•</span>
+      <div class="needle-wrap" id="needle">
+        <svg class="premium-needle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs><linearGradient id="needleGold" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#fff2c7"/><stop offset=".52" stop-color="#d4a753"/><stop offset="1" stop-color="#75522f"/>
+          </linearGradient><linearGradient id="needleTeal" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#affff0"/><stop offset="1" stop-color="#256e73"/>
+          </linearGradient></defs>
+          <path d="M50 3L64 54L50 45L36 54Z" fill="url(#needleGold)" stroke="#fff4ca" stroke-width="1.1"/>
+          <path d="M50 3L50 45L36 54Z" fill="#fff1ba" opacity=".85"/>
+          <path d="M50 97L64 46L50 55L36 46Z" fill="url(#needleTeal)" stroke="#64ddcc" stroke-width=".7"/>
+          <circle cx="50" cy="50" r="10" fill="#061521" stroke="#d8b66f" stroke-width="1.6"/>
+          <circle cx="50" cy="50" r="4" fill="#fff0bd"/>
+        </svg>
+      </div>
+    </div>
+    <div class="compass-readout"><div class="small-label">Kıble yönü · Canlı pusula</div><div class="qval" id="bearing">---°</div><div class="qsub" id="bearing-note">GPS ile Kâbe yönü hesaplanıyor.</div><div class="compass-status" id="compass-status">Pusula sensörü bekleniyor…</div><button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button></div>
+  </section>
   <section class="panel location" aria-label="Konum ayarları"><div class="small-label">Konum • Google konum servisi → GPS</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="reset-button" class="secondary">Yeniden konum bul</button><button type="button" id="location-settings-button" class="secondary">Konum ayarları</button></div>
     <details><summary>GPS çalışmazsa koordinatı elle gir</summary><div class="manual"><label>Enlem (−90 … 90)<input id="latitude" type="number" step="any" placeholder="3.13900" /></label><label>Boylam (−180 … 180)<input id="longitude" type="number" step="any" placeholder="101.68690" /></label><button id="manual-button" type="button">Bu koordinatı kullan</button></div></details>
     <div class="settings"><label>Hesaplama yöntemi<select id="method"><option value="MWL">Genel (18° / 17°)</option><option value="JAKIM">JAKIM yaklaşık (18° / 18°)</option></select></label><label>İkindi hesabı<select id="asr-method"><option value="1">Standart</option><option value="2">Hanefî</option></select></label></div>
@@ -87,6 +113,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 <script src="adhan_settings.js"></script>
 <script src="daily_dua_library.js"></script>
 <script src="learning_content.js"></script>
+<script src="esma_i18n.js"></script>
 <script src="learning_ui.js"></script>
 <script src="prayer_tracker.js"></script>
 <script>

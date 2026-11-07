@@ -21,14 +21,17 @@ CC0 metni: https://creativecommons.org/publicdomain/zero/1.0/
 
 **Kural:** Kullanıcının geliştirme onayı, üçüncü taraf ses kayıtlarına telif izni vermez. Herhangi bir özel yarışmacı sesini veya TRT/Diyanet/YouTube videosundan ayıklanan sesi, izin veya uygun lisans olmadan Google Play'e paketleme ya da yeniden dağıtma.
 
-## v0.9'da çalışan kapsam ve açık işler
+## v0.10 ön izleme: otomatik ezan
 
-- Beş namaz için birbirinden bağımsız seçim; seçim cihazda yerel olarak saklanır.
-- İnternetsiz **kullanıcı başlatmalı ön dinleme** ve durdurma.
-- 12 uygulama dilinde ezan ekranı için temel çeviri.
-- **Otomatik ezan bildirimi, arka plan çalışması, uyandırma alarmı henüz uygulanmadı.**
-- Seslerin tam ezan olup olmadığı ve farklı Android cihazlarda oynatma son QA'da test edilecek.
-- Düşük veri tüketimi: üç ses toplam ~2.39 MB; telefona uygulama paketinin içinde gelir, ayrı ağ erişimi gerekmez.
+- Beş namaz için birbirinden bağımsız ses seçimi korunur. Her namaz için **Sessiz** seçilebilir.
+- Otomatik ezan varsayılan olarak açıktır; kullanıcı **Vakit girince otomatik ezan oku** anahtarından tamamen kapatabilir.
+- Android AlarmManager, alarm BroadcastReceiver ve mediaPlayback foreground service eklenmiştir. Otomatik kayıt listesi 31 gün için hazırlanır; cihazda aynı anda yalnızca bir sonraki alarm programlanır.
+- Kullanıcı bildirime veya alarm izin ekranına yönlendirilir. **SCHEDULE_EXACT_ALARM** verilmezse zamanlama gecikebilir veya cihazın arka plan sınırlarına takılabilir.
+- Telefona paketlenmiş üç CC0 kayıt, internet kullanmadan ön dinlemede ve otomatik ezanda seçilebilir. İzin bekleyen kayıtlar pakete alınmadı.
+- 12 uygulama dilinde otomatik ezan kontrolü vardır; mevcut günlük dua ve öğrenme ekranlarına müdahale edilmedi.
+- **İşlevsel otomasyon ve kaynak statik testlerden geçti; Android APK derlemesi ile ekran kapalı/yeniden başlatma/gerçek ses testi henüz yapılmadı. Bu sürüm Google Play yayınına hazır olarak etiketlenmez.**
+- Açık denizde hareket eden cihazlarda uygulama yeniden açılıp konum yenilenmelidir; kapalıyken hesaplanan vakitler son doğrulanmış koordinata dayanır.
+- Düşük veri tüketimi: üç ses toplam ~2.39 MB; sesler uygulama varlıklarındadır, ayrı ağ erişimi gerekmez.
 
 ## QA
 

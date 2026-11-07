@@ -45,7 +45,7 @@ function apply(){
  set(".compass-card .qsub",t("qiblaWaiting"));
  set(".location details:last-of-type p.loc-sub",t("timeHelp"));
  set("main > .note",t("note"));
- set("#compass-permission",t("compassPermission"));
+ set("#compass-permission",t("permissionCompass"));
  set("#method option[value='MWL']",t("general"));
  set("#method option[value='JAKIM']","JAKIM (18° / 18°)");
  set("#asr-method option[value='1']",t("asrStandard"));

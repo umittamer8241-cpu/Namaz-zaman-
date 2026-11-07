@@ -24,7 +24,8 @@ practice:"Hide pronunciation while memorizing, and play the surah 1, 3 or 5 time
 translit:"Transliteration is an approximation, not a substitute for accurate instruction.",
 noAudio:"No approved recitation yet",none:"No results",onlyTr:"Meanings of names are currently in Turkish.",end:"Show more",ready:"Ready to listen.",playing:"Playing...",failed:"Audio could not be played."}
 };
-let chosenSurah = "fatiha", showTranslit = true, shownNames = 12, query = "";
+let chosenSurah = "fatiha", showTranslit = true;
+let lastEsmaDay = "";
 let playing = null, remaining = 0;
 let savedSurahs = readObject("nz_surah_memorized_v09");
 let savedNames = readObject("nz_esma_learned_v09");
@@ -46,9 +47,9 @@ function dayOrdinal(key){
  const dt=new Date(millis);
  return dt.getUTCFullYear()===parts[0]&&dt.getUTCMonth()===parts[1]-1&&dt.getUTCDate()===parts[2] ? Math.floor(millis/86400000) : NaN;
 }
-function dailyIndex(day,n){
+function dailyIndex(day,n,sequenceKey="nz_dua_sequence_start_v09"){
  if(!Number.isInteger(n)||n<1)return 0;
- const current=dayOrdinal(day),key="nz_dua_sequence_start_v09";
+ const current=dayOrdinal(day),key=sequenceKey;
  let first=null;
  try{first=localStorage.getItem(key);}catch(_){}
  if(!Number.isFinite(dayOrdinal(first))){first=day;try{localStorage.setItem(key,first);}catch(_){}}
@@ -81,7 +82,7 @@ function playAudio(surah){
 }
 function audioError(){const x=$("nz-surah-audio-status");if(x)x.textContent=t("failed");}
 function makeLink(url,label){
- const a=el("a",label,"nz-source-link");a.href=url;a.target="_blank";a.rel="noopener noreferrer";return a;
+ const a=el("a",label,"nz-source-link");a.href=url;a.rel="noopener noreferrer";return a;
 }
 function buildSectionTitle(host,name,subtitle){
  host.replaceChildren();
@@ -134,6 +135,24 @@ function renderSurah(){
  const source=el("div",null,"nz-source");source.appendChild(makeLink(surah.link,t("source")));
  host.appendChild(source);
 }
+function listenToDua(dua){
+ const status=$("nz-dua-audio-status");
+ if(window.GemiNative&&typeof window.GemiNative.speakArabic==="function"){
+   window.GemiNative.speakArabic(dua.ar);
+   if(status)status.textContent=lang()==="tr"?"Telefonun Arapça seslendirmesi kullanılıyor (tilavet kaydı değildir). Ses paketi gerekebilir.":"Using Android Arabic text-to-speech, not a recorded recitation. An Arabic voice pack may be required.";
+   return;
+ }
+ if("speechSynthesis" in window&&"SpeechSynthesisUtterance" in window){
+   window.speechSynthesis.cancel();
+   const item=new SpeechSynthesisUtterance(dua.ar);item.lang="ar";item.rate=0.8;window.speechSynthesis.speak(item);
+   if(status)status.textContent=lang()==="tr"?"Cihazın Arapça konuşma sesi kullanılıyor (tilavet değildir).":"Using device Arabic TTS (not recitation).";
+ }else if(status)status.textContent=lang()==="tr"?"Bu cihazda Arapça konuşma motoru bulunamadı.":"Arabic speech engine is unavailable on this device.";
+}
+function stopDuaSpeech(){
+ if(window.GemiNative&&typeof window.GemiNative.stopArabic==="function")window.GemiNative.stopArabic();
+ if("speechSynthesis" in window)window.speechSynthesis.cancel();
+ const status=$("nz-dua-audio-status");if(status)status.textContent="";
+}
 function renderDua(force){
  const host=$("nz-dua-learning");if(!host)return;
  const day=currentDay();if(!force&&day===lastDuaDay)return;lastDuaDay=day;
@@ -145,49 +164,46 @@ function renderDua(force){
  if(dua.title)host.appendChild(el("h3",dua.title,"nz-dua-title"));
  const ar=el("p",dua.ar,"nz-arabic nz-dua-arabic");ar.lang="ar";ar.dir="rtl";host.appendChild(ar);
  host.appendChild(el("p",dua.latin,"nz-phonetic"));
+ const speaking=el("div",null,"nz-learn-controls");
+ speaking.appendChild(button(lang()==="tr"?"▶ Okunuşu dinle (cihaz sesi)":"▶ Listen (device voice)",()=>listenToDua(dua)));
+ speaking.appendChild(button(t("stop"),stopDuaSpeech));
+ host.appendChild(speaking);
+ host.appendChild(el("p","", "loc-sub")).id="nz-dua-audio-status";
  host.appendChild(el("div",t("meaning"),"nz-mini-label"));
  host.appendChild(el("p",lang()==="tr"?dua.tr:dua.en,"nz-meaning"));
  host.appendChild(makeLink(dua.url,dua.ref+" · "+t("source")));
 }
-function renderNames(){
+function renderNames(force=true){
  const host=$("nz-esma-learning");if(!host)return;
- buildSectionTitle(host,t("esma"),t("onlyTr"));
+ const day=currentDay();if(!force&&day===lastEsmaDay)return;lastEsmaDay=day;
+ const position=dailyIndex(day,DATA.names.length,"nz_esma_sequence_start_v10");
+ const item=DATA.names[position];
+ const esma=window.NamazEsmaI18n;
+ const localized=key=>esma?esma.text(key):t(key);
+ buildSectionTitle(host,localized("title"),localized("subtitle"));
+ if(!item)return;
  const head=el("div",null,"nz-learn-row");
- const input=document.createElement("input");input.type="search";input.value=query;input.placeholder=t("search");input.setAttribute("aria-label",t("search"));
- input.addEventListener("input",()=>{query=input.value;shownNames=12;paintNamesList();});
- head.appendChild(input);
- const count=el("strong",Object.keys(savedNames).filter(k=>savedNames[k]).length+"/99","nz-progress");count.id="nz-esma-count";head.appendChild(count);
- host.appendChild(head);
- const list=el("div",null,"nz-esma-grid");list.id="nz-esma-list";host.appendChild(list);
- const more=button(t("end"),()=>{shownNames+=12;paintNamesList();});more.id="nz-esma-more";host.appendChild(more);
- host.appendChild(el("p",lang()==="tr"?"Kaynak: Tirmizî rivayetiyle yaygın liste. Bazı kaynaklarda sıralama değişir.":"Source: commonly circulated Tirmidhi list; order may vary in other traditions.","loc-sub"));
- host.appendChild(makeLink("https://kurul.diyanet.gov.tr/yayinlarpdf/7.pdf",t("source")));
- paintNamesList();
-}
-function paintNamesList(){
- const host=$("nz-esma-list");if(!host)return;
- host.replaceChildren();
- const s=query.trim().toLocaleLowerCase("tr-TR");
- const matches=DATA.names.filter(x=>!s||(x.name+" "+x.meaningTr+" "+x.ar+" "+x.number).toLocaleLowerCase("tr-TR").includes(s));
- if(!matches.length)host.appendChild(el("p",t("none"),"loc-sub"));
- matches.slice(0,shownNames).forEach(item=>{
-   const wrap=el("div",null,"nz-esma-item");
-   const title=el("div",null,"nz-esma-label");
-   title.appendChild(el("span",String(item.number).padStart(2,"0"),"nz-index"));
-   title.appendChild(el("strong",item.name));
-   const arab=el("span",item.ar,"nz-esma-ar");arab.lang="ar";arab.dir="rtl";title.appendChild(arab);
-   wrap.appendChild(title);
-   wrap.appendChild(el("p",item.meaningTr,"nz-esma-meaning"));
-   const checked=!!savedNames[item.number];
-   const done=button(checked?t("notLearned"):t("learned"),()=>{
-      savedNames[item.number]=!savedNames[item.number];save("nz_esma_learned_v09",savedNames);
-      paintNamesList();
-   },checked?"nz-done":"secondary");
-   done.setAttribute("aria-pressed",checked?"true":"false");
-   wrap.appendChild(done);host.appendChild(wrap);
- });
- const count=$("nz-esma-count");if(count)count.textContent=Object.keys(savedNames).filter(k=>savedNames[k]).length+"/99";
- const more=$("nz-esma-more");if(more){more.hidden=matches.length<=shownNames;more.textContent=t("end")+" ("+Math.min(shownNames,matches.length)+"/"+matches.length+")";}
+ head.appendChild(el("strong",(position+1)+" / "+DATA.names.length,"nz-progress"));
+ const count=el("span",localized("count")+": "+Object.keys(savedNames).filter(k=>savedNames[k]).length+"/99","loc-sub");
+ count.id="nz-esma-count";head.appendChild(count);host.appendChild(head);
+ const wrap=el("div",null,"nz-esma-item nz-esma-today");
+ const title=el("div",null,"nz-esma-label");
+ title.appendChild(el("span",String(item.number).padStart(2,"0"),"nz-index"));
+ title.appendChild(el("strong",item.name));
+ const arab=el("span",item.ar,"nz-esma-ar");arab.lang="ar";arab.dir="rtl";title.appendChild(arab);
+ wrap.appendChild(title);
+ const meaning=el("p",esma?esma.meaning(item):item.meaningTr,"nz-esma-meaning");
+ meaning.lang=esma?esma.language():"tr";wrap.appendChild(meaning);
+ const checked=!!savedNames[item.number];
+ const done=button(checked?localized("unlearn"):localized("learned"),()=>{
+   savedNames[item.number]=!savedNames[item.number];save("nz_esma_learned_v09",savedNames);renderNames(true);
+ },checked?"nz-done":"secondary");
+ done.setAttribute("aria-pressed",checked?"true":"false");
+ wrap.appendChild(done);host.appendChild(wrap);
+ const info=el("p",localized("info"),"loc-sub");
+ host.appendChild(info);
+ host.appendChild(el("p",localized("note"),"loc-sub"));
+ host.appendChild(makeLink("https://www.diyanet.gov.tr/icerik/10462",localized("source")));
 }
 function refresh(){
  renderDua(true);renderSurah();renderNames();
@@ -200,8 +216,8 @@ function init(){
  refresh();
  const langSel=$("app-language");if(langSel)langSel.addEventListener("change",()=>{setTimeout(refresh,0);});
  ["timezone-mode","utc-offset"].forEach(id=>{const x=$(id);if(x)x.addEventListener("change",()=>renderDua(true));});
- setInterval(()=>renderDua(false),60000);
- document.addEventListener("visibilitychange",()=>{if(document.hidden)stopAudio();else renderDua(false);});
+ setInterval(()=>{renderDua(false);renderNames(false);},60000);
+ document.addEventListener("visibilitychange",()=>{if(document.hidden){stopAudio();stopDuaSpeech();}else{renderDua(false);renderNames(false);}});
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();

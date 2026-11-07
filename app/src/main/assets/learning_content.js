@@ -31,7 +31,7 @@ const SURAH = [
 ["وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ","Ve lem yekün lehû küfüven ehad"]
 ] },
 { id:"falaq", number:113, tr:"Felak", en:"Al-Falaq", link:"https://quran.com/113",
-  audio:null,
+  audio:"quran_audio/falaq.mp3",
   meaningTr:"Yaratılanların kötülüğünden, karanlığın ve hasedin zararından Allah'a sığınmayı öğretir.",
   meaningEn:"A prayer seeking God's protection from harm, darkness, envy and malicious acts.",
   verses:[
@@ -42,7 +42,7 @@ const SURAH = [
 ["وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ","Ve min şerri hâsidin izâ hased"]
 ] },
 { id:"nas", number:114, tr:"Nâs", en:"An-Nas", link:"https://quran.com/114",
-  audio:null,
+  audio:"quran_audio/nas.mp3",
   meaningTr:"İnsanların Rabbine, hükümdarına ve ilahına; gizli kötülük telkinlerinden korunmak için sığınırız.",
   meaningEn:"Seeking refuge in the Lord, Sovereign and God of humanity against harmful whispers.",
   verses:[

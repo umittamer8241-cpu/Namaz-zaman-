@@ -47,3 +47,40 @@
 .nz-selected-prayer{box-shadow:0 0 0 2px var(--gold)}
 #nz-developer-note{font-size:11px;line-height:1.6;color:var(--muted);text-align:center;margin:20px 8px 8px;padding:12px;border-top:1px solid #355363}
 @media(max-width:380px){.nz-esma-grid{grid-template-columns:1fr}.nz-track-grid{grid-template-columns:1fr}.nz-learn-controls button{padding:8px}}
+
+
+/* v0.11: integrated compact daily prayer completion */
+#nz-prayer-tracker.nz-prayer-inline{margin:0}
+.nz-prayer-today-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 10px;font-size:12px;color:#b4dcd7}
+.nz-prayer-today-head strong{color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13px}
+.time-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:108px;gap:3px}
+.time-tile .time-num{margin-bottom:3px}
+.nz-tile-completion{display:flex;align-items:center;justify-content:center;gap:6px;padding:5px 7px;border-radius:9px;color:#accdd0;font-size:11px;line-height:1.2;border:1px solid #355b61;cursor:pointer;max-width:100%;background:#112b35}
+.nz-tile-completion.done{color:#e4fff2;border-color:#68d5a3;background:#165040}
+.nz-tile-completion input{margin:0;width:15px;height:15px;flex:none;accent-color:#7ce6b5}
+.nz-tile-completion input:focus-visible{outline:2px solid #f4d48c;outline-offset:2px}
+
+/* v0.11: gold/teal premium compass, precise needle remains sensor-driven */
+.compass-card.compass-luxe{background:radial-gradient(ellipse at 12% 0%,#26647966,transparent 60%),linear-gradient(140deg,#102e40,#071c2b);border:1px solid #7d7354;box-shadow:0 20px 40px #0005,inset 0 1px 0 #f3d58a24;padding:21px 16px}
+.premium-dial{isolation:isolate;max-width:240px;margin:auto;border:5px solid #98764c;box-shadow:0 0 0 2px #ead28b82,0 0 0 7px #071c28,0 0 0 8px #6aa7a33b,0 15px 35px #0008,inset 0 0 20px #0008;background:radial-gradient(circle at 45% 35%,#153d50,#0a2433 62%,#051422 100%);overflow:visible}
+.premium-dial:before{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid #bfa26988;background:repeating-conic-gradient(from 0deg,#e9d39bba 0deg 1deg,transparent 1deg 30deg);-webkit-mask:radial-gradient(circle,transparent 0 83%,#000 85% 87%,transparent 88%);mask:radial-gradient(circle,transparent 0 83%,#000 85% 87%,transparent 88%);pointer-events:none}
+.premium-dial:after{content:"";position:absolute;top:50%;left:50%;width:5px;height:5px;transform:translate(-50%,-50%);border:1px solid #fff5ce;background:#f9e3a1;border-radius:50%;box-shadow:0 0 12px #f0cd7f;z-index:4}
+.compass-halo{position:absolute;inset:16%;border:1px solid #a2d0c845;border-radius:50%;box-shadow:inset 0 0 40px #79d9bb11,0 0 20px #2bb4a015}
+.compass-face{position:absolute;inset:26%;border:1px dashed #bd9f6350;border-radius:50%}
+.premium-dial .tick{font-weight:900;font-size:13px;text-shadow:0 1px 8px #000;z-index:3}
+.premium-dial .tick.n{color:#ffe49e;top:12px;left:50%;transform:translateX(-50%)}
+.premium-dial .tick.s{color:#a5e4df;bottom:11px;left:50%;transform:translateX(-50%)}
+.premium-dial .tick.e{right:11px;top:50%;transform:translateY(-50%)}
+.premium-dial .tick.w{left:11px;top:50%;transform:translateY(-50%)}
+.compass-point{position:absolute;font-size:15px;color:#8fc2b0;opacity:.8}
+.compass-point.ne{top:21%;right:20%}.compass-point.nw{top:21%;left:20%}
+.compass-point.se{bottom:21%;right:20%}.compass-point.sw{bottom:21%;left:20%}
+.premium-dial .needle-wrap{inset:15%;transition:transform .23s ease-out;filter:drop-shadow(0 3px 4px #000)}
+.premium-needle{width:100%;height:100%;overflow:visible}
+.compass-readout .qval{font-size:clamp(39px,8vw,54px);background:linear-gradient(145deg,#fff4d0,#c5964c);background-clip:text;-webkit-background-clip:text;color:transparent;text-shadow:0 6px 24px #e9bb5b33}
+.compass-readout .compass-status{margin-top:12px;padding:8px 10px;border:1px solid #315d62;border-radius:10px;background:#082838b0}
+.nz-esma-today{max-width:520px;margin:12px auto}
+.nz-esma-today .nz-esma-ar{font-size:32px;text-align:center;padding:9px}
+.nz-esma-today .nz-esma-label{justify-content:center}
+.nz-esma-today .nz-esma-meaning{text-align:center;min-height:0}
+@media(max-width:410px){.premium-dial{max-width:182px}.compass-card.compass-luxe{padding:16px 10px}.nz-prayer-today-head{font-size:11px}.time-tile{min-height:100px}.nz-tile-completion{padding:4px 5px}}

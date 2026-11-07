@@ -22,6 +22,10 @@ import android.provider.Settings;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebResourceRequest;
+import android.net.Uri;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.Voice;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -44,10 +48,14 @@ import java.util.Locale;
 public class MainActivity extends Activity implements LocationListener, SensorEventListener {
     private static final int REQ_LOCATION = 24;
     private static final int REQ_LOCATION_SETTINGS = 25;
+    private static final int REQ_ADHAN_NOTIFICATIONS = 26;
     private static final long LOCATION_MAX_AGE_MS = 10 * 60 * 1000L;
     private static final float LOCATION_MAX_ACCURACY_M = 5000f;
     private static final long FIRST_FALLBACK_MS = 28000L;
     private WebView webView;
+    private TextToSpeech arabicTts;
+    private boolean arabicTtsReady = false;
+    private String queuedArabic;
     private LocationManager locationManager;
     private SensorManager sensors;
     private Sensor rotation;
@@ -86,7 +94,11 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient(){
             @Override public boolean shouldOverrideUrlLoading(WebView view,String url){
-                return !url.startsWith("file:///android_asset/");
+                return openExternalLink(url);
+            }
+            @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request){
+                if(!request.isForMainFrame())return false;
+                return openExternalLink(request.getUrl().toString());
             }
             @Override public void onPageFinished(WebView view,String url){
                 nativeReady=true;
@@ -102,10 +114,92 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
     public class Bridge {
         @JavascriptInterface public void requestLocation(){runOnUiThread(()->beginLocation());}
+        @JavascriptInterface public void previewAdhan(String prayer, String recording){
+            runOnUiThread(()-> AdhanPlaybackService.play(MainActivity.this, prayer, recording, true));
+        }
+        @JavascriptInterface public void speakArabic(String text){
+            runOnUiThread(()-> startArabicSpeech(text));
+        }
+        @JavascriptInterface public void stopArabic(){
+            runOnUiThread(()-> {if(arabicTts!=null)arabicTts.stop();});
+        }
+        @JavascriptInterface public void setAdhanEnabled(boolean enabled) {
+            runOnUiThread(() -> AdhanScheduler.setEnabled(MainActivity.this, enabled));
+        }
+        @JavascriptInterface public void setAdhanSchedule(String schedule) {
+            runOnUiThread(() -> AdhanScheduler.updateEvents(MainActivity.this, schedule));
+        }
+        @JavascriptInterface public void stopAdhan() {
+            runOnUiThread(() -> stopService(new Intent(MainActivity.this, AdhanPlaybackService.class)));
+        }
+        @JavascriptInterface public String adhanPermissionState() {
+            boolean exact = true, notifications = true;
+            if (Build.VERSION.SDK_INT >= 31) {
+                android.app.AlarmManager alarms = (android.app.AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                exact = alarms != null && alarms.canScheduleExactAlarms();
+            }
+            if (Build.VERSION.SDK_INT >= 33) {
+                notifications = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                    == PackageManager.PERMISSION_GRANTED;
+            }
+            return "{" + JSONObject.quote("exact") + ":" + exact + "," + JSONObject.quote("notifications") + ":" + notifications + "}";
+        }
+        @JavascriptInterface public void requestAdhanPermissions() {
+            runOnUiThread(() -> {
+                if (Build.VERSION.SDK_INT >= 33 &&
+                        checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_ADHAN_NOTIFICATIONS);
+                    return;
+                }
+                if (Build.VERSION.SDK_INT >= 31) {
+                    android.app.AlarmManager alarms = (android.app.AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                    if (alarms != null && !alarms.canScheduleExactAlarms()) {
+                        try {
+                            Intent i = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                            i.setData(android.net.Uri.parse("package:" + getPackageName()));
+                            startActivity(i);
+                        } catch (Exception ignored) {}
+                    }
+                }
+            });
+        }
         @JavascriptInterface public void openLocationSettings(){runOnUiThread(()->{
             try{startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));}
             catch(Exception ignored){sendError("Konum ayarları açılamadı. Telefon Ayarlar > Konum bölümünü aç.");}
         });}
+    }
+
+    private boolean openExternalLink(String address){
+        if(address!=null&&address.startsWith("file:///android_asset/"))return false;
+        try {
+            Uri uri=Uri.parse(address);
+            if("https".equalsIgnoreCase(uri.getScheme())){
+                startActivity(new Intent(Intent.ACTION_VIEW,uri).addCategory(Intent.CATEGORY_BROWSABLE));
+            }
+        }catch(Exception ignored){}
+        return true;
+    }
+    private void startArabicSpeech(String raw){
+        String text=raw==null?"":raw.trim();
+        if(text.length()==0)return;
+        if(text.length()>4000)text=text.substring(0,4000);
+        queuedArabic=text;
+        if(arabicTts==null){
+            arabicTts=new TextToSpeech(this,status->{
+                arabicTtsReady=status==TextToSpeech.SUCCESS;
+                if(arabicTtsReady&&arabicTts!=null){
+                    int available=arabicTts.setLanguage(new Locale("ar"));
+                    if(available==TextToSpeech.LANG_MISSING_DATA||available==TextToSpeech.LANG_NOT_SUPPORTED){
+                        arabicTtsReady=false;
+                    }else{
+                        arabicTts.setSpeechRate(0.82f);
+                        if(queuedArabic!=null)arabicTts.speak(queuedArabic,TextToSpeech.QUEUE_FLUSH,null,"dua_ar");
+                    }
+                }
+            });
+        }else if(arabicTtsReady){
+            arabicTts.speak(text,TextToSpeech.QUEUE_FLUSH,null,"dua_ar");
+        }
     }
 
     private void js(String script){
@@ -376,6 +470,16 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             if(hasAnyPermission())beginLocation();
             else sendError("Konum izni reddedildi. Koordinatları elle girebilirsin.");
         }
+        if(code==REQ_ADHAN_NOTIFICATIONS && Build.VERSION.SDK_INT>=31){
+            android.app.AlarmManager alarms=(android.app.AlarmManager)getSystemService(Context.ALARM_SERVICE);
+            if(alarms!=null && !alarms.canScheduleExactAlarms()){
+                try{
+                    Intent i=new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                    i.setData(android.net.Uri.parse("package:"+getPackageName()));
+                    startActivity(i);
+                }catch(Exception ignored){}
+            }
+        }
     }
     @Override public void onBackPressed(){
         if(webView!=null&&webView.canGoBack())webView.goBack();
@@ -383,6 +487,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     }
     @Override protected void onDestroy(){
         stopSources();
+        if(arabicTts!=null){arabicTts.stop();arabicTts.shutdown();arabicTts=null;}
         if(webView!=null)webView.destroy();
         super.onDestroy();
     }

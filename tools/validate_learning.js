@@ -29,6 +29,8 @@ for(const dua of data.duas){
  ok(dua.ar&&dua.tr&&dua.en&&dua.latin,'Incomplete dua '+dua.ref);
 }
 const expected={
+ 'quran_audio/falaq.mp3':'45C0DDECF765E4E9C30F85D2EB747F96708F1149CD7F027DB613B491313F110A',
+ 'quran_audio/nas.mp3':'BB5EED58FB701407FF40EC5E74CD0423DE687E40E87E539E2E67CF83EAC6E217',
  'quran_audio/fatiha.mp3':'46FE21A5118957D52AC76F5A6A7FDD7E75D52E4A569619AE3E174A23CE5C82BC',
  'quran_audio/ikhlas.mp3':'BCF92FC3FF76170C1A5F12C94636D290F26386A382B58E102425407B71463C5B'
 };
@@ -38,9 +40,14 @@ for(const [p,hash] of Object.entries(expected)){
  ok(b.toString('ascii',0,3)==='ID3'||b[0]===255,'MP3 signature not present '+p);
  ok(crypto.createHash('sha256').update(b).digest('hex').toUpperCase()===hash,'Modified audio '+p);
 }
-ok(data.surahs.find(x=>x.id==='falaq').audio===null,'No unsupported Falaq audio');
-ok(data.surahs.find(x=>x.id==='nas').audio===null,'No unsupported Nas audio');
-for(const surah of data.surahs.filter(s=>s.audio))ok(expected[surah.audio],'Unlisted audio '+surah.audio);
+for(const id of ['falaq','nas']){
+ const surah=data.surahs.find(x=>x.id===id);
+ ok(surah.audio==='quran_audio/'+id+'.mp3','Missing audio mapping '+id);
+ const audio=fs.readFileSync(path.join(dir,surah.audio));
+ ok(audio.length>250000,'Missing or incomplete audio '+id);
+ ok(audio.toString('ascii',0,3)==='ID3'||audio[0]===255,'Invalid MP3 signature '+id);
+}
+for(const surah of data.surahs.filter(s=>s.audio))ok(fs.existsSync(path.join(dir,surah.audio)),'Audio not found '+surah.audio);
 const html=file('index.html');
 for(const id of ['nz-prayer-tracker','nz-dua-learning','nz-surah-learning','nz-esma-learning','nz-developer-note'])
  ok(html.includes('id="'+id+'"'),'Missing HTML hook '+id);
@@ -51,4 +58,4 @@ const ui=file('learning_ui.js'),tracker=file('prayer_tracker.js');
 ok(ui.includes('localStorage')&&tracker.includes('localStorage'),'Offline progress missing');
 ok(!ui.includes('innerHTML')&&!tracker.includes('innerHTML'),'Unsafe HTML interpolation in new modules');
 ok(!ui.includes('Hafiz_Mustafa_Ozcan')&&!ui.includes('Muhsin_Kara'),'Unlicensed voice linked');
-console.log('PASS: 4 surahs (22 verses), '+data.duas.length+' ordered daily duas, 99 Esma names, 2 CC0 audios (SHA256), 5 prayer tracker IDs, offline progress, UI wiring.');
+console.log('PASS: 4 surahs (22 verses), '+data.duas.length+' ordered daily duas, 99 Esma names, 4 CC0 recitation audios (4 SHA256 pinned), 5 prayer tracker IDs, offline progress, UI wiring.');
