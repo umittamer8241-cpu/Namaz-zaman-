@@ -4,10 +4,10 @@ const root=path.resolve(__dirname,'..'),assets=path.join(root,'app/src/main/asse
 const html=fs.readFileSync(path.join(assets,'index.html'),'utf8');
 const css=fs.readFileSync(path.join(assets,'learning_styles.css'),'utf8');
 const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
-assert(gradle.includes('versionCode 24')&&gradle.includes("0.23-compass-arrow-preview"));
+assert(Number(gradle.match(/versionCode\s+(\d+)/)[1])>=24);
 assert(html.includes('id="compass-arrow-mode"'));
-assert(html.includes("trusted?wrap(bearing-h,360):bearing"),'North-up bearing must be used when sensor is unverified.');
-assert(html.includes("needle.classList.toggle('compass-unreliable',hasLocation&&!trusted&&!byShadow&&!byManual)"));
+assert(html.includes("oriented?wrap(bearing-h,360):bearing"),'North-up bearing must be used when sensor is unverified.');
+assert(html.includes("needle.classList.toggle('compass-unreliable',hasLocation&&!oriented&&!byShadow&&!byManual)"));
 assert(html.includes("needle.classList.toggle('compass-no-location',!hasLocation)"));
 assert(html.includes('Kuzey üstte: bu sadece haritaya göre kıble açısıdır.'));
 assert(html.includes('telefonu bu oka göre çevirmeyin'));

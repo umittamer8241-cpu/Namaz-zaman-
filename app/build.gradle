@@ -7,13 +7,13 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 24
-        versionName '0.23-compass-arrow-preview'
+        versionCode 25
+        versionName '0.24-actual-sensors-preview'
     }
     buildTypes {
         debug {
             // Standalone QA app: never overwrite the user's existing prayer records.
-            applicationIdSuffix '.pusulatest23'
+            applicationIdSuffix '.pusulatest24'
             versionNameSuffix '-side-by-side'
         }
         fullPreview {

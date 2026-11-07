@@ -243,7 +243,7 @@ const KAABA = { lat: 21.422487, lon: 39.826206 };
 const METHODS = { MWL: { fajr:18, isha:17 }, JAKIM: {fajr:18, isha:18} };
 const TIMES = [['fajr','Sabah'],['sunrise','Güneş'],['dhuhr','Öğle'],['asr','İkindi'],['maghrib','Akşam'],['isha','Yatsı']];
 const PRAYERS = [['fajr','Sabah'],['dhuhr','Öğle'],['asr','İkindi'],['maghrib','Akşam'],['isha','Yatsı']];
-const state = {lat:null,lon:null,accuracy:null,stamp:0,live:false,heading:null,headingError:180,headingSource:'',headingTrusted:false,headingUpdatedAt:0,source:'',provider:'',manual:false,calcKey:'',times:null,watchId:null,method:'MWL',asr:1,compassRequested:false,tzMode:'phone',utcOffset:8,gpsMessage:''};
+const state = {lat:null,lon:null,accuracy:null,stamp:0,live:false,heading:null,headingError:180,headingSource:'',headingTrusted:false,headingApproximate:false,headingUpdatedAt:0,source:'',provider:'',manual:false,calcKey:'',times:null,watchId:null,method:'MWL',asr:1,compassRequested:false,tzMode:'phone',utcOffset:8,gpsMessage:''};
 const rad = x=>x*Math.PI/180, deg=x=>x*180/Math.PI;
 const sind=x=>Math.sin(rad(x)), cosd=x=>Math.cos(rad(x));
 const wrap=(v,n)=>((v%n)+n)%n;
@@ -645,6 +645,21 @@ const COMPASS_ARROW_MODES={
  ur:['قبلہ • مقام درکار','سمت کے لیے نقاط درکار ہیں۔','قبلہ • خاکہ','شمال اوپر ہے: یہ نقشے کی سمت ہے، فون کی سمت نہیں۔ اس تیر کی پیروی میں فون نہ گھمائیں۔','قبلہ • براہ راست تیر','سینسر تصدیق شدہ: تیر فون کے مطابق قبلہ دکھاتا ہے۔','قبلہ • حوالہ','دستی حوالہ، فون حرکت پر دوبارہ ملائیں۔','قبلہ • سایہ','سائے کی عارضی سیدھ۔',' محفوظ مقام پرانا ہو سکتا ہے۔']
 };
 function compassArrowWords(){return COMPASS_ARROW_MODES[window.NamazI18n?.getLanguage?.()||'tr']||COMPASS_ARROW_MODES.en;}
+const COMPASS_APPROX_TEXT={
+ tr:['KIBLE • YAKLAŞIK CANLI OK','Manyetik sensör yönü algılıyor, ancak tam doğrulanmadı. Ok telefonla döner; ibadet için kesin yön sayma, açık alanda kalibre edip doğrula.'],
+ en:['QIBLA • APPROXIMATE LIVE ARROW','Magnetic heading detected but not fully verified. Arrow follows the phone; calibrate away from metal and do not treat it as a confirmed Qibla.'],
+ ms:['KIBLAT • ANAK PANAH ANGGARAN','Sensor magnetik mengesan arah tetapi belum disahkan sepenuhnya. Jauhkan logam dan kalibrasi semula.'],
+ id:['KIBLAT • PANAH PERKIRAAN','Sensor magnetik mendeteksi arah namun belum sepenuhnya tervalidasi. Jauhkan logam dan kalibrasi ulang.'],
+ ar:['القبلة • سهم تقريبي','اتجاه مغناطيسي غير مؤكد بالكامل. ابتعد عن المعادن وأعد المعايرة قبل الاعتماد عليه.'],
+ ru:['КИБЛА • ПРИБЛИЗИТЕЛЬНАЯ СТРЕЛКА','Магнитный курс ещё не подтверждён. Уберите магниты и откалибруйте датчик.'],
+ fr:['QIBLA • FLÈCHE APPROXIMATIVE','Cap magnétique non entièrement vérifié. Éloignez le métal et calibrez avant de vous y fier.'],
+ de:['QIBLA • UNGEFÄHRER PFEIL','Magnetrichtung noch nicht vollständig geprüft. Abstand zu Metall, Sensor kalibrieren.'],
+ es:['QUIBLA • FLECHA APROXIMADA','Rumbo magnético aún no verificado. Aléjalo del metal y calibra antes de confiar.'],
+ pt:['QIBLA • SETA APROXIMADA','Rumo magnético ainda não confirmado. Afaste metais e calibre o sensor.'],
+ az:['QİBLƏ • TƏXMİNİ CANLI OX','Maqnit sensoru işləyir, amma istiqamət tam təsdiqlənməyib. Metaldan uzaqlaşdırıb kalibrlə.'],
+ ur:['قبلہ • تخمینی تیر','مقناطیسی سمت مکمل تصدیق شدہ نہیں۔ دھات سے دور رہیں اور سینسر دوبارہ کیلیبریٹ کریں۔']
+};
+function compassApproxWords(){return COMPASS_APPROX_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||COMPASS_APPROX_TEXT.en;}
 function updateCompassLanguage(){
  const locale=window.NamazI18n?.getLanguage?.()||'tr',words=COMPASS_TEXT[locale]||COMPASS_TEXT.en;
  const ids=['pro-compass-label','pro-compass-heading-label','pro-compass-difference-label'];
@@ -767,17 +782,21 @@ function updateNeedle(){
  const fresh=state.headingUpdatedAt>0&&Date.now()-state.headingUpdatedAt<7500;
  const mismatch=compassHeadingDisagreement();
  const trusted=hasLocation&&fresh&&state.headingTrusted&&Number.isFinite(h)&&!mismatch;
+ const approximate=hasLocation&&fresh&&state.headingApproximate&&Number.isFinite(h)&&!mismatch;
+ const oriented=trusted||approximate;
  const byShadow=shadowActive();
  const byManual=manualReferenceActive()&&!byShadow;
  const needle=$('needle');
  const words=compassArrowWords();
  const compassMode=!hasLocation?0:byShadow?8:byManual?6:trusted?4:2;
  const label=$('pro-compass-label'),modeNote=$('compass-arrow-mode');
- if(label)label.textContent=words[compassMode];
- if(modeNote)modeNote.textContent=words[compassMode+1]+
+ const aw=compassApproxWords();
+ if(label)label.textContent=approximate&&!byShadow&&!byManual?aw[0]:words[compassMode];
+ if(modeNote)modeNote.textContent=(approximate&&!byShadow&&!byManual?aw[1]:words[compassMode+1])+
     (hasLocation&&locationIsStale()?words[10]:'');
  if(needle){
-   needle.classList.toggle('compass-unreliable',hasLocation&&!trusted&&!byShadow&&!byManual);
+   needle.classList.toggle('compass-unreliable',hasLocation&&!oriented&&!byShadow&&!byManual);
+   needle.classList.toggle('compass-approximate',approximate&&!byShadow&&!byManual);
    needle.classList.toggle('compass-no-location',!hasLocation);
  }
  if(!hasLocation){
@@ -789,7 +808,7 @@ function updateNeedle(){
  const bearing=qibla(state.lat,state.lon);
  if(byShadow&&needle)needle.style.transform='rotate('+shadowAlignment.relative+'deg)';
  else if(byManual&&needle)needle.style.transform='rotate('+manualReference.relative+'deg)';
- else if(needle)needle.style.transform='rotate('+(trusted?wrap(bearing-h,360):bearing)+'deg)';
+ else if(needle)needle.style.transform='rotate('+(oriented?wrap(bearing-h,360):bearing)+'deg)';
  $('bearing-note').textContent=tr('qiblaNorth');
  const displayHeading=$('pro-compass-heading'),difference=$('pro-compass-difference');
  if(byManual){
@@ -813,13 +832,19 @@ function updateNeedle(){
    return;
  }
  if(displayHeading)displayHeading.textContent=fresh&&Number.isFinite(h)?Math.round(h)+'°':'—';
- if(difference)difference.textContent=trusted?Math.round(Math.abs(wrap(bearing-h+180,360)-180))+'°':'—';
+ if(difference)difference.textContent=oriented?Math.round(Math.abs(wrap(bearing-h+180,360)-180))+'°':'—';
  if(!fresh||!Number.isFinite(h)){
    $('compass-status').textContent=q.waiting;
    if(quality)quality.textContent=q.notReady;
    return;
  }
- const source=state.headingSource==='fused'?q.fused:q.fallback;
+ const source=state.headingSource==='fused'?q.fused:
+    state.headingSource==='magnetic'?'Magnetic + Accelerometer':q.fallback;
+ if(approximate){
+   $('compass-status').textContent=q.calibrate;
+   if(quality)quality.textContent=source+' · '+aw[1];
+   return;
+ }
  if(!trusted){
    $('compass-status').textContent=mismatch?diagText().warning:q.calibrate;
    if(quality)quality.textContent=source+' · '+q.notReady;
@@ -836,7 +861,14 @@ const COMPASS_DIAGNOSTICS_TEXT={
  en:{title:'Compare two phones',copy:'Copy diagnostic report',copied:'Report copied.',failed:'Copy unavailable; capture a screenshot.',waiting:'Waiting for measurements',target:'Qibla bearing',fused:'Google heading',android:'Android heading',gap:'Sensor disagreement',accuracy:'Estimated error',rotation:'Screen rotation',pitch:'Pitch',roll:'Roll',declination:'Magnetic declination',active:'Active source',status:'Arrow status',visible:'Visible',hidden:'Schematic (sensor unverified)',warning:'Sensors disagree. Move away from metal and magnets and calibrate.',stale:'Not measured'}
 };
 function diagText(){return COMPASS_DIAGNOSTICS_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||COMPASS_DIAGNOSTICS_TEXT.en;}
-const compassDebug={fused:null,android:null};
+const compassDebug={fused:null,android:null,magnetic:null};
+let compassNativeHealth=null;
+function nativeCompassSensorStatus(value){
+ if(!value||typeof value!=='object')return;
+ compassNativeHealth=value;
+ renderCompassDiagnostics();
+}
+
 function compassHeadingDisagreement(){
  const f=compassDebug.fused,a=compassDebug.android,now=Date.now();
  return !!(f&&a&&now-f.time<9000&&now-a.time<9000&&
@@ -855,15 +887,29 @@ function renderCompassDiagnostics(){
    const x=compassDebug[key];
    return x&&Date.now()-x.time<9000?x:null;
  };
- const fused=recent('fused'),android=recent('android');
+ const fused=recent('fused'),android=recent('android'),magnetic=recent('magnetic');
  const target=validLocation()?qibla(state.lat,state.lon):null;
  const disagreement=fused&&android?
      Math.abs(wrap(fused.heading-android.heading+180,360)-180):null;
  const rows=[
-   ['App','Namaz Zamanı v0.23'],
+   ['App','Namaz Zamanı v0.24'],
+   ['Telefon',compassNativeHealth?.model||'—'],
    [q.target,diagnosticValue(target)],
    [q.fused,diagnosticValue(fused?.heading)],
    [q.android,diagnosticValue(android?.heading)],
+   ['İvme + manyetik yön',diagnosticValue(magnetic?.heading)],
+   ['Dönüş sensörü',compassNativeHealth?.rotationPresent
+      ?'Var · '+(compassNativeHealth.rotationSamples||0)+' ölçüm':'Yok'],
+   ['İvmeölçer',compassNativeHealth?.accelerometerPresent
+      ?'Var · '+(compassNativeHealth.gravitySamples||0)+' ölçüm':'Yok'],
+   ['Manyetik sensör',compassNativeHealth?.magnetometerPresent
+      ?'Var · '+(compassNativeHealth.magneticSamples||0)+' ölçüm':'Yok'],
+   ['Manyetik alan',compassNativeHealth?.magneticStrength>=0
+      ?compassNativeHealth.magneticStrength+' µT':'—'],
+   ['Manyetik kalibrasyon',compassNativeHealth
+      ?String(compassNativeHealth.magneticAccuracy)+'/3':'—'],
+   ['Google sensör örneği',compassNativeHealth
+      ?String(compassNativeHealth.fusedSamples):'—'],
    [q.gap,diagnosticValue(disagreement)],
    [q.accuracy,diagnosticValue(fused?.accuracy)],
    [q.rotation,android?String(android.rotation*90)+'°':'—'],
@@ -886,7 +932,7 @@ function renderCompassDiagnostics(){
  }
 }
 function nativeCompassDiagnostic(heading,accuracy,source,pitch,roll,declination,rotation){
- if(!Number.isFinite(heading)||!['fused','android'].includes(source))return;
+ if(!Number.isFinite(heading)||!['fused','android','magnetic'].includes(source))return;
  compassDebug[source]={heading:wrap(heading,360),accuracy:Number(accuracy),
     pitch:Number.isFinite(pitch)?pitch:null,roll:Number.isFinite(roll)?roll:null,
     declination:Number.isFinite(declination)?declination:null,
@@ -910,8 +956,10 @@ function nativeHeadingData(degrees,error,source,trusted){
  if(!Number.isFinite(degrees))return;
  state.heading=wrap(degrees,360);
  state.headingError=Number.isFinite(error)?Math.min(180,Math.max(0,error)):180;
- state.headingSource=source==='fused'?'fused':'android';
+ state.headingSource=['fused','android','magnetic'].includes(source)?source:'android';
  state.headingTrusted=trusted===true&&state.headingError<=25;
+ state.headingApproximate=source==='magnetic'&&!state.headingTrusted&&
+    state.headingError>=25&&state.headingError<=45;
  state.headingUpdatedAt=Date.now();
  updateNeedle();
 }
@@ -923,6 +971,7 @@ function nativeHeading(degrees){
    state.headingError=0;
    state.headingSource='web';
    state.headingTrusted=true;
+   state.headingApproximate=false;
    state.headingUpdatedAt=Date.now();
    updateNeedle();
  }
@@ -938,7 +987,7 @@ function nativeLocation(lat,lon,accuracy,cached,timestamp,provider){
 }
 function nativeError(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
 function nativeSearching(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
-window.nativeHeading=nativeHeading;window.nativeHeadingData=nativeHeadingData;window.nativeCompassDiagnostic=nativeCompassDiagnostic;window.nativeQiblaOnlineResult=nativeQiblaOnlineResult;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;
+window.nativeCompassSensorStatus=nativeCompassSensorStatus;window.nativeHeading=nativeHeading;window.nativeHeadingData=nativeHeadingData;window.nativeCompassDiagnostic=nativeCompassDiagnostic;window.nativeQiblaOnlineResult=nativeQiblaOnlineResult;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;
 function onPosition(pos){if(state.manual)return;setLocation(pos.coords.latitude,pos.coords.longitude,pos.coords.accuracy,'gps',pos.timestamp||Date.now(),true);}
 function onGpsError(error){state.gpsMessage='@noFix';updateLocationPanel();}
 function startGPS(mode='satellite'){

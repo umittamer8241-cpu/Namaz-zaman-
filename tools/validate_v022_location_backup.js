@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,'..');
 const java=fs.readFileSync(path.join(root,'app/src/main/java/com/geminamaz/app/MainActivity.java'),'utf8');
 const html=fs.readFileSync(path.join(root,'app/src/main/assets/index.html'),'utf8');
 const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
-assert(/versionName '0\.2(?:2|3)[^']*'/.test(gradle));
+assert(/versionName '0\.2(?:2|3|4)[^']*'/.test(gradle));
 assert(Number(gradle.match(/versionCode\s+(\d+)/)[1])>=23);
 const init=java.slice(java.indexOf('@Override public void onCreate('), java.indexOf('public class Bridge'));
 assert(init.includes('restoreNativeLocationBackup();'), 'Last-known native location must restore on Activity launch.');

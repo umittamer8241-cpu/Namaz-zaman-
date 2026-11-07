@@ -13,7 +13,7 @@ assert(html.includes('class="needle-wrap ornate-single-needle"'),'Single arrow c
 assert(html.includes('compass_ornate_frame.svg'),'Ornate frame asset missing');
 assert(!html.includes('needleTeal'),'Old blue counterpoint must be removed');
 assert(html.includes('id="pro-compass-heading"')&&html.includes('id="pro-compass-difference"'));
-assert(html.includes('function updateNeedle(){')&&html.includes("trusted?wrap(bearing-h,360):bearing"),'Reliable native direction hook lost');
+assert(html.includes('function updateNeedle(){')&&html.includes("oriented?wrap(bearing-h,360):bearing"),'Reliable native direction hook lost');
 assert(css.includes('ornate-single-needle')&&css.includes('ornate-compass-frame')&&css.includes('max-width:759px'));
 assert(frame.includes('viewBox="0 0 400 400"')&&frame.includes('id="raisedGold"'));
 assert((frame.match(/<g transform="rotate\(/g)||[]).length===28,'24 emboss reliefs + 4 cardinal ornaments expected');

@@ -74,6 +74,16 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private LocationManager locationManager;
     private SensorManager sensors;
     private Sensor rotation;
+    private Sensor accelerometer;
+    private Sensor magnetometer;
+    private final float[] gravityValues=new float[3];
+    private final float[] magneticValues=new float[3];
+    private boolean gravityReady=false, magneticReady=false;
+    private int magneticAccuracy=SensorManager.SENSOR_STATUS_UNRELIABLE;
+    private long lastGravityMs=0L,lastMagneticMs=0L,lastPlatformGoodMs=0L;
+    private long lastCompassHealthMs=0L,lastMagneticPublishMs=0L;
+    private int gravitySamples=0,magneticSamples=0,rotationSamples=0,fusedSamples=0;
+    private float magneticStrength=Float.NaN;
     private FusedOrientationProviderClient fusedOrientationClient;
     private DeviceOrientationListener fusedOrientationListener;
     private long lastFusedOrientationMs;
@@ -115,6 +125,8 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         sensors=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         rotation=sensors==null?null:sensors.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         if(rotation==null&&sensors!=null)rotation=sensors.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
+        accelerometer=sensors==null?null:sensors.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        magnetometer=sensors==null?null:sensors.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         webView=new WebView(this);
         webView.setBackgroundColor(Color.rgb(6,21,36));
         webView.getSettings().setJavaScriptEnabled(true);
@@ -137,6 +149,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 sendStatus(pendingStatus);
                 if(latest!=null)sendLocation(latest,true,latestSource);
                 sendLocationDiagnostics();
+                sendCompassSensorHealth();
                 // UI restores last saved coordinates from localStorage.
                 // Do NOT refresh GPS/Google after reload or screen wake without user action.
             }
@@ -721,13 +734,101 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
            "window.nativeHeadingData(%.2f,%.2f,%s,%s);",
            normalized,safeError,JSONObject.quote(source),trusted?"true":"false"));
     }
+    private void sendCompassSensorHealth(){
+        if(!nativeReady)return;
+        try{
+            JSONObject d=new JSONObject();
+            d.put("model",Build.MANUFACTURER+" "+Build.MODEL);
+            d.put("rotationPresent",rotation!=null);
+            d.put("accelerometerPresent",accelerometer!=null);
+            d.put("magnetometerPresent",magnetometer!=null);
+            d.put("rotationSamples",rotationSamples);
+            d.put("gravitySamples",gravitySamples);
+            d.put("magneticSamples",magneticSamples);
+            d.put("fusedSamples",fusedSamples);
+            d.put("magneticAccuracy",magneticAccuracy);
+            d.put("magneticStrength",Float.isFinite(magneticStrength)
+                ?Math.round(magneticStrength):-1);
+            long now=SystemClock.elapsedRealtime();
+            d.put("magneticAgeMs",lastMagneticMs>0?now-lastMagneticMs:-1);
+            d.put("fusedGoodAgeMs",lastFusedOrientationMs>0?now-lastFusedOrientationMs:-1);
+            d.put("platformGoodAgeMs",lastPlatformGoodMs>0?now-lastPlatformGoodMs:-1);
+            // Diagnostic never includes latitude, longitude, IP, or identifiers.
+            js("window.nativeCompassSensorStatus("+d.toString()+");");
+        }catch(Exception ignored){}
+    }
+    private void maybeSendCompassHealth(){
+        long now=SystemClock.elapsedRealtime();
+        if(now-lastCompassHealthMs>=3000L){
+            lastCompassHealthMs=now;
+            sendCompassSensorHealth();
+        }
+    }
+    private void processMagneticFallback(){
+        if(!gravityReady||!magneticReady)return;
+        long now=SystemClock.elapsedRealtime();
+        if(now-lastGravityMs>1800L||now-lastMagneticMs>1800L)return;
+        float g=(float)Math.sqrt(gravityValues[0]*gravityValues[0]+
+            gravityValues[1]*gravityValues[1]+gravityValues[2]*gravityValues[2]);
+        float mag=(float)Math.sqrt(magneticValues[0]*magneticValues[0]+
+            magneticValues[1]*magneticValues[1]+magneticValues[2]*magneticValues[2]);
+        magneticStrength=mag;
+        if(!Float.isFinite(g)||!Float.isFinite(mag)||g<7f||g>13f||mag<20f||mag>85f){
+            maybeSendCompassHealth();
+            return;
+        }
+        // Secondary, independent compass method: accel + geomagnetic sensors.
+        // Android SensorManager handles tilt compensation, unlike raw atan2().
+        float[] rotationMatrix=new float[9],screenMatrix=new float[9],out=new float[3];
+        if(!SensorManager.getRotationMatrix(rotationMatrix,null,gravityValues,magneticValues))return;
+        if(!remapCompassMatrix(rotationMatrix,screenMatrix))return;
+        SensorManager.getOrientation(screenMatrix,out);
+        double heading=Math.toDegrees(out[0]);
+        if(Double.isFinite(compassLat)&&Double.isFinite(compassLon)){
+            heading+=new GeomagneticField((float)compassLat,(float)compassLon,0f,
+                System.currentTimeMillis()).getDeclination();
+        }
+        if(!Double.isFinite(heading))return;
+        sendCompassDiagnostic(heading,magneticAccuracy>=SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM
+            ?40d:180d,"magnetic",Math.toDegrees(out[1]),Math.toDegrees(out[2]),lastDeclination);
+        maybeSendCompassHealth();
+        // Do not override a calibrated/fresh FOP or rotation-vector heading.
+        if(lastFusedOrientationMs>0&&now-lastFusedOrientationMs<5000L)return;
+        if(lastPlatformGoodMs>0&&now-lastPlatformGoodMs<5000L)return;
+        if(magneticAccuracy<SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM)return;
+        if(now-lastMagneticPublishMs<180L)return;
+        lastMagneticPublishMs=now;
+        // Raw magnetic is explicitly approximate, never certified/high trust.
+        sendCompassHeading(heading,40d,"magnetic",false);
+    }
+    private boolean remapCompassMatrix(float[] matrix,float[] screenMatrix){
+        switch(currentScreenRotation()){
+            case Surface.ROTATION_90:
+                return SensorManager.remapCoordinateSystem(matrix,
+                    SensorManager.AXIS_Y,SensorManager.AXIS_MINUS_X,screenMatrix);
+            case Surface.ROTATION_180:
+                return SensorManager.remapCoordinateSystem(matrix,
+                    SensorManager.AXIS_MINUS_X,SensorManager.AXIS_MINUS_Y,screenMatrix);
+            case Surface.ROTATION_270:
+                return SensorManager.remapCoordinateSystem(matrix,
+                    SensorManager.AXIS_MINUS_Y,SensorManager.AXIS_X,screenMatrix);
+            default:
+                System.arraycopy(matrix,0,screenMatrix,0,matrix.length);
+                return true;
+        }
+    }
     private void startOrientationTracking(){
         orientationRunning=true;
         lastFusedOrientationMs=0;
         fallbackSensorAccuracy=SensorManager.SENSOR_STATUS_UNRELIABLE;
-        if(sensors!=null&&rotation!=null){
-            sensors.registerListener(this,rotation,SensorManager.SENSOR_DELAY_UI);
+        lastPlatformGoodMs=0L;
+        gravityReady=false;magneticReady=false;
+        if(sensors!=null){
+            if(rotation!=null)sensors.registerListener(this,rotation,SensorManager.SENSOR_DELAY_UI);
+            if(accelerometer!=null)sensors.registerListener(this,accelerometer,SensorManager.SENSOR_DELAY_UI);
+            if(magnetometer!=null)sensors.registerListener(this,magnetometer,SensorManager.SENSOR_DELAY_UI);
         }
+        sendCompassSensorHealth();
         boolean googleReady=false;
         try{
             googleReady=GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
@@ -742,9 +843,15 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 double error=orientation.hasConservativeHeadingErrorDegrees()
                     ?orientation.getConservativeHeadingErrorDegrees()
                     :orientation.getHeadingErrorDegrees();
-                lastFusedOrientationMs=SystemClock.elapsedRealtime();
-                sendCompassHeading(heading,error,"fused",Double.isFinite(error)&&error<=25d);
+                fusedSamples++;
+                boolean reliable=Double.isFinite(heading)&&Double.isFinite(error)&&error<=25d;
+                if(reliable){
+                    lastFusedOrientationMs=SystemClock.elapsedRealtime();
+                    sendCompassHeading(heading,error,"fused",true);
+                }
+                // Inaccurate FOP samples must not block Android magnetic fallback.
                 sendCompassDiagnostic(heading,error,"fused",Double.NaN,Double.NaN,lastDeclination);
+                maybeSendCompassHealth();
             };
             DeviceOrientationRequest request=new DeviceOrientationRequest.Builder(100000L).build();
             fusedOrientationClient.requestOrientationUpdates(request,(Runnable command)->{handler.post(command);},fusedOrientationListener)
@@ -766,28 +873,29 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     }
     @Override public void onSensorChanged(SensorEvent event){
         if(!orientationRunning)return;
-        if(event.sensor.getType()!=Sensor.TYPE_ROTATION_VECTOR &&
-           event.sensor.getType()!=Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)return;
+        int type=event.sensor.getType();
+        long now=SystemClock.elapsedRealtime();
+        if(type==Sensor.TYPE_ACCELEROMETER){
+            System.arraycopy(event.values,0,gravityValues,0,3);
+            gravityReady=true;lastGravityMs=now;gravitySamples++;
+            processMagneticFallback();return;
+        }
+        if(type==Sensor.TYPE_MAGNETIC_FIELD){
+            System.arraycopy(event.values,0,magneticValues,0,3);
+            magneticReady=true;lastMagneticMs=now;magneticSamples++;
+            if(event.accuracy>=SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM)
+                magneticAccuracy=event.accuracy;
+            processMagneticFallback();return;
+        }
+        if(type!=Sensor.TYPE_ROTATION_VECTOR &&
+           type!=Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)return;
+        rotationSamples++;
+        maybeSendCompassHealth();
         float[] matrix=new float[9],screenMatrix=new float[9],orientation=new float[3];
         SensorManager.getRotationMatrixFromVector(matrix,event.values);
         // Unlike Google FOP, the platform rotation-vector is tied to the
         // sensor's natural axes. Remap to the currently displayed screen top.
-        boolean remapped;
-        switch(currentScreenRotation()){
-            case Surface.ROTATION_90:
-                remapped=SensorManager.remapCoordinateSystem(matrix,
-                    SensorManager.AXIS_Y,SensorManager.AXIS_MINUS_X,screenMatrix);break;
-            case Surface.ROTATION_180:
-                remapped=SensorManager.remapCoordinateSystem(matrix,
-                    SensorManager.AXIS_MINUS_X,SensorManager.AXIS_MINUS_Y,screenMatrix);break;
-            case Surface.ROTATION_270:
-                remapped=SensorManager.remapCoordinateSystem(matrix,
-                    SensorManager.AXIS_MINUS_Y,SensorManager.AXIS_X,screenMatrix);break;
-            default:
-                System.arraycopy(matrix,0,screenMatrix,0,matrix.length);
-                remapped=true;
-        }
-        if(!remapped)return;
+        if(!remapCompassMatrix(matrix,screenMatrix))return;
         SensorManager.getOrientation(screenMatrix,orientation);
         double heading=Math.toDegrees(orientation[0]);
         double pitch=Math.toDegrees(orientation[1]);
@@ -809,14 +917,18 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             accuracy=fallbackSensorAccuracy;
         boolean trusted=accuracy==SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
         sendCompassDiagnostic(heading,trusted?25d:180d,"android",pitch,roll,declination);
-        // Allow the fallback to drive the arrow only when FOP is unavailable
-        // or has not sent usable updates for at least five seconds.
+        // An unreliable rotation sample must never override the calibrated
+        // accel+magnetic heading. Only HIGH accuracy is authoritative here.
+        if(!trusted)return;
+        lastPlatformGoodMs=SystemClock.elapsedRealtime();
         if(lastFusedOrientationMs>0 &&
            SystemClock.elapsedRealtime()-lastFusedOrientationMs<5000L)return;
-        sendCompassHeading(heading,trusted?25d:180d,"android",trusted);
+        sendCompassHeading(heading,25d,"android",true);
     }
     @Override public void onAccuracyChanged(Sensor sensor,int accuracy){
         if(sensor==rotation)fallbackSensorAccuracy=accuracy;
+        if(sensor==magnetometer)magneticAccuracy=accuracy;
+        maybeSendCompassHealth();
     }
     @Override protected void onResume(){
         super.onResume();

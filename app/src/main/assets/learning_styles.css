@@ -432,3 +432,10 @@
 #nz-location-diagnostic-hint{color:#f9cf9a;border:1px solid #d2a65e70;border-radius:9px;
  padding:10px;background:#5641273d}
 #nz-location-diagnostic-copy-status{display:block;color:#a9e0bc;font-size:11px}
+
+/* Approximate live orientation: magnetic fallback is moving but not calibrated. */
+.premium-dial.pro-dial .needle-wrap.ornate-single-needle.compass-approximate{
+ opacity:.96!important;
+ filter:saturate(.55) drop-shadow(0 0 4px #eda969);
+ transition:transform .22s ease-out;
+}
