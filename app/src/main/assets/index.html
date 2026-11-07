@@ -76,12 +76,15 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
   <p class="note">Google Haritalar uygulaması veya Google Maps API anahtarı gerekmez; Google Play Hizmetleri üzerinden Wi-Fi/ağ destekli konum alınmaya çalışılır. <b>Gemi uydu interneti kendi başına gerçek gemi koordinatını vermez.</b> Açık denizde ağ konumu yoksa GPS veya manuel koordinat gereklidir. Vakitler seçilen saat dilimine ve doğrulanmış koordinatlara göre <b>internetsiz yaklaşık astronomik hesapla</b> belirlenir; resmî veya bölgesel takvimlerle belirgin dakika farkları olabilir. Gemide ilerledikçe konum yenilenir. Kıble pusulası için telefonu mümkünse düz tut; metal yüzeyler, gemi donanımı ve manyetik sapma yönü etkileyebilir. <span class="warn">GPS alınamazsa önceki kayıt güncel konum sayılmaz.</span></p>
 </main>
 <script src="daily_i18n.js"></script>
+<script src="full_ui_i18n.js"></script>
 <script>
 'use strict';
 // This file intentionally has NO network calls, external imports, or remote dependencies.
 // Solar calculation: iterative solar equatorial coordinates and hour angle.
 // Fajr/Isha conventions are approximations; compare with local religious authority.
 const $ = id => document.getElementById(id);
+const tr=(key,vars)=>window.NamazUI?window.NamazUI.t(key,vars):key;
+const trStatus=(msg)=>window.NamazUI?window.NamazUI.status(msg):String(msg||"");
 const KAABA = { lat: 21.422487, lon: 39.826206 };
 const METHODS = { MWL: { fajr:18, isha:17 }, JAKIM: {fajr:18, isha:18} };
 const TIMES = [['fajr','Sabah'],['sunrise','Güneş'],['dhuhr','Öğle'],['asr','İkindi'],['maghrib','Akşam'],['isha','Yatsı']];
@@ -117,6 +120,13 @@ function displayClock(now){
 function displayDay(now){
   const d=state.tzMode==='phone'?now:new Date(now.getTime()+activeOffsetMinutes(now)*60000);
   const locale=(window.NamazI18n&&window.NamazI18n.getLanguage())||'tr';
+  if(locale==='az'){
+    const months=['yanvar','fevral','mart','aprel','may','iyun','iyul','avqust','sentyabr','oktyabr','noyabr','dekabr'];
+    const weekdays=['bazar','bazar ertəsi','çərşənbə axşamı','çərşənbə','cümə axşamı','cümə','şənbə'];
+    const utc=state.tzMode!=='phone';
+    const day=utc?d.getUTCDate():d.getDate(),month=utc?d.getUTCMonth():d.getMonth(),week=utc?d.getUTCDay():d.getDay(),year=utc?d.getUTCFullYear():d.getFullYear();
+    return weekdays[week]+', '+day+' '+months[month]+' '+year;
+  }
   return d.toLocaleDateString(locale,{timeZone:state.tzMode==='phone'?undefined:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
 function formatUtc(min){
@@ -178,54 +188,67 @@ function formatDuration(ms){const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor
 function setLocation(lat,lon,accuracy,source,stamp=Date.now(),live=true,provider=''){
   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return;
   if(state.manual&&source!=='manual')return;
+  if(source==='manual')state.gpsMessage='';
   state.lat=lat;state.lon=lon;state.accuracy=accuracy;state.source=source;state.stamp=stamp;state.live=live;state.provider=provider;
   store('location',{lat,lon,accuracy,stamp,source,provider});
   state.calcKey='';renderAll();
 }
+
 function updateHeroLocation(){
-  const node=$('hero-location-status');
-  if(validLocation()){
-    const src=state.source==='manual'?'Manuel':state.provider==='google'?'Google konumu':state.provider==='network'?'Wi-Fi/ağ':state.provider==='gps'?'Uydu GPS':'Telefon konumu';
-    const accuracy=Number.isFinite(state.accuracy)&&state.accuracy>0?' · ±'+Math.round(state.accuracy)+' m':'';
-    node.textContent='✓ '+src+' bulundu'+accuracy;
-    return;
-  }
-  const message=state.gpsMessage||'Google konumu (Wi-Fi/ağ) aranıyor...';
-  node.textContent='⚠ '+message;
-  $('next-name').textContent=message.includes('bulunamadı')?'Konum bulunamadı':'Konum aranıyor';
-  $('next-time').textContent='--:--';$('countdown').textContent='--:--:--';
+ const node=$('hero-location-status');
+ if(validLocation()){
+   const src=state.source==='manual'?'sourceManual':state.source==='previous'?'sourceOld':state.provider==='google'?'sourceGoogle':state.provider==='network'?'sourceNetwork':state.provider==='gps'?'sourceGPS':'sourceGoogle';
+   const accuracy=Number.isFinite(state.accuracy)&&state.accuracy>0?' · '+tr('accuracy',{n:Math.round(state.accuracy)}):'';
+   node.textContent='✓ '+tr('locationFound',{source:tr(src),accuracy});
+   return;
+ }
+ const msg=trStatus(state.gpsMessage||'@preparing');
+ node.textContent='⚠ '+msg;
+ $('next-name').textContent=window.NamazI18n?window.NamazI18n.text('loading'):tr('preparing');
+ $('next-name').removeAttribute('data-prayer');
+ $('next-time').textContent='--:--';$('countdown').textContent='--:--:--';
 }
 function updateLocationPanel(){
-  updateHeroLocation();
-  if(state.lat===null){
-    $('coords').textContent='Konum henüz bulunamadı';
-    $('location-status').textContent=state.gpsMessage||'Konum izni ver; güverteye çıkıp GPS sinyali almayı dene.';
-    return;
-  }
-  $('coords').textContent=`${state.lat.toFixed(5)}°, ${state.lon.toFixed(5)}°`;
-  const age=Math.max(0,Date.now()-state.stamp),stale=!validLocation();
-  const accuracy=Number.isFinite(state.accuracy)&&state.accuracy>0?` · ±${Math.round(state.accuracy)} m`:'';
-  const src=state.source==='manual'?'Elle girilen konum':state.source==='native'?(state.provider==='google'?'Google konum servisi':state.provider==='network'?'Wi-Fi/ağ konumu':state.provider==='gps'?'Uydu GPS':'Telefon konumu'):state.source==='gps'?'Tarayıcı konumu':'Önceki kayıt';
-  const ageText=state.source==='manual'?'':` · ${Math.floor(age/60000)} dk önce`;
-  $('location-status').textContent=`${src}${accuracy}${ageText} · ${stale?'⚠ KONUM ESKİ — VAKİTLER GİZLENDİ':'Konum doğrulandı'}${state.gpsMessage?' · '+state.gpsMessage:''}`;
+ updateHeroLocation();
+ if(state.lat===null){
+   $('coords').textContent=tr('noCoords');
+   $('location-status').textContent=trStatus(state.gpsMessage||'@preparing');
+   return;
+ }
+ $('coords').textContent=state.lat.toFixed(5)+'°, '+state.lon.toFixed(5)+'°';
+ const stale=!validLocation();
+ const src=state.source==='manual'?'sourceManual':state.source==='previous'?'sourceOld':state.provider==='google'?'sourceGoogle':state.provider==='network'?'sourceNetwork':state.provider==='gps'?'sourceGPS':'sourceGoogle';
+ const acc=Number.isFinite(state.accuracy)&&state.accuracy>0?' · '+tr('accuracy',{n:Math.round(state.accuracy)}):'';
+ const age=state.source==='manual'?'':' · '+tr('age',{n:Math.max(0,Math.floor((Date.now()-state.stamp)/60000))});
+ $('location-status').textContent=tr(src)+acc+age+' · '+tr(stale?'stale':'verified')+
+    (state.gpsMessage?' · '+trStatus(state.gpsMessage):'');
 }
+
+
 function updateTimeStatus(now){
-  const phone=-now.getTimezoneOffset();
-  const sea=state.lon!==null?Math.round(state.lon/15)*60:null;
-  const active=activeOffsetMinutes(now);
-  let message=`Gösterilen saat: ${formatUtc(active)} · ${state.tzMode==='phone'?'Telefon':state.tzMode==='sea'?'Boylama göre deniz':'Elle seçilen gemi'} saati`;
-  if(sea!==null&&state.tzMode==='phone'&&Math.abs(phone-sea)>=90){
-    message+=` ⚠ Telefon (${formatUtc(phone)}) ile boylama göre deniz saati (${formatUtc(sea)}) farklı; geminin saatini kontrol et.`;
-  }
-  $('time-status').textContent=message;
-  $('utc-offset').disabled=state.tzMode!=='manual';
+ const phone=-now.getTimezoneOffset();
+ const sea=state.lon!==null?Math.round(state.lon/15)*60:null;
+ const active=activeOffsetMinutes(now);
+ const mode=state.tzMode==='phone'?'phone':state.tzMode==='sea'?'sea':'ship';
+ const modeName=window.NamazI18n?window.NamazI18n.text(mode):tr('timeShown');
+ let message=tr('timeShown',{offset:formatUtc(active),mode:modeName});
+ if(sea!==null&&state.tzMode==='phone'&&Math.abs(phone-sea)>=90){
+   message+=' ⚠ '+tr('mismatch',{phone:formatUtc(phone),sea:formatUtc(sea)});
+ }
+ $('time-status').textContent=message;
+ $('utc-offset').disabled=state.tzMode!=='manual';
 }
+
+
 function clearSchedule(){
-  $('schedule').innerHTML=TIMES.map(([,label])=>`<div class="time-tile"><div class="time-label">${window.NamazI18n?window.NamazI18n.prayer(id):label}</div><div class="time-num">--:--</div></div>`).join('');
-  $('next-name').textContent='Güncel konum bekleniyor';$('next-time').textContent='--:--';$('countdown').textContent='--:--:--';
-  $('bearing').textContent='---°';$('bearing-note').textContent='Konum doğrulanınca kıble hesaplanacak.';
-  $('compass-status').textContent='Konum güncel değil';
+ $('schedule').innerHTML=TIMES.map(([id,label])=>'<div class="time-tile"><div class="time-label">'+(window.NamazI18n?window.NamazI18n.prayer(id):label)+'</div><div class="time-num">--:--</div></div>').join('');
+ $('next-name').textContent=window.NamazI18n?window.NamazI18n.text('wait'):tr('noCoords');
+ $('next-name').removeAttribute('data-prayer');
+ $('next-time').textContent='--:--';$('countdown').textContent='--:--:--';
+ $('bearing').textContent='---°';$('bearing-note').textContent=tr('qiblaWaiting');
+ $('compass-status').textContent=tr('compassWait');
 }
+
 function refreshCalculations(now){
   if(!validLocation(now.getTime())){if(state.times!==null){state.times=null;state.tomorrow=null;state.calcKey='';clearSchedule();}return;}
   const day=displayDateParts(now);
@@ -237,7 +260,7 @@ function refreshCalculations(now){
   state.tomorrow=prayerTimes(nextDay,state.lat,state.lon,state.method,state.asr);
   $('schedule').innerHTML=TIMES.map(([id,label])=>`<div class="time-tile" data-prayer="${id}"><div class="time-label">${window.NamazI18n?window.NamazI18n.prayer(id):label}</div><div class="time-num">${fmtTime(state.times[id])}</div></div>`).join('');
   $('bearing').textContent=`${qibla(state.lat,state.lon).toFixed(1)}°`;
-  $('bearing-note').textContent='Gerçek kuzeyden saat yönünde Kâbe açısı';
+  $('bearing-note').textContent=tr('qiblaNorth');
   updateNeedle();
 }
 function renderClock(){
@@ -252,34 +275,43 @@ function renderClock(){
   if(!upcoming.length)upcoming=PRAYERS.map(([id,name])=>({id,name,time:state.tomorrow[id]})).filter(x=>x.time!==null&&x.time>now.getTime()).sort((a,b)=>a.time-b.time);
   const next=upcoming[0];
   if(next){$('next-name').dataset.prayer=next.id;$('next-name').textContent=window.NamazI18n?window.NamazI18n.prayer(next.id):next.name;$('next-time').textContent=fmtTime(next.time);$('countdown').textContent=formatDuration(next.time-now.getTime());}
-  else{$('next-name').textContent='Vakit hesaplanamadı';$('next-time').textContent='—';$('countdown').textContent='—';}
+  else{$('next-name').textContent=tr('noTimes');$('next-time').textContent='—';$('countdown').textContent='—';}
   const current=PRAYERS.filter(([id])=>state.times[id]!==null&&state.times[id]<=now.getTime()).slice(-1)[0]?.[0];
   document.querySelectorAll('[data-prayer]').forEach(el=>el.classList.toggle('current',el.getAttribute('data-prayer')===current));
 }
+
 function updateNeedle(){
-  if(!validLocation())return;
-  const bearing=qibla(state.lat,state.lon),h=state.heading;
-  const turn=h===null?bearing:wrap(bearing-h,360);
-  $('needle').style.transform=`rotate(${turn}deg)`;
-  $('compass-status').textContent=h===null?'Pusula verisi yok: ok kuzeye göre şematik gösterilir.':`Telefon yönü: ${Math.round(h)}° · ${Math.abs(wrap(bearing-h+180,360)-180)<8?'✓ Kıble doğrultusunda':'Telefonu düz tutup oku üste çevir'}`;
+ if(!validLocation()){
+    $('compass-status').textContent=state.heading===null?tr('compassWait'):tr('qiblaWaiting');
+    $('bearing-note').textContent=tr('qiblaWaiting');
+    return;
+ }
+ const bearing=qibla(state.lat,state.lon),h=state.heading;
+ const turn=h===null?bearing:wrap(bearing-h,360);
+ $('needle').style.transform='rotate('+turn+'deg)';
+ $('bearing-note').textContent=tr('qiblaNorth');
+ $('compass-status').textContent=h===null?tr('compassNoData'):
+    tr('compassDirection',{n:Math.round(h)})+' · '+
+    (Math.abs(wrap(bearing-h+180,360)-180)<8?tr('compassAligned'):tr('compassTurn'));
 }
-function nativeHeading(degrees){if(Number.isFinite(degrees)){state.heading=wrap(degrees,360);if(!validLocation())$('compass-status').textContent='Pusula çalışıyor, kıble hesabı için konum bekleniyor.';updateNeedle();}}
+
+function nativeHeading(degrees){if(Number.isFinite(degrees)){state.heading=wrap(degrees,360);if(!validLocation())$('compass-status').textContent=tr('qiblaWaiting');updateNeedle();}}
 function nativeLocation(lat,lon,accuracy,cached,timestamp,provider){if(state.manual)return;state.gpsMessage='';setLocation(lat,lon,accuracy,cached?'previous':'native',timestamp||Date.now(),!cached,provider||'gps');}
-function nativeError(message){state.gpsMessage=String(message);updateLocationPanel();}
-function nativeSearching(message){state.gpsMessage=String(message);updateLocationPanel();}
+function nativeError(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
+function nativeSearching(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
 window.nativeHeading=nativeHeading;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;
 function onPosition(pos){if(state.manual)return;setLocation(pos.coords.latitude,pos.coords.longitude,pos.coords.accuracy,'gps',pos.timestamp||Date.now(),true);}
-function onGpsError(error){$('location-status').textContent='GPS alınamadı: '+(error.code===1?'Konum izni reddedildi.':error.code===2?'Telefon konum bulamıyor.':'GPS zaman aşımına uğradı.')+' Manuel koordinat kullanabilirsin.';}
+function onGpsError(error){state.gpsMessage='@noFix';updateLocationPanel();}
 function startGPS(){
   state.manual=false;
   if(state.source==='manual'){
     state.lat=null;state.lon=null;state.stamp=0;state.source='';state.live=false;
     state.times=null;state.tomorrow=null;state.calcKey='';clearSchedule();
   }
-  state.gpsMessage='Google konumu yüksek doğrulukla aranıyor (Wi-Fi + uydu). Haritalar açılmaz...';updateLocationPanel();
+  state.gpsMessage='@googleSearching';updateLocationPanel();
   if(window.GemiNative){window.GemiNative.requestLocation();return;}
-  if(!navigator.geolocation){$('location-status').textContent='Bu ortamda GPS erişimi yok. HTTPS veya Android uygulaması gerekir.';return;}
-  if(!window.isSecureContext){$('location-status').textContent='Bu dosya açılışında tarayıcı GPS’i engelleyebilir. Android uygulaması ya da HTTPS gerekir.';}
+  if(!navigator.geolocation){state.gpsMessage='@browserGPS';updateLocationPanel();return;}
+  if(!window.isSecureContext){state.gpsMessage='@browserSecure';updateLocationPanel();}
   if(state.watchId!==null)navigator.geolocation.clearWatch(state.watchId);
   state.watchId=navigator.geolocation.watchPosition(onPosition,onGpsError,{enableHighAccuracy:true,maximumAge:30000,timeout:25000});
 }
@@ -295,12 +327,13 @@ function onOrientation(e){
 }
 function startCompass(){
   if(window.GemiNative)return;
-  if(!('DeviceOrientationEvent' in window)){$('compass-status').textContent='Bu telefonda pusula sensörü erişilemiyor.';return;}
+  if(!('DeviceOrientationEvent' in window)){$('compass-status').textContent=tr('compassNoSensor');return;}
   window.addEventListener('deviceorientationabsolute',onOrientation,true);
   window.addEventListener('deviceorientation',onOrientation,true);
   if(typeof DeviceOrientationEvent.requestPermission==='function')$('compass-permission').style.display='inline-block';
 }
-function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();}
+function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();updateNeedle();}
+window.NamazApp={refreshLocale:function(){updateLocationPanel();updateTimeStatus(new Date());updateNeedle();}};
 function init(){
   if(window.NamazI18n)window.NamazI18n.init();
   const cached=saved('location',null);
@@ -313,19 +346,19 @@ function init(){
   list.value=String(state.utcOffset);
   $('timezone-mode').value=state.tzMode;
   $('method').value=state.method;$('asr-method').value=String(state.asr);
-  $('schedule').innerHTML=TIMES.map(([,label])=>`<div class="time-tile"><div class="time-label">${window.NamazI18n?window.NamazI18n.prayer(id):label}</div><div class="time-num">--:--</div></div>`).join('');
+  $('schedule').innerHTML=TIMES.map(([id,label])=>`<div class="time-tile"><div class="time-label">${window.NamazI18n?window.NamazI18n.prayer(id):label}</div><div class="time-num">--:--</div></div>`).join('');
   if(cached&&Number.isFinite(cached.lat)&&Number.isFinite(cached.lon))setLocation(cached.lat,cached.lon,cached.accuracy,'previous',cached.stamp,false,cached.provider||'');
   $('gps-button').addEventListener('click',startGPS);
   $('reset-button').addEventListener('click',startGPS);
   $('location-settings-button').addEventListener('click',()=>{
     if(window.GemiNative&&typeof window.GemiNative.openLocationSettings==='function')window.GemiNative.openLocationSettings();
-    else alert('Telefon Ayarlar > Konum kısmından Google konum doğruluğunu aç.');
+    else alert(tr('permission'));
   });
   $('manual-button').addEventListener('click',()=>{
     const a=$('latitude').value.trim().replace(',','.'),b=$('longitude').value.trim().replace(',','.');
-    if(a===''||b===''){alert('Enlem ve boylam gir.');return;}
+    if(a===''||b===''){alert(tr('manualMissing'));return;}
     const lat=Number(a),lon=Number(b);
-    if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180){alert('Enlem −90…90, boylam −180…180 olmalı.');return;}
+    if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180){alert(tr('manualRange'));return;}
     state.manual=true;
     if(state.watchId!==null){navigator.geolocation.clearWatch(state.watchId);state.watchId=null;}
     setLocation(lat,lon,null,'manual',Date.now(),true);
@@ -335,8 +368,8 @@ function init(){
   $('timezone-mode').addEventListener('change',e=>{state.tzMode=e.target.value;store('tzMode',state.tzMode);state.calcKey='';renderAll();});
   $('utc-offset').addEventListener('change',e=>{state.utcOffset=Number(e.target.value);store('utcOffset',state.utcOffset);state.calcKey='';renderAll();});
   $('compass-permission').addEventListener('click',async()=>{
-    try{const result=await DeviceOrientationEvent.requestPermission(true);$('compass-status').textContent=result==='granted'?'Pusula etkinleştirildi.':'Pusula izni reddedildi.';if(result==='granted')$('compass-permission').style.display='none';}
-    catch(e){$('compass-status').textContent='Pusula izni sağlanamadı.';}
+    try{const result=await DeviceOrientationEvent.requestPermission(true);$('compass-status').textContent=result==='granted'?tr('compassAligned'):tr('denied');if(result==='granted')$('compass-permission').style.display='none';}
+    catch(e){$('compass-status').textContent=tr('denied');}
   });
   startCompass();startGPS();renderClock();setInterval(renderClock,1000);
   setInterval(updateLocationPanel,30000);
