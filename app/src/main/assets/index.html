@@ -258,7 +258,7 @@ function startGPS(){
     state.lat=null;state.lon=null;state.stamp=0;state.source='';state.live=false;
     state.times=null;state.tomorrow=null;state.calcKey='';clearSchedule();
   }
-  state.gpsMessage='Google konumu aranıyor (Wi-Fi/ağ). Sonuç yoksa GPS denenecek...';updateLocationPanel();
+  state.gpsMessage='Google konumu yüksek doğrulukla aranıyor (Wi-Fi + uydu). Haritalar açılmaz...';updateLocationPanel();
   if(window.GemiNative){window.GemiNative.requestLocation();return;}
   if(!navigator.geolocation){$('location-status').textContent='Bu ortamda GPS erişimi yok. HTTPS veya Android uygulaması gerekir.';return;}
   if(!window.isSecureContext){$('location-status').textContent='Bu dosya açılışında tarayıcı GPS’i engelleyebilir. Android uygulaması ya da HTTPS gerekir.';}

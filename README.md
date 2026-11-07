@@ -1,33 +1,22 @@
-# Namaz Zamanı v0.3
+# Namaz Zamanı v0.4 — Google konumunu kendisi etkinleştirir
 
-Gemi için günlük namaz vakitleri ve kıble yönü.
+Android 7+ cihazlarda günlük namaz vakitleri ve aynı ekranda kıble pusulası.
 
-## Konum alma (v0.3)
-Uygulama **Google Haritalar'ı açmaz**. Google Play Hizmetleri'nin konum sağlayıcısını kullanır:
-1. Google Play services FusedLocationProvider ile Wi-Fi / ağ destekli konumu dener.
-2. Android ağ konumunu dener.
-3. Yaklaşık 17 saniyede yeterli sonuç alamazsa GPS uydu konumuna geçer.
-4. Veri yoksa ekranda nedenini gösterir ve Android konum ayarlarına kısayol sunar.
+## Konum sistemi
+Uygulama açılınca Google Play Hizmetleri'nin **yüksek doğruluklu Fused Location Provider** konum aramasını otomatik başlatır (Google Haritalar uygulamasını açmaz). Wi-Fi, mobil ağ ve GPS gibi kaynakları cihazın sağlayıcısı birleştirir. İlk aşamada yaklaşık modla sınırlı değildir.
 
-Google Maps API anahtarı veya harita açılması gerekmez. Google Play Hizmetleri bulunmayan cihazda Android ağ/GPS yedeği çalışır.
+- Google konumunun yeni bir ölçüm üretmesi için yüksek doğruluklu tek seferlik konum isteği.
+- Daha hızlı veri için yüksek doğruluklu konum güncellemeleri.
+- Eksik telefon ayarı varsa Android'in izin/onay penceresini gösterebilir; kullanıcı onayı olmadan ayarları değiştirmez.
+- Google konumu bulunmazsa 28 saniye sonra yerel GPS yedeği de devreye girer.
+- Konumun doğruluğu, zamanı ve kaynağı ekranda gösterilir; eski koordinatın güncel olduğu iddia edilmez.
+- Gerçek Google Maps uygulaması veya Google Maps API anahtarı gerekmez.
 
-**Önemli:** Gemi Wi-Fi'ının internete bağlı olması gerçek coğrafi koordinatın bilindiği anlamına gelmez. Açık denizde telefonun çevresinde tanınabilir Wi-Fi / baz istasyonu olmayabilir. İnternetin çıkış sunucusu konumu geminin yeri değildir. Bu nedenle GPS veya manuel koordinat gerekebilir. Uygulama IP tabanlı konum tahminini kesin koordinat saymaz.
+**Önemli:** Açık denizde Wi-Fi interneti bulunması gerçek gemi koordinatının Google'a bildirildiği anlamına gelmez. İnternet yönlendirme sunucusunun IP coğrafyası geminin koordinatı değildir. Telefon konum servisi çözüm üretmiyorsa açık güvertede GPS veya manuel gemi koordinatı gereklidir.
 
-## Namaz vakitleri
-- Günlük sabah, güneş, öğle, ikindi, akşam, yatsı.
-- İnternetsiz yaklaşık astronomik hesaplama; resmî takvim değildir.
-- Telefon saati, boylama göre yaklaşık deniz saati veya gemi için elle seçilen UTC farkı.
-- Kıble açısı ve cihazın pusula sensörüne göre ok.
-- Yaklaşık konumun kaynağı, güncelliği ve doğruluğu görünür.
-- 10 dakikadan eski telefon konumu geçerli sayılmaz.
+Vakitler yaklaşık astronomik hesaba dayanır; resmî JAKIM/Diyanet takviminin yerine geçmez. Gemi saati için UTC farkı doğru seçilmelidir.
 
-## Android
-- Android 7.0+ (API 24)
-- Google Play Hizmetleri varsa ağ destekli Google konum servisi, değilse Android yerel konum sağlayıcısı
-- Konum ve internet erişimi izinleri
-- Açık kaynak kod GitHub'da
-- Test APK; fiziksel cihaz testi henüz tamamlanmadı
+## Kurulum
+Android 7.0+ için GitHub Releases sayfasından APK'yi indir. Debug test imzası önceki sürümle uyuşmazsa v0.3'ü kaldırıp yenisini kur (kayıtlı yerel ayarlar sıfırlanır).
 
-Not: GitHub Actions debug APK her çalışmada farklı imzalanabileceği için önceki v0.1/v0.2 üzerine yükleme sorunlu olabilir. Gerekirse eski sürümü kaldır.
-
-GitHub Actions derleme sonucunun APK'sı Releases bölümünde yayımlanır.
+Kaynak proje: https://github.com/umittamer8241-cpu/Namaz-zaman-

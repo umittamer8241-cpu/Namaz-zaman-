@@ -20,6 +20,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -34,15 +35,18 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.tasks.CancellationTokenSource;
 import org.json.JSONObject;
 import java.util.Locale;
 
 public class MainActivity extends Activity implements LocationListener, SensorEventListener {
     private static final int REQ_LOCATION = 24;
+    private static final int REQ_LOCATION_SETTINGS = 25;
     private static final long LOCATION_MAX_AGE_MS = 10 * 60 * 1000L;
     private static final float LOCATION_MAX_ACCURACY_M = 5000f;
-    private static final long FIRST_FALLBACK_MS = 17000L;
+    private static final long FIRST_FALLBACK_MS = 28000L;
     private WebView webView;
     private LocationManager locationManager;
     private SensorManager sensors;
@@ -61,6 +65,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private Runnable fallbackRunnable;
     private Runnable warningRunnable;
     private boolean working = false;
+    private boolean settingsPromptShown = false;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -176,10 +181,10 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         }
         stopSources();
         working=true;freshFix=false;
-        sendStatus("1/2 · Google konumu deneniyor (Wi-Fi/ağ). Haritalar açılmaz.");
+        sendStatus("1/2 · Google Haritalar konum motoru yüksek doğrulukla çalışıyor (Wi-Fi / baz / uydu)...");
         startGoogleOrNetwork();
         fallbackRunnable=()->{if(!freshFix){
-            sendStatus("2/2 · Ağdan konum bulunamadı. Uydu GPS'i deneniyor; açık güvertede dene.");
+            sendStatus("2/2 · Google henüz konum vermedi, doğrudan uydu GPS yedeği de etkinleşiyor...");
             startGpsFallback();
         }};
         handler.postDelayed(fallbackRunnable,FIRST_FALLBACK_MS);
@@ -200,15 +205,34 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         if(googleReady){
             try{
                 fusedClient=LocationServices.getFusedLocationProviderClient(this);
+                // Ask Android to enable the same high-accuracy location settings used by map navigation.
+                // A system-owned confirmation dialog is shown only if a setting must change.
+                if(hasFine() && !settingsPromptShown){
+                    LocationRequest desired=new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY,8000L)
+                        .setMinUpdateIntervalMillis(4000L).build();
+                    LocationSettingsRequest needs=new LocationSettingsRequest.Builder()
+                        .addLocationRequest(desired).setAlwaysShow(true).build();
+                    LocationServices.getSettingsClient(this).checkLocationSettings(needs)
+                        .addOnFailureListener(ex -> {
+                            if(ex instanceof ResolvableApiException && !settingsPromptShown){
+                                try {
+                                    settingsPromptShown=true;
+                                    ((ResolvableApiException)ex).startResolutionForResult(this,REQ_LOCATION_SETTINGS);
+                                }catch(IntentSender.SendIntentException failure){
+                                    sendStatus("Telefonun yüksek doğruluklu konum ayarını aç.");
+                                }
+                            }
+                        });
+                }
                 fusedClient.getLastLocation().addOnSuccessListener(loc->{
                     if(loc!=null&&System.currentTimeMillis()-loc.getTime()<120000L)
                         accept(loc,true,"google");
                 });
                 CurrentLocationRequest req=new CurrentLocationRequest.Builder()
-                    .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
+                    .setPriority(hasFine()?Priority.PRIORITY_HIGH_ACCURACY:Priority.PRIORITY_BALANCED_POWER_ACCURACY)
                     .setGranularity(Granularity.GRANULARITY_PERMISSION_LEVEL)
-                    .setMaxUpdateAgeMillis(30000L)
-                    .setDurationMillis(16000L)
+                    .setMaxUpdateAgeMillis(15000L)
+                    .setDurationMillis(35000L)
                     .build();
                 currentToken=new CancellationTokenSource();
                 fusedClient.getCurrentLocation(req,currentToken.getToken())
@@ -219,8 +243,9 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                     .addOnFailureListener(ex->{
                         if(!freshFix)sendStatus("Google konum yanıt vermedi. Android ağ konumu deneniyor.");
                     });
-                LocationRequest updates=new LocationRequest.Builder(Priority.PRIORITY_BALANCED_POWER_ACCURACY,60000L)
-                    .setMinUpdateIntervalMillis(15000L)
+                LocationRequest updates=new LocationRequest.Builder(hasFine()?Priority.PRIORITY_HIGH_ACCURACY:Priority.PRIORITY_BALANCED_POWER_ACCURACY,8000L)
+                    .setMinUpdateIntervalMillis(4000L)
+                    .setWaitForAccurateLocation(false)
                     .build();
                 fusedCallback=new LocationCallback(){
                     @Override public void onLocationResult(LocationResult res){
@@ -333,6 +358,17 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         if(sensors!=null)sensors.unregisterListener(this);
         if(webView!=null)webView.onPause();
         super.onPause();
+    }
+    @Override protected void onActivityResult(int code,int resultCode,Intent data){
+        super.onActivityResult(code,resultCode,data);
+        if(code==REQ_LOCATION_SETTINGS){
+            if(resultCode==RESULT_OK){
+                sendStatus("Yüksek doğruluklu Google konumu etkinleştirildi. Konum yenileniyor...");
+                beginLocation();
+            } else {
+                sendStatus("Google yüksek doğruluk ayarı onaylanmadı. Mevcut konum kaynaklarıyla devam ediliyor.");
+            }
+        }
     }
     @Override public void onRequestPermissionsResult(int code,String[] permissions,int[] results){
         super.onRequestPermissionsResult(code,permissions,results);
