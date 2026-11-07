@@ -20,7 +20,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:10px;ma
 .hero:before{content:"";width:220px;height:220px;position:absolute;right:-95px;top:-130px;border:1px solid #7be8cb33;border-radius:50%;box-shadow:0 0 0 30px #7be8cb0a,0 0 0 60px #7be8cb09}
 .small-label{font-size:11px;font-weight:780;text-transform:uppercase;letter-spacing:2px;color:var(--muted)}
 .nextname{font-size:31px;font-weight:750;margin:7px 0 2px}.bigtime{font-size:clamp(38px,9vw,58px);line-height:1.06;letter-spacing:-2.4px;color:var(--gold);font-variant-numeric:tabular-nums;font-weight:770;margin:8px 0}
-.subtext{font-size:13px;color:var(--muted)}.countdown{color:var(--mint);font-weight:800;font-variant-numeric:tabular-nums}
+.subtext{font-size:13px;color:var(--muted)}.hero-loc-status{font-size:12px;line-height:1.5;color:var(--mint);margin-top:12px;padding:9px 11px;border:1px solid #416568;border-radius:10px;background:#0b2532}.countdown{color:var(--mint);font-weight:800;font-variant-numeric:tabular-nums}
 .sectionhead{font-size:17px;font-weight:720;margin:23px 2px 12px;display:flex;justify-content:space-between;align-items:center}
 .sectionhead span{color:var(--muted);font-size:11px;font-weight:500}
 .schedule{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.time-tile{background:#102a3acc;border:1px solid #2a485b;border-radius:16px;padding:13px 8px 11px;text-align:center;min-width:0}.time-tile.current{background:#173f47;border-color:#72d7b088}.time-label{font-size:12px;color:var(--muted);font-weight:600}.time-num{font-size:clamp(19px,5.1vw,26px);font-weight:760;margin-top:5px;font-variant-numeric:tabular-nums}
@@ -42,13 +42,13 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 </head>
 <body>
 <main>
-  <header><div><div class="brand">Açık deniz • Seyir yardımcısı</div><div class="app-title">Namaz Zamanı <span style="color:var(--gold)">☾</span></div></div><span class="offline">◉ Çevrimdışı hesaplama</span></header>
+  <header><div><div class="brand">Açık deniz • Seyir yardımcısı</div><div class="app-title">Namaz Zamanı <span style="color:var(--gold)">☾</span></div></div><span class="offline">◉ Vakit hesabı çevrimdışı</span></header>
   <div class="topline"><span id="today">Tarih alınıyor…</span><span id="clock">--:--:--</span></div>
   <div class="loc-sub" id="time-status" style="margin-bottom:12px;color:var(--mint)">Saat dilimi kontrol ediliyor...</div>
-  <section class="panel hero" aria-label="Sıradaki namaz vakti"><div class="small-label">Sıradaki namaz vakti</div><div class="nextname" id="next-name">Konum bekleniyor</div><div class="bigtime" id="next-time">--:--</div><div class="subtext">Kalan süre: <span class="countdown" id="countdown">--:--:--</span></div></section>
+  <section class="panel hero" aria-label="Sıradaki namaz vakti"><div class="small-label">Sıradaki namaz vakti</div><div class="nextname" id="next-name">Konum bekleniyor</div><div class="bigtime" id="next-time">--:--</div><div class="subtext">Kalan süre: <span class="countdown" id="countdown">--:--:--</span></div><div id="hero-location-status" class="hero-loc-status">Google konumu aranıyor (Wi-Fi / ağ)...</div></section>
   <div class="sectionhead">Bugünün vakitleri <span>Yalnızca günlük</span></div><section class="schedule" id="schedule" aria-label="Günlük namaz vakitleri"></section>
   <section class="panel compass-card" aria-label="Kıble yönü"><div class="dial" aria-label="Kıble pusulası"><span class="tick n">K</span><span class="tick s">G</span><span class="tick e">D</span><span class="tick w">B</span><div class="needle-wrap" id="needle"><div class="needle"><svg viewBox="0 0 28 150" aria-hidden="true"><path d="M14 0 L28 80 L14 68 L0 80 Z" fill="#f4d48c"/><path d="M14 0L14 68L0 80Z" fill="#fff6d9"/><path d="M14 68 L23 112 L14 102 L5 112Z" fill="#77d9cb" opacity=".7" /></svg></div></div></div><div><div class="small-label">Kıble yönü</div><div class="qval" id="bearing">---°</div><div class="qsub" id="bearing-note">GPS ile Kâbe yönü hesaplanıyor.</div><div class="compass-status" id="compass-status">Pusula sensörü bekleniyor…</div><button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button></div></section>
-  <section class="panel location" aria-label="Konum ayarları"><div class="small-label">Konum • Harita açılmaz</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="reset-button" class="secondary">GPS'e dön</button></div>
+  <section class="panel location" aria-label="Konum ayarları"><div class="small-label">Konum • Google konum servisi → GPS</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="reset-button" class="secondary">Yeniden konum bul</button><button type="button" id="location-settings-button" class="secondary">Konum ayarları</button></div>
     <details><summary>GPS çalışmazsa koordinatı elle gir</summary><div class="manual"><label>Enlem (−90 … 90)<input id="latitude" type="number" step="any" placeholder="3.13900" /></label><label>Boylam (−180 … 180)<input id="longitude" type="number" step="any" placeholder="101.68690" /></label><button id="manual-button" type="button">Bu koordinatı kullan</button></div></details>
     <div class="settings"><label>Hesaplama yöntemi<select id="method"><option value="MWL">Genel (18° / 17°)</option><option value="JAKIM">JAKIM yaklaşık (18° / 18°)</option></select></label><label>İkindi hesabı<select id="asr-method"><option value="1">Standart</option><option value="2">Hanefî</option></select></label></div>
     <details open><summary>⏰ Saat dilimi (gemi saati için önemli)</summary>
@@ -58,7 +58,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       </div><p class="loc-sub">Gemi saati, telefon saat dilimi ve boylama göre otomatik deniz saati farklı olabilir. Geminin kullandığı saat için UTC farkını ayarla. Bu ayar namaz vakitlerinin gösterimini de değiştirir.</p>
     </details>
   </section>
-  <p class="note">Vakitler seçilen saat dilimine ve doğrulanmış koordinatlara göre <b>internetsiz yaklaşık astronomik hesapla</b> belirlenir; resmî veya bölgesel takvimlerle belirgin dakika farkları olabilir. Gemide ilerledikçe konum yenilenir. Kıble pusulası için telefonu mümkünse düz tut; metal yüzeyler, gemi donanımı ve manyetik sapma yönü etkileyebilir. <span class="warn">GPS alınamazsa önceki kayıt güncel konum sayılmaz.</span></p>
+  <p class="note">Google Haritalar uygulaması veya Google Maps API anahtarı gerekmez; Google Play Hizmetleri üzerinden Wi-Fi/ağ destekli konum alınmaya çalışılır. <b>Gemi uydu interneti kendi başına gerçek gemi koordinatını vermez.</b> Açık denizde ağ konumu yoksa GPS veya manuel koordinat gereklidir. Vakitler seçilen saat dilimine ve doğrulanmış koordinatlara göre <b>internetsiz yaklaşık astronomik hesapla</b> belirlenir; resmî veya bölgesel takvimlerle belirgin dakika farkları olabilir. Gemide ilerledikçe konum yenilenir. Kıble pusulası için telefonu mümkünse düz tut; metal yüzeyler, gemi donanımı ve manyetik sapma yönü etkileyebilir. <span class="warn">GPS alınamazsa önceki kayıt güncel konum sayılmaz.</span></p>
 </main>
 <script>
 'use strict';
@@ -165,7 +165,21 @@ function setLocation(lat,lon,accuracy,source,stamp=Date.now(),live=true,provider
   store('location',{lat,lon,accuracy,stamp,source,provider});
   state.calcKey='';renderAll();
 }
+function updateHeroLocation(){
+  const node=$('hero-location-status');
+  if(validLocation()){
+    const src=state.source==='manual'?'Manuel':state.provider==='google'?'Google konumu':state.provider==='network'?'Wi-Fi/ağ':state.provider==='gps'?'Uydu GPS':'Telefon konumu';
+    const accuracy=Number.isFinite(state.accuracy)&&state.accuracy>0?' · ±'+Math.round(state.accuracy)+' m':'';
+    node.textContent='✓ '+src+' bulundu'+accuracy;
+    return;
+  }
+  const message=state.gpsMessage||'Google konumu (Wi-Fi/ağ) aranıyor...';
+  node.textContent='⚠ '+message;
+  $('next-name').textContent=message.includes('bulunamadı')?'Konum bulunamadı':'Konum aranıyor';
+  $('next-time').textContent='--:--';$('countdown').textContent='--:--:--';
+}
 function updateLocationPanel(){
+  updateHeroLocation();
   if(state.lat===null){
     $('coords').textContent='Konum henüz bulunamadı';
     $('location-status').textContent=state.gpsMessage||'Konum izni ver; güverteye çıkıp GPS sinyali almayı dene.';
@@ -174,7 +188,7 @@ function updateLocationPanel(){
   $('coords').textContent=`${state.lat.toFixed(5)}°, ${state.lon.toFixed(5)}°`;
   const age=Math.max(0,Date.now()-state.stamp),stale=!validLocation();
   const accuracy=Number.isFinite(state.accuracy)&&state.accuracy>0?` · ±${Math.round(state.accuracy)} m`:'';
-  const src=state.source==='manual'?'Elle girilen konum':state.source==='native'?(state.provider==='network'?'Ağ/telefon yaklaşık konumu':'Uydu GPS'):state.source==='gps'?'Tarayıcı GPS':'Önceki kayıt';
+  const src=state.source==='manual'?'Elle girilen konum':state.source==='native'?(state.provider==='google'?'Google konum servisi':state.provider==='network'?'Wi-Fi/ağ konumu':state.provider==='gps'?'Uydu GPS':'Telefon konumu'):state.source==='gps'?'Tarayıcı konumu':'Önceki kayıt';
   const ageText=state.source==='manual'?'':` · ${Math.floor(age/60000)} dk önce`;
   $('location-status').textContent=`${src}${accuracy}${ageText} · ${stale?'⚠ KONUM ESKİ — VAKİTLER GİZLENDİ':'Konum doğrulandı'}${state.gpsMessage?' · '+state.gpsMessage:''}`;
 }
@@ -231,7 +245,7 @@ function updateNeedle(){
   $('needle').style.transform=`rotate(${turn}deg)`;
   $('compass-status').textContent=h===null?'Pusula verisi yok: ok kuzeye göre şematik gösterilir.':`Telefon yönü: ${Math.round(h)}° · ${Math.abs(wrap(bearing-h+180,360)-180)<8?'✓ Kıble doğrultusunda':'Telefonu düz tutup oku üste çevir'}`;
 }
-function nativeHeading(degrees){if(Number.isFinite(degrees)){state.heading=wrap(degrees,360);updateNeedle();}}
+function nativeHeading(degrees){if(Number.isFinite(degrees)){state.heading=wrap(degrees,360);if(!validLocation())$('compass-status').textContent='Pusula çalışıyor, kıble hesabı için konum bekleniyor.';updateNeedle();}}
 function nativeLocation(lat,lon,accuracy,cached,timestamp,provider){if(state.manual)return;state.gpsMessage='';setLocation(lat,lon,accuracy,cached?'previous':'native',timestamp||Date.now(),!cached,provider||'gps');}
 function nativeError(message){state.gpsMessage=String(message);updateLocationPanel();}
 function nativeSearching(message){state.gpsMessage=String(message);updateLocationPanel();}
@@ -244,7 +258,7 @@ function startGPS(){
     state.lat=null;state.lon=null;state.stamp=0;state.source='';state.live=false;
     state.times=null;state.tomorrow=null;state.calcKey='';clearSchedule();
   }
-  state.gpsMessage='Konum aranıyor (GPS açık gökyüzünde daha iyi çalışır)...';updateLocationPanel();
+  state.gpsMessage='Google konumu aranıyor (Wi-Fi/ağ). Sonuç yoksa GPS denenecek...';updateLocationPanel();
   if(window.GemiNative){window.GemiNative.requestLocation();return;}
   if(!navigator.geolocation){$('location-status').textContent='Bu ortamda GPS erişimi yok. HTTPS veya Android uygulaması gerekir.';return;}
   if(!window.isSecureContext){$('location-status').textContent='Bu dosya açılışında tarayıcı GPS’i engelleyebilir. Android uygulaması ya da HTTPS gerekir.';}
@@ -284,6 +298,10 @@ function init(){
   if(cached&&Number.isFinite(cached.lat)&&Number.isFinite(cached.lon))setLocation(cached.lat,cached.lon,cached.accuracy,'previous',cached.stamp,false,cached.provider||'');
   $('gps-button').addEventListener('click',startGPS);
   $('reset-button').addEventListener('click',startGPS);
+  $('location-settings-button').addEventListener('click',()=>{
+    if(window.GemiNative&&typeof window.GemiNative.openLocationSettings==='function')window.GemiNative.openLocationSettings();
+    else alert('Telefon Ayarlar > Konum kısmından Google konum doğruluğunu aç.');
+  });
   $('manual-button').addEventListener('click',()=>{
     const a=$('latitude').value.trim().replace(',','.'),b=$('longitude').value.trim().replace(',','.');
     if(a===''||b===''){alert('Enlem ve boylam gir.');return;}
