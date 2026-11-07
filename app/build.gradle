@@ -7,8 +7,8 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 21
-        versionName '0.20-smart-location-diagnostics-preview'
+        versionCode 22
+        versionName '0.21-resume-gps-fix-preview'
     }
     buildTypes {
         debug {

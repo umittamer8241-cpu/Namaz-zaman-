@@ -99,6 +99,9 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private boolean settingsPromptShown = false;
     private boolean waitingSatellitePermission;
     private boolean satelliteOnlyActive;
+    // Preserve an unfinished user-initiated GPS search across screen lock / app pause.
+    // Resume ONLY satellite GPS, never automatically resume network/Google traffic.
+    private boolean resumePendingGpsSearch;
     private long lastOnlineQiblaRequestMs=0L;
 
     @Override public void onCreate(Bundle savedInstanceState) {
@@ -423,7 +426,10 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         }
         latest=location;latestSource=source;
         compassLat=location.getLatitude();compassLon=location.getLongitude();
-        if(!cached)freshFix=true;
+        if(!cached){
+            freshFix=true;
+            resumePendingGpsSearch=false;
+        }
         sendLocation(location,cached,source);
         if(location.hasAccuracy()&&location.getAccuracy()>2500f)
             sendStatus("Yalnızca yaklaşık konum alındı (±"+
@@ -766,11 +772,24 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         super.onResume();
         startOrientationTracking();
         if(webView!=null)webView.onResume();
+        // onPause() unsubscribes from GPS. If that interrupted an unfinished
+        // search, restart the satellite-only provider after screen wake.
+        // This never launches a Google/network request or asks for permission.
+        if(resumePendingGpsSearch){
+            resumePendingGpsSearch=false;
+            if(hasFine()&&locationEnabled()&&providerAvailable(LocationManager.GPS_PROVIDER)){
+                startSatelliteOnly();
+            }else{
+                sendError(hasFine()
+                    ?"Uydu GPS kapalı. Telefonun Konum ayarını aç ve yeniden dene."
+                    :"Kesin Konum izni gerekli. İzni açıp Akıllı Konum Bul'a dokun.");
+            }
+        }
         sendLocationDiagnostics();
-        // Never start a fresh location search just because the screen wakes.
-        // User-initiated satellite or network mode remains explicit.
     }
     @Override protected void onPause(){
+        // Remember an unfinished search BEFORE stopSources() clears `working`.
+        resumePendingGpsSearch=working&&!freshFix;
         stopSources();
         stopOrientationTracking();
         if(webView!=null)webView.onPause();

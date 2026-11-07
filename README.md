@@ -116,3 +116,10 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Eski koordinatlar ve namaz vakitleri korunur; ekranın kilitlenmesi konumu silmez. Kullanıcı özellikle arama yapmadıkça ekran açılışı Google/ağ sorgusu tetiklemez.
 - Android'in tam izin ve gerçek GPS durumu ancak kullanıcının cihazında görülebilir; testlerin geçmesi dışarıda GPS'in mutlaka konum bulacağını garanti etmez.
 - Aylık namaz çizelgesi, Esma, dua, sure sesleri, 12 dil ve çok yöntemli kıble sistemleri korunur. Google Play'e yayın yapılmaz.
+
+
+## v0.21 — GPS arama ekranının takılı kalmasını düzeltme
+- `MainActivity.onPause` arka planda GPS aboneliklerini kapatırken aramanın henüz tamamlanmadığını kaydeder. `onResume` ekran açıldığında yarım kalmış kullanıcı aramasını **yalnız uydu GPS** üzerinden yeniden başlatır. Bunun için otomatik Google/ağ konum sorgusu yapılmaz.
+- GPS yeni bir çözüm döndürürse bekleyen yeniden başlatma işareti temizlenir. Kaydedilmiş koordinatlar ve namaz vakitleri etkilenmez.
+- Telefonun genel Konum ayarı veya Kesin Konum izni kapalıysa açık hata gösterilir; uygulama izin almadan uydu GPS'i çalıştırdığını iddia etmez.
+- Gerçek cihazda doğrulama için uygulamanın `Konum tanılama ve onarım` panelinde Kesin/Yaklaşık izin, Uydu GPS, Ağ Konumu ve Google servisi satırları karşılaştırılmalıdır.
