@@ -46,12 +46,16 @@ jobs:
           node tools/validate_prayer_calendar.js
           node tools/validate_royal_compass.js
           node tools/validate_compass_heading.js
+          node tools/validate_test_installer.js
       - name: Play önizleme APK ve AAB derle
         run: gradle --no-daemon --stacktrace :app:assembleDebug :app:bundleRelease
-      - name: İç test APK
+      - name: Debug APK test paket adını doğrula
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep -q "name='com.geminamaz.app.pusulatest'"
+      - name: Mevcut uygulamayı silmeden kurulabilen pusula test APK
         uses: actions/upload-artifact@v4
         with:
-          name: Namaz-Zamani-Play-Preview-APK
+          name: Namaz-Zamani-Pusula-SideBySide-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - name: İmzasız AAB önizleme

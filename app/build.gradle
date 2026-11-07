@@ -10,6 +10,13 @@ android {
         versionCode 16
         versionName '0.15-verified-heading-compass-preview'
     }
+    buildTypes {
+        debug {
+            // Standalone QA app: never overwrite the user's existing prayer records.
+            applicationIdSuffix '.pusulatest'
+            versionNameSuffix '-side-by-side'
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17

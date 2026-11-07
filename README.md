@@ -59,3 +59,10 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - FOP kullanılamazsa Android rotation-vector sensörüne düşülür; yalnızca yüksek doğruluk bildirilen okumada ok görünür, sensörün tahmini olduğu açıkça bildirilir. Manuel/GPS konumu alınmışsa yalnız fallback sensöre manyetik sapma eklenir; Google FOP düzeltmesi iki kez yapılmaz.
 - Tarayıcı deviceorientation geri dönüşü yerel Android güven kalite kapısından bağımsız tutulur. Manyetik kılıf, büyük metal yapılar (özellikle gemi güvertesi), hoparlör ve kablolar sensör okumasını bozabilir. Kullanıcıya cihazı yatay tutma ve havada sekiz çizerek yeniden kalibre etme rehberi sağlanır.
 - İki telefonun doğru kalibre edilmiş aynı doğrultuda fiziksel doğrulaması henüz yapılmadı. Uygulama telefonu yanlış yönlendiriyorsa önce farklı bir güvenilir kıble yöntemiyle doğrulayın.
+
+
+### Pusula çift-telefon tanı sürümü (Debug)
+- Debug APK paket adı `com.geminamaz.app.pusulatest` olarak ayrı kurulabilir. Mevcut `com.geminamaz.app` uygulamasını silmez; takip kayıtlarını ayrı tutar.
+- Ekranda uygulama adı “Namaz Zamanı Pusula Test” olarak görünür.
+- Release AAB paket adı değiştirilmedi: `com.geminamaz.app`.
+- Test: İki telefonu yan yana düz ve aynı doğrultuda tut. Uygulamadan “Telefon yönü”, “Kâbe farkı”, sensör kaynağı/doğruluk bilgisinin ekran görüntülerini karşılaştır. Yalnızca Kâbe açısı eşitliği sensör uyuşmasını garanti etmez.
