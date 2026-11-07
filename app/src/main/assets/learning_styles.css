@@ -270,3 +270,11 @@
  .ornate-compass-dial .tick{font-size:17px!important}
 }
 @media (prefers-reduced-motion:reduce){.ornate-single-needle{transition:none!important}}
+/* Compass truthfulness: never display a confident Qibla needle from uncalibrated heading. */
+.ornate-single-needle.compass-unreliable,
+.needle-wrap.compass-unreliable{opacity:0!important;pointer-events:none!important;transition:opacity .22s ease}
+.ornate-single-needle:not(.compass-unreliable){opacity:1;transition:transform .38s cubic-bezier(.22,.7,.2,1),opacity .2s ease}
+.compass-quality{margin:8px 0 10px;font-size:12px;line-height:1.5;color:#efdcad;border:1px solid #94784b;background:#271f178c;border-radius:10px;padding:9px 10px}
+#compass-calibrate{border:1px solid #b28a52;color:#f1da9b;background:linear-gradient(145deg,#24434b,#122835);font-weight:750;margin:5px auto;display:inline-block}
+.compass-calibration-guide{border:1px solid #a88452;background:linear-gradient(155deg,#15393b,#1a252e);border-radius:13px;padding:12px 14px;margin:9px 0 0;font-size:12px;line-height:1.65;color:#f3e9c8}
+.compass-calibration-guide[hidden]{display:none!important}

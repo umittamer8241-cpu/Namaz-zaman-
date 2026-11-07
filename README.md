@@ -1,4 +1,4 @@
-# Namaz Zamanı v0.14 — Namaz Takvimi ve Royal Qibla Pusulası
+# Namaz Zamanı v0.15 — Kalibrasyon Kontrollü Kıble Pusulası
 
 ## İçerik
 - 12 dil: Türkçe, İngilizce, Malayca, Endonezce, Arapça, Rusça, Fransızca, Almanca, İspanyolca, Portekizce, Azerbaycanca, Urduca.
@@ -49,3 +49,13 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Dekoratif çerçeve sabittir; `id="needle"` ile tek altın ok önceki matematik/sensör değerlerine göre hareket etmeyi sürdürür. Kuzey referansı ve kıble açısı korunmuştur.
 - Mobil yerleşimde gösterişli büyük kadran ile bilgi kartı alt alta gösterilir. Görsel tamamen paket içidir, internet indirmez.
 - Gerçek telefon sensörü ve konum kalibrasyonu üzerinde son kullanıcı cihazında fiziksel test ayrıca yapılmalıdır.
+
+
+## v0.15 — İki cihazda farklı pusula yönü düzeltmesi
+
+- Sabit Kâbe açısı (kuzeye göre ör. 272,2°) ile telefonun kendi gerçek kuzey yönü ayrı verilerdir. İki telefon aynı koordinattaysa sabit açı aynı olur, ancak sensör başlığı farklıysa ekrandaki göreli ok farklı durur.
+- Android sensör başlığı için öncelik Google Play Hizmetleri Fused Orientation Provider'dır. Bu servis cihazlar arasında ortak algoritma uygular, mümkün olduğunda yerel manyetik sapma düzeltmesini ve yönün tahmini hata açısını verir.
+- Tutarlı bir yön verisi olmadan altın kıble oku **gizlenir**; kaynağın Google/Android olduğu, yaklaşık doğruluğun durumu ve kalibrasyon önerisi ekranda gösterilir. Eşik: FOP'un verdiği heading hata yarıçapı en fazla 25°. Conservative heading error varsa öncelikle o dikkate alınır.
+- FOP kullanılamazsa Android rotation-vector sensörüne düşülür; yalnızca yüksek doğruluk bildirilen okumada ok görünür, sensörün tahmini olduğu açıkça bildirilir. Manuel/GPS konumu alınmışsa yalnız fallback sensöre manyetik sapma eklenir; Google FOP düzeltmesi iki kez yapılmaz.
+- Tarayıcı deviceorientation geri dönüşü yerel Android güven kalite kapısından bağımsız tutulur. Manyetik kılıf, büyük metal yapılar (özellikle gemi güvertesi), hoparlör ve kablolar sensör okumasını bozabilir. Kullanıcıya cihazı yatay tutma ve havada sekiz çizerek yeniden kalibre etme rehberi sağlanır.
+- İki telefonun doğru kalibre edilmiş aynı doğrultuda fiziksel doğrulaması henüz yapılmadı. Uygulama telefonu yanlış yönlendiriyorsa önce farklı bir güvenilir kıble yöntemiyle doğrulayın.

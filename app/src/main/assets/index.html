@@ -113,6 +113,9 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
         <div><span id="pro-compass-difference-label">Kâbe farkı</span><strong id="pro-compass-difference">—</strong></div>
       </div>
       <div class="compass-status" id="compass-status">Pusula sensörü bekleniyor…</div>
+      <div class="compass-quality" id="compass-quality" aria-live="polite">Sensör doğruluğu kontrol ediliyor…</div>
+      <button type="button" id="compass-calibrate" class="secondary">Pusulayı kalibre et</button>
+      <div id="compass-calibration-guide" class="compass-calibration-guide" hidden></div>
       <button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button>
     </div>
   </section>
@@ -163,7 +166,7 @@ const KAABA = { lat: 21.422487, lon: 39.826206 };
 const METHODS = { MWL: { fajr:18, isha:17 }, JAKIM: {fajr:18, isha:18} };
 const TIMES = [['fajr','Sabah'],['sunrise','Güneş'],['dhuhr','Öğle'],['asr','İkindi'],['maghrib','Akşam'],['isha','Yatsı']];
 const PRAYERS = [['fajr','Sabah'],['dhuhr','Öğle'],['asr','İkindi'],['maghrib','Akşam'],['isha','Yatsı']];
-const state = {lat:null,lon:null,accuracy:null,stamp:0,live:false,heading:null,source:'',provider:'',manual:false,calcKey:'',times:null,watchId:null,method:'MWL',asr:1,compassRequested:false,tzMode:'phone',utcOffset:8,gpsMessage:''};
+const state = {lat:null,lon:null,accuracy:null,stamp:0,live:false,heading:null,headingError:180,headingSource:'',headingTrusted:false,headingUpdatedAt:0,source:'',provider:'',manual:false,calcKey:'',times:null,watchId:null,method:'MWL',asr:1,compassRequested:false,tzMode:'phone',utcOffset:8,gpsMessage:''};
 const rad = x=>x*Math.PI/180, deg=x=>x*180/Math.PI;
 const sind=x=>Math.sin(rad(x)), cosd=x=>Math.cos(rad(x));
 const wrap=(v,n)=>((v%n)+n)%n;
@@ -264,6 +267,9 @@ function setLocation(lat,lon,accuracy,source,stamp=Date.now(),live=true,provider
   if(state.manual&&source!=='manual')return;
   if(source==='manual')state.gpsMessage='';
   state.lat=lat;state.lon=lon;state.accuracy=accuracy;state.source=source;state.stamp=stamp;state.live=live;state.provider=provider;
+  if(window.GemiNative&&typeof window.GemiNative.setCompassLocation==='function'){
+    window.GemiNative.setCompassLocation(lat,lon);
+  }
   store('location',{lat,lon,accuracy,stamp,source,provider});
   state.calcKey='';renderAll();
 }
@@ -354,6 +360,23 @@ function renderClock(){
   document.querySelectorAll('[data-prayer]').forEach(el=>el.classList.toggle('current',el.getAttribute('data-prayer')===current));
 }
 
+const COMPASS_QUALITY={
+ tr:{waiting:'Pusula sensörü bekleniyor · oku güvenilir değil',calibrate:'Sensör doğruluğu düşük. Telefonu 8 çizerek kalibre et.',reliable:'Sensör doğruluğu',approx:'Yaklaşık sensör yönü · cihazlar arasında farklılık olabilir',fused:'Google yön sensörü',fallback:'Android pusula sensörü',button:'Kalibrasyon rehberi',guide:'Telefonları aynı doğrultuda ve yataya yakın tut. Mıknatıslı kılıfı çıkar; metal, hoparlör ve araçlardan uzaklaş. Telefonu havada yavaşça 8 çizerek birkaç kez hareket ettir. İki telefonda da “Telefon yönü” değerlerini karşılaştır.',notReady:'Doğru yön bulunana kadar ok gizlenir.'},
+ en:{waiting:'Waiting for a reliable heading · arrow hidden',calibrate:'Low sensor confidence. Calibrate by moving the phone in a figure eight.',reliable:'Sensor accuracy',approx:'Approximate sensor reading · devices may disagree',fused:'Google orientation sensor',fallback:'Android rotation sensor',button:'Calibration guide',guide:'Hold both phones flat with their top edges parallel. Remove magnetic cases and move away from steel, speakers and vehicles. Move each phone slowly in a figure eight, then compare their Phone heading values.',notReady:'The arrow stays hidden until heading data is reliable.'},
+ ms:{waiting:'Menunggu arah yang boleh dipercayai',calibrate:'Ketepatan rendah. Gerakkan telefon membentuk angka 8.',reliable:'Ketepatan sensor',approx:'Arah anggaran · telefon mungkin berbeza',fused:'Sensor arah Google',fallback:'Sensor Android',button:'Panduan penentukuran',guide:'Pegang kedua-dua telefon rata dan selari. Jauhi logam, magnet dan pembesar suara. Gerakkan telefon perlahan membentuk angka 8, kemudian bandingkan arah telefon.',notReady:'Anak panah disembunyikan sehingga tepat.'},
+ id:{waiting:'Menunggu arah yang tepercaya',calibrate:'Akurasi rendah. Gerakkan ponsel membentuk angka 8.',reliable:'Akurasi sensor',approx:'Perkiraan arah · ponsel mungkin berbeda',fused:'Sensor arah Google',fallback:'Sensor Android',button:'Panduan kalibrasi',guide:'Pegang kedua ponsel rata dan sejajar. Jauhkan dari logam dan magnet. Gerakkan perlahan membentuk angka 8 lalu bandingkan arah ponsel.',notReady:'Panah disembunyikan hingga data andal.'},
+ ar:{waiting:'في انتظار اتجاه موثوق',calibrate:'دقة الحساس منخفضة. حرّك الهاتف على شكل الرقم 8.',reliable:'دقة المستشعر',approx:'قراءة تقريبية وقد تختلف الأجهزة',fused:'مستشعر اتجاه Google',fallback:'مستشعر Android',button:'دليل المعايرة',guide:'ضع الهاتفين بشكل متوازٍ وبعيداً عن المعادن والمغناطيس. حرّك الهاتف بهدوء على شكل الرقم 8 ثم قارن اتجاه الهاتف.',notReady:'يُخفى السهم حتى تصبح القراءة موثوقة.'},
+ ru:{waiting:'Ожидание достоверного направления',calibrate:'Низкая точность. Сделайте телефоном движение «восьмёркой».',reliable:'Точность датчика',approx:'Приблизительный курс',fused:'Датчик Google',fallback:'Датчик Android',button:'Калибровка',guide:'Держите телефоны параллельно, вдали от металла и магнитов. Медленно двигайте телефоном по восьмёрке и сравните курс.',notReady:'Стрелка скрыта до точных показаний.'},
+ fr:{waiting:'En attente d’une orientation fiable',calibrate:'Précision faible. Déplacez le téléphone en huit.',reliable:'Précision du capteur',approx:'Orientation approximative',fused:'Capteur Google',fallback:'Capteur Android',button:'Guide de calibrage',guide:'Placez les téléphones parallèles, loin du métal et des aimants. Bougez-les lentement en huit et comparez les caps.',notReady:'La flèche reste cachée sans cap fiable.'},
+ de:{waiting:'Warte auf zuverlässige Ausrichtung',calibrate:'Geringe Genauigkeit. Telefon in einer Acht bewegen.',reliable:'Sensorgenauigkeit',approx:'Nur ungefähre Ausrichtung',fused:'Google-Richtungssensor',fallback:'Android-Sensor',button:'Kalibrieranleitung',guide:'Telefone parallel halten, Abstand zu Metall und Magneten. Langsam eine Acht bewegen und die Richtungen vergleichen.',notReady:'Pfeil erst bei verlässlicher Messung.'},
+ es:{waiting:'Esperando orientación fiable',calibrate:'Baja precisión. Mueve el móvil en forma de ocho.',reliable:'Precisión del sensor',approx:'Orientación aproximada',fused:'Sensor de Google',fallback:'Sensor de Android',button:'Guía de calibración',guide:'Mantén ambos móviles paralelos, lejos de imanes y metal. Muévelos formando un ocho y compara los rumbos.',notReady:'La flecha se oculta si la lectura no es fiable.'},
+ pt:{waiting:'A aguardar direção fiável',calibrate:'Pouca precisão. Move o telemóvel em forma de oito.',reliable:'Precisão do sensor',approx:'Rumo aproximado',fused:'Sensor Google',fallback:'Sensor Android',button:'Guia de calibração',guide:'Mantém os telefones paralelos e longe de metal e ímanes. Move-os num oito e compara a direção.',notReady:'A seta fica oculta até haver direção fiável.'},
+ az:{waiting:'Etibarlı istiqamət gözlənilir',calibrate:'Dəqiqlik aşağıdır. Telefonla havada 8 rəqəmi çək.',reliable:'Sensor dəqiqliyi',approx:'Təxmini sensor istiqaməti',fused:'Google istiqamət sensoru',fallback:'Android sensoru',button:'Kalibrləmə bələdçisi',guide:'Telefonları paralel tut, metaldan və maqnitdən uzaqlaş. Telefonla 8 rəqəmi çək və istiqamətləri müqayisə et.',notReady:'Etibarlı oxunuşa qədər ox gizlənir.'},
+ ur:{waiting:'قابل اعتماد سمت کا انتظار ہے',calibrate:'سینسر کی درستگی کم ہے۔ فون کو آٹھ کی شکل میں گھمائیں۔',reliable:'سینسر کی درستگی',approx:'تقریبی سمت',fused:'گوگل سمت سینسر',fallback:'اینڈرائیڈ سینسر',button:'کیلیبریشن رہنمائی',guide:'دونوں فون برابر رخ میں رکھیں، دھات اور مقناطیس سے دور رہیں۔ فون کو آٹھ کی شکل میں ہلائیں اور سمت کا موازنہ کریں۔',notReady:'درست سمت تک تیر چھپا رہے گا۔'}
+};
+function compassQualityText(){
+ return COMPASS_QUALITY[window.NamazI18n?.getLanguage?.()||'tr']||COMPASS_QUALITY.en;
+}
 const COMPASS_TEXT={
  tr:['KIBLE • CANLI YÖN','Telefon yönü','Kâbe farkı'],
  en:['QIBLA • LIVE BEARING','Phone heading','Kaaba difference'],
@@ -375,28 +398,70 @@ function updateCompassLanguage(){
 }
 function updateNeedle(){
  updateCompassLanguage();
- if(!validLocation()){
-    $('compass-status').textContent=state.heading===null?tr('compassWait'):tr('qiblaWaiting');
-    $('bearing-note').textContent=tr('qiblaWaiting');
-    return;
+ const q=compassQualityText();
+ const c=$('compass-calibrate'),guide=$('compass-calibration-guide'),quality=$('compass-quality');
+ if(c)c.textContent=q.button;
+ if(guide)guide.textContent=q.guide;
+ const hasLocation=validLocation();
+ const h=state.heading;
+ const fresh=state.headingUpdatedAt>0&&Date.now()-state.headingUpdatedAt<7500;
+ const trusted=hasLocation&&fresh&&state.headingTrusted&&Number.isFinite(h);
+ const needle=$('needle');
+ if(needle)needle.classList.toggle('compass-unreliable',!trusted);
+ if(!hasLocation){
+   $('compass-status').textContent=tr('qiblaWaiting');
+   $('bearing-note').textContent=tr('qiblaWaiting');
+   if(quality)quality.textContent=q.waiting;
+   return;
  }
- const bearing=qibla(state.lat,state.lon),h=state.heading;
- const turn=h===null?bearing:wrap(bearing-h,360);
- $('needle').style.transform='rotate('+turn+'deg)';
+ const bearing=qibla(state.lat,state.lon);
+ if(needle)needle.style.transform='rotate('+(trusted?wrap(bearing-h,360):0)+'deg)';
  $('bearing-note').textContent=tr('qiblaNorth');
- $('compass-status').textContent=h===null?tr('compassNoData'):
-    tr('compassDirection',{n:Math.round(h)})+' · '+
-    (Math.abs(wrap(bearing-h+180,360)-180)<8?tr('compassAligned'):tr('compassTurn'));
  const displayHeading=$('pro-compass-heading'),difference=$('pro-compass-difference');
- if(displayHeading)displayHeading.textContent=h===null?'—':Math.round(h)+'°';
- if(difference)difference.textContent=h===null?'—':Math.round(Math.abs(wrap(bearing-h+180,360)-180))+'°';
+ if(displayHeading)displayHeading.textContent=fresh&&Number.isFinite(h)?Math.round(h)+'°':'—';
+ if(difference)difference.textContent=trusted?Math.round(Math.abs(wrap(bearing-h+180,360)-180))+'°':'—';
+ if(!fresh||!Number.isFinite(h)){
+   $('compass-status').textContent=q.waiting;
+   if(quality)quality.textContent=q.notReady;
+   return;
+ }
+ const source=state.headingSource==='fused'?q.fused:q.fallback;
+ if(!trusted){
+   $('compass-status').textContent=q.calibrate;
+   if(quality)quality.textContent=source+' · '+q.notReady;
+   return;
+ }
+ const diff=Math.abs(wrap(bearing-h+180,360)-180);
+ $('compass-status').textContent=tr('compassDirection',{n:Math.round(h)})+' · '+(diff<8?tr('compassAligned'):tr('compassTurn'));
+ if(quality){
+   quality.textContent=source+' · '+(state.headingSource==='fused'?q.reliable+' ±'+Math.round(state.headingError)+'°':q.approx);
+ }
 }
-
-function nativeHeading(degrees){if(Number.isFinite(degrees)){state.heading=wrap(degrees,360);if(!validLocation())$('compass-status').textContent=tr('qiblaWaiting');updateNeedle();}}
+function nativeHeadingData(degrees,error,source,trusted){
+ if(!Number.isFinite(degrees))return;
+ state.heading=wrap(degrees,360);
+ state.headingError=Number.isFinite(error)?Math.min(180,Math.max(0,error)):180;
+ state.headingSource=source==='fused'?'fused':'android';
+ state.headingTrusted=trusted===true&&state.headingError<=25;
+ state.headingUpdatedAt=Date.now();
+ updateNeedle();
+}
+// Legacy browser/device-orientation path. Android native sends nativeHeadingData
+// with its measured uncertainty, never this unqualified method.
+function nativeHeading(degrees){
+ if(Number.isFinite(degrees)){
+   state.heading=wrap(degrees,360);
+   state.headingError=0;
+   state.headingSource='web';
+   state.headingTrusted=true;
+   state.headingUpdatedAt=Date.now();
+   updateNeedle();
+ }
+}
 function nativeLocation(lat,lon,accuracy,cached,timestamp,provider){if(state.manual)return;state.gpsMessage='';setLocation(lat,lon,accuracy,cached?'previous':'native',timestamp||Date.now(),!cached,provider||'gps');}
 function nativeError(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
 function nativeSearching(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
-window.nativeHeading=nativeHeading;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;
+window.nativeHeading=nativeHeading;window.nativeHeadingData=nativeHeadingData;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;
 function onPosition(pos){if(state.manual)return;setLocation(pos.coords.latitude,pos.coords.longitude,pos.coords.accuracy,'gps',pos.timestamp||Date.now(),true);}
 function onGpsError(error){state.gpsMessage='@noFix';updateLocationPanel();}
 function startGPS(){
@@ -413,7 +478,8 @@ function startGPS(){
   state.watchId=navigator.geolocation.watchPosition(onPosition,onGpsError,{enableHighAccuracy:true,maximumAge:30000,timeout:25000});
 }
 function onOrientation(e){
-  if(state.heading!==null&&window.GemiNative)return;
+  // Android must use nativeHeadingData; browser events have no reliability estimate.
+  if(window.GemiNative)return;
   let heading=null;
   if(typeof e.webkitCompassHeading==='number'&&Number.isFinite(e.webkitCompassHeading))heading=e.webkitCompassHeading;
   else if(e.absolute&&Number.isFinite(e.alpha)){
@@ -475,11 +541,16 @@ function init(){
   $('asr-method').addEventListener('change',e=>{state.asr=Number(e.target.value);store('asr',state.asr);state.calcKey='';renderAll();});
   $('timezone-mode').addEventListener('change',e=>{state.tzMode=e.target.value;store('tzMode',state.tzMode);state.calcKey='';renderAll();});
   $('utc-offset').addEventListener('change',e=>{state.utcOffset=Number(e.target.value);store('utcOffset',state.utcOffset);state.calcKey='';renderAll();});
+  $('compass-calibrate').addEventListener('click',()=>{
+    const panel=$('compass-calibration-guide');
+    if(panel)panel.hidden=!panel.hidden;
+  });
   $('compass-permission').addEventListener('click',async()=>{
     try{const result=await DeviceOrientationEvent.requestPermission(true);$('compass-status').textContent=result==='granted'?tr('compassAligned'):tr('denied');if(result==='granted')$('compass-permission').style.display='none';}
     catch(e){$('compass-status').textContent=tr('denied');}
   });
   startCompass();startGPS();renderClock();setInterval(renderClock,1000);
+  setInterval(()=>{if(state.headingUpdatedAt>0)updateNeedle();},2000);
   setInterval(updateLocationPanel,30000);
 }
 init();

@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -31,6 +32,10 @@ import android.webkit.WebViewClient;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.CurrentLocationRequest;
+import com.google.android.gms.location.DeviceOrientation;
+import com.google.android.gms.location.DeviceOrientationListener;
+import com.google.android.gms.location.DeviceOrientationRequest;
+import com.google.android.gms.location.FusedOrientationProviderClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Granularity;
 import com.google.android.gms.location.LocationCallback;
@@ -57,6 +62,13 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private LocationManager locationManager;
     private SensorManager sensors;
     private Sensor rotation;
+    private FusedOrientationProviderClient fusedOrientationClient;
+    private DeviceOrientationListener fusedOrientationListener;
+    private long lastFusedOrientationMs;
+    private boolean orientationRunning;
+    private int fallbackSensorAccuracy = SensorManager.SENSOR_STATUS_UNRELIABLE;
+    private double compassLat = Double.NaN;
+    private double compassLon = Double.NaN;
     private FusedLocationProviderClient fusedClient;
     private LocationCallback fusedCallback;
     private CancellationTokenSource currentToken;
@@ -112,6 +124,13 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
 
     public class Bridge {
         @JavascriptInterface public void requestLocation(){runOnUiThread(()->beginLocation());}
+        @JavascriptInterface public void setCompassLocation(double latitude,double longitude){
+            runOnUiThread(()->{
+                if(Double.isFinite(latitude)&&Double.isFinite(longitude)&&Math.abs(latitude)<=90&&Math.abs(longitude)<=180){
+                    compassLat=latitude;compassLon=longitude;
+                }
+            });
+        }
         @JavascriptInterface public void speakArabic(String text){
             runOnUiThread(()-> startArabicSpeech(text));
         }
@@ -206,6 +225,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 && latest.getAccuracy()<location.getAccuracy()/3f)return;
         }
         latest=location;latestSource=source;
+        compassLat=location.getLatitude();compassLon=location.getLongitude();
         if(!cached)freshFix=true;
         sendLocation(location,cached,source);
     }
@@ -379,32 +399,97 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         sendStatus("Konum kaynağı kapatıldı. Konumu aç veya GPS'i tekrar dene.");
     }
 
+    // Primary: Google Fused Orientation Provider. It estimates heading against geographic
+    // north when it has local magnetic declination and reports a heading error envelope.
+    // Fallback: Android rotation vector only when FOP is absent or has stalled.
+    // Never claim a trustworthy heading when the error is high or unreported.
+    private void sendCompassHeading(double heading,double error,String source,boolean trusted){
+        if(!Double.isFinite(heading))return;
+        double normalized=((heading%360d)+360d)%360d;
+        double safeError=Double.isFinite(error)?Math.max(0,Math.min(180,error)):180;
+        js(String.format(Locale.US,
+           "window.nativeHeadingData(%.2f,%.2f,%s,%s);",
+           normalized,safeError,JSONObject.quote(source),trusted?"true":"false"));
+    }
+    private void startOrientationTracking(){
+        orientationRunning=true;
+        lastFusedOrientationMs=0;
+        fallbackSensorAccuracy=SensorManager.SENSOR_STATUS_UNRELIABLE;
+        if(sensors!=null&&rotation!=null){
+            sensors.registerListener(this,rotation,SensorManager.SENSOR_DELAY_UI);
+        }
+        boolean googleReady=false;
+        try{
+            googleReady=GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
+                ==ConnectionResult.SUCCESS;
+        }catch(Exception ignored){}
+        if(!googleReady)return;
+        try{
+            fusedOrientationClient=LocationServices.getFusedOrientationProviderClient(this);
+            fusedOrientationListener=(DeviceOrientation orientation)->{
+                if(!orientationRunning)return;
+                double heading=orientation.getHeadingDegrees();
+                double error=orientation.hasConservativeHeadingErrorDegrees()
+                    ?orientation.getConservativeHeadingErrorDegrees()
+                    :orientation.getHeadingErrorDegrees();
+                lastFusedOrientationMs=SystemClock.elapsedRealtime();
+                sendCompassHeading(heading,error,"fused",Double.isFinite(error)&&error<=25d);
+            };
+            DeviceOrientationRequest request=new DeviceOrientationRequest.Builder(100000L).build();
+            fusedOrientationClient.requestOrientationUpdates(request,(Runnable command)->{handler.post(command);},fusedOrientationListener)
+              .addOnFailureListener(failure->{
+                  // Keep the platform sensor registered as a low-trust fallback.
+                  fusedOrientationListener=null;
+              });
+        }catch(Exception ignored){fusedOrientationClient=null;fusedOrientationListener=null;}
+    }
+    private void stopOrientationTracking(){
+        orientationRunning=false;
+        if(sensors!=null)sensors.unregisterListener(this);
+        if(fusedOrientationClient!=null&&fusedOrientationListener!=null){
+            try{fusedOrientationClient.removeOrientationUpdates(fusedOrientationListener);}
+            catch(Exception ignored){}
+        }
+        fusedOrientationListener=null;
+        lastFusedOrientationMs=0;
+    }
     @Override public void onSensorChanged(SensorEvent event){
-        if(event.sensor.getType()!=Sensor.TYPE_ROTATION_VECTOR&&
+        if(!orientationRunning)return;
+        if(event.sensor.getType()!=Sensor.TYPE_ROTATION_VECTOR &&
            event.sensor.getType()!=Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)return;
+        if(lastFusedOrientationMs>0 &&
+           SystemClock.elapsedRealtime()-lastFusedOrientationMs<5000L)return;
         float[] matrix=new float[9],orientation=new float[3];
         SensorManager.getRotationMatrixFromVector(matrix,event.values);
         SensorManager.getOrientation(matrix,orientation);
         double heading=Math.toDegrees(orientation[0]);
-        if(latest!=null&&recent(latest)){
-            GeomagneticField field=new GeomagneticField((float)latest.getLatitude(),
-                (float)latest.getLongitude(),(float)latest.getAltitude(),System.currentTimeMillis());
+        // The platform rotation vector is magnetic-north based. Add the local
+        // declination only here; FOP already includes it when available.
+        if(Double.isFinite(compassLat)&&Double.isFinite(compassLon)){
+            GeomagneticField field=new GeomagneticField(
+                (float)compassLat,(float)compassLon,0f,System.currentTimeMillis());
             heading+=field.getDeclination();
         }
-        heading=((heading%360)+360)%360;
-        js(String.format(Locale.US,"window.nativeHeading(%.2f);",heading));
+        // Rotation-vector accuracy quality is vendor-dependent: display the
+        // source as a fallback and require HIGH before permitting an arrow.
+        int accuracy=event.accuracy;
+        if(accuracy<0||accuracy>SensorManager.SENSOR_STATUS_ACCURACY_HIGH)
+            accuracy=fallbackSensorAccuracy;
+        boolean trusted=accuracy==SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
+        sendCompassHeading(heading,trusted?25d:180d,"android",trusted);
     }
-    @Override public void onAccuracyChanged(Sensor sensor,int accuracy){}
-
+    @Override public void onAccuracyChanged(Sensor sensor,int accuracy){
+        if(sensor==rotation)fallbackSensorAccuracy=accuracy;
+    }
     @Override protected void onResume(){
         super.onResume();
-        if(sensors!=null&&rotation!=null)sensors.registerListener(this,rotation,SensorManager.SENSOR_DELAY_UI);
+        startOrientationTracking();
         if(webView!=null)webView.onResume();
         if(nativeReady)beginLocation();
     }
     @Override protected void onPause(){
         stopSources();
-        if(sensors!=null)sensors.unregisterListener(this);
+        stopOrientationTracking();
         if(webView!=null)webView.onPause();
         super.onPause();
     }

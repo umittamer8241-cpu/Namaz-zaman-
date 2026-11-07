@@ -45,6 +45,7 @@ jobs:
           node tools/validate_esma_i18n.js
           node tools/validate_prayer_calendar.js
           node tools/validate_royal_compass.js
+          node tools/validate_compass_heading.js
       - name: Play önizleme APK ve AAB derle
         run: gradle --no-daemon --stacktrace :app:assembleDebug :app:bundleRelease
       - name: İç test APK
