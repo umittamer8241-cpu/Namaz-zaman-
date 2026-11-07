@@ -25,11 +25,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   const manualGood=state.manual&&state.source==='manual'&&validLocation()&&rescue.hidden;
   const schedule=document.querySelectorAll('#schedule .time-tile[data-prayer]').length===6;
   document.getElementById('gps-button').click();
-  const cleared=!state.manual&&!validLocation()&&!rescue.hidden;
+  const preserved=!state.manual&&validLocation()&&rescue.hidden;
   nativeLocation(3.139,101.686,10000,false,Date.now(),'network');
   const approximate=validLocation()&&!rescue.hidden&&
      document.getElementById('location-rescue-message').textContent.includes('10');
-  const result={before,opened,manualGood,schedule,cleared,approximate,
+  const result={before,opened,manualGood,schedule,preserved,approximate,
     permissionCount,settingsCount,gpsRequests,calendar:!!document.getElementById('nz-month-calendar')};
   const out=document.createElement('output');out.id='location-qa';
   out.textContent='LOCATIONQA_'+JSON.stringify(result);document.body.appendChild(out);
@@ -45,7 +45,7 @@ try{
  const html=run.stdout||'',match=/LOCATIONQA_(\{.*?\})<\/output>/.exec(html);
  if(!match)throw Error('Missing result: '+(html.match(/data-location-error="([^"]+)"/)||[])[1]+' '+(run.stderr||'').slice(-400));
  const v=JSON.parse(match[1].replaceAll('&quot;','"').replaceAll('&amp;','&'));
- for(const key of ['before','opened','manualGood','schedule','cleared','approximate','calendar'])
+ for(const key of ['before','opened','manualGood','schedule','preserved','approximate','calendar'])
     if(!v[key])throw Error('Broken '+key+' '+JSON.stringify(v));
  if(v.permissionCount!==1||v.settingsCount!==1||v.gpsRequests!==1)
     throw Error('Missing Android bridge actions '+JSON.stringify(v));

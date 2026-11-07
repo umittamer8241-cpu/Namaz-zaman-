@@ -819,8 +819,21 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         }
     }
     @Override public void onBackPressed(){
-        if(webView!=null&&webView.canGoBack())webView.goBack();
-        else super.onBackPressed();
+        if(webView==null){super.onBackPressed();return;}
+        // Respect the premium in-app location sheet before navigating away
+        // or closing the Android activity. All UI access remains on main.
+        webView.evaluateJavascript(
+            "Boolean(window.NamazLocationHub&&window.NamazLocationHub.isOpen&&window.NamazLocationHub.isOpen())",
+            state->{
+                if("true".equals(state)){
+                    webView.evaluateJavascript("window.NamazLocationHub.close()",null);
+                }else if(webView.canGoBack()){
+                    webView.goBack();
+                }else{
+                    MainActivity.super.onBackPressed();
+                }
+            }
+        );
     }
     @Override protected void onDestroy(){
         stopSources();

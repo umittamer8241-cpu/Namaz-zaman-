@@ -123,3 +123,14 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - GPS yeni bir çözüm döndürürse bekleyen yeniden başlatma işareti temizlenir. Kaydedilmiş koordinatlar ve namaz vakitleri etkilenmez.
 - Telefonun genel Konum ayarı veya Kesin Konum izni kapalıysa açık hata gösterilir; uygulama izin almadan uydu GPS'i çalıştırdığını iddia etmez.
 - Gerçek cihazda doğrulama için uygulamanın `Konum tanılama ve onarım` panelinde Kesin/Yaklaşık izin, Uydu GPS, Ağ Konumu ve Google servisi satırları karşılaştırılmalıdır.
+
+
+## v0.22 — Premium Plus tek düğmeli Konum Merkezi
+
+- Ana ekranda önceki üç bağımsız konum kartı yerine **tek Konum Merkezi düğmesi** bulunur. Düğme açıldığında tüm konum izinleri, kesin konum, akıllı GPS/ağ araması, uydu GPS, manuel koordinat, tanı raporu, hesaplama yöntemi ve gemi saati ayarı bir alt panelde toplanır.
+- Panel normalde gizlidir; sayfayı gereksiz yere uzatmaz. Kapat düğmesi, karartılmış dış alana dokunma, Escape veya Android geri tuşu ile kapanır. Klavye odağı giriş düğmesine geri döner.
+- Birbirinin aynı olan iki uydu GPS düğmesi birleştirildi. **Mevcut kayıtlı konum ve namaz vakitleri GPS yenilemesinde silinmez.**
+- Pusulada altın tek ok ve canlı sensör doğruluğu görünür kalır; gölge/gerçek kuzey/harici heading/görünür kara işareti/çevrim içi doğrulama tek Kıble araçları başlığı altında gizlenebilir. Telefonların sensörlerinin doğruluğu gerçek saha testiyle ayrıca doğrulanmalıdır.
+- Aylık namaz takvimi dokunularak açılan, geçmiş namazları düzenleme olanağı taşıyan bir karta; sureler ve Esmaül Hüsna da tek açılır öğrenme bölümüne dönüştürülür. Günlük dua, günlük namaz vakitleri ve ayet/hadis kartları ana ekranda yerinde kalır.
+- Yalnızca CSS/SVG tabanlı premium safir-altın görsellik kullanılır; harici font/görsel indirilmez, arka plan internet sorgusu eklenmez. 12 uygulama dili desteklenir.
+- Android test APK normal com.geminamaz.app paket kimliğindedir. fullPreview test anahtarıyla imzalanır; Google Play yayını yapılmaz. Test anahtarları GitHub Actions oturumları arasında değişebileceğinden daha eski debug APK'larla güncelleme imzası uyuşmayabilir: kayıtlı verileri korumadan uygulamayı silmeyin.

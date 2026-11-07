@@ -42,6 +42,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 @media(max-width:410px){.compass-card{grid-template-columns:43% 1fr;gap:9px}.panel{padding:16px}.qval{font-size:35px}.schedule{gap:7px}.time-tile{padding:11px 3px}.app-title{font-size:24px}}@media(max-width:340px){.compass-card{grid-template-columns:1fr}.dial{max-width:220px;margin:auto}.settings{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="learning_styles.css" />
+<link rel="stylesheet" href="premium_shell.css" />
 </head>
 <body>
 <main>
@@ -50,34 +51,26 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
   <div class="topline"><span id="today">Tarih alınıyor…</span><span id="clock">--:--:--</span></div>
   <div class="loc-sub" id="time-status" style="margin-bottom:12px;color:var(--mint)">Saat dilimi kontrol ediliyor...</div>
   <section class="panel hero" aria-label="Sıradaki namaz vakti"><div class="small-label">Sıradaki namaz vakti</div><div class="nextname" id="next-name">Konum bekleniyor</div><div class="bigtime" id="next-time">--:--</div><div class="subtext">Kalan süre: <span class="countdown" id="countdown">--:--:--</span></div><div id="hero-location-status" class="hero-loc-status">Google ve GPS konumu aranıyor...</div></section>
-  <section id="location-rescue" class="location-rescue" aria-label="Konum bulma yardımcısı">
-    <strong id="location-rescue-title">Konum bulunamadıysa</strong>
-    <p id="location-rescue-message">Telefonun konum izinlerini kontrol et veya koordinat gir.</p>
-    <div class="location-rescue-actions">
-      <button type="button" id="location-precise-button">Kesin Konum İzni</button>
-      <button type="button" id="location-manual-shortcut" class="secondary">Koordinat Gir</button>
-      <button type="button" id="location-app-settings-button" class="secondary">Uygulama İzinleri</button>
-      <button type="button" id="location-last-known" class="secondary" hidden>Son Kaydedilen Konumu Kullan</button>
-    </div>
+  <!-- Single premium entry point: every location control lives in the sheet. -->
+  <section class="nz-location-entry" aria-label="Konum merkezi">
+    <button type="button" id="nz-location-hub-open" class="nz-location-hub-launch" aria-haspopup="dialog" aria-controls="nz-location-hub" aria-expanded="false">
+      <span class="nz-location-hub-glyph" aria-hidden="true">⌖</span>
+      <span class="nz-location-hub-launch-copy">
+        <strong id="nz-location-hub-button-label">Konum Merkezi</strong>
+        <small id="nz-location-hub-caption">Konum ve gemi saati ayarlarını yönet</small>
+      </span>
+      <span class="nz-location-hub-chevron" aria-hidden="true">›</span>
+    </button>
   </section>
-  <details class="nz-location-diagnostic-panel" id="nz-location-diagnostic-panel" open>
-    <summary id="nz-location-diagnostic-title">Konum tanılama ve onarım</summary>
-    <p id="nz-location-diagnostic-intro">GPS ve izin durumunu telefondan kontrol et.</p>
-    <button id="nz-location-smart" type="button">Akıllı konum bul (GPS + ağ)</button>
-    <button id="nz-location-diagnostic-refresh" class="secondary" type="button">Telefon konum durumunu kontrol et</button>
-    <div id="nz-location-diagnostic-results"></div>
-    <p id="nz-location-diagnostic-hint" aria-live="polite">Konum izinleri kontrol ediliyor…</p>
-    <button id="nz-location-diagnostic-copy" class="secondary" type="button">Konum raporunu kopyala</button>
-    <span id="nz-location-diagnostic-copy-status" aria-live="polite"></span>
-  </details>
   <div class="sectionhead">Bugünün vakitleri <span>Yalnızca günlük</span></div>
   <div id="nz-prayer-tracker" class="nz-prayer-inline" aria-label="Bugünün vakitleri ve namaz takibi">
     <div class="nz-prayer-today-head"><span id="nz-prayer-summary-label">✓ Namaz takibi · Kıldığın vakti işaretle</span><strong id="nz-prayer-progress">Kılınan: 0/5</strong></div>
     <section class="schedule" id="schedule" aria-label="Günlük namaz vakitleri ve namaz takibi"></section>
   </div>
-  <section class="panel nz-calendar-panel" aria-label="Monthly prayer tracking">
+  <details class="panel nz-calendar-panel nz-calendar-drawer" id="nz-calendar-drawer" aria-label="Monthly prayer tracking">
+    <summary id="nz-calendar-label">◈ Aylık Namaz Çizelgesi <span>Günleri düzenlemek için aç</span></summary>
     <div id="nz-month-calendar" class="nz-month-calendar" aria-live="off"></div>
-  </section>
+  </details>
   <section class="panel compass-card compass-proplus" aria-label="Kıble pusulası">
     <div class="pro-compass-shell">
       <div class="dial premium-dial pro-dial ornate-compass-dial" aria-label="Canlı kıble yönünü gösteren tek ok">
@@ -134,7 +127,12 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       </div>
       <div class="compass-status" id="compass-status">Pusula sensörü bekleniyor…</div>
       <div class="compass-quality" id="compass-quality" aria-live="polite">Sensör doğruluğu kontrol ediliyor…</div>
-      <details id="sun-shadow-method" class="sun-shadow-method" open>
+      <button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button>
+    </div>
+      <details id="nz-compass-tools" class="nz-compass-tools">
+        <summary id="nz-compass-tools-label">◈ Kıble doğrulama ve alternatif yöntemler</summary>
+        <p id="nz-compass-tools-hint">Pusula şüpheliyse gölge, gerçek kuzey veya bağımsız çevrim içi kontrolü kullan.</p>
+      <details id="sun-shadow-method" class="sun-shadow-method">
         <summary id="sun-shadow-title">☀ Sensörsüz kıble — Gölge yöntemi</summary>
         <p id="sun-shadow-instructions">Dik bir nesnenin gölgesinin UZANDIĞI yöne telefonun üst kenarını doğrult. Telefon yatay dururken Gölgeye hizaladım düğmesine bas.</p>
         <div id="sun-shadow-status" class="sun-shadow-status" aria-live="polite">Güneşin konumu hesaplanıyor…</div>
@@ -189,10 +187,42 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
         <button type="button" class="secondary" id="compass-diagnostics-copy">Tanı raporunu kopyala</button>
         <div id="compass-diagnostics-copy-status" class="loc-sub"></div>
       </details>
-      <button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button>
+      </details>
+  </section>
+  <!-- Fixed sheet, not part of the scroll height when closed. -->
+  <div id="nz-location-hub" class="nz-location-hub" hidden aria-hidden="true">
+    <div class="nz-location-hub-backdrop" id="nz-location-hub-backdrop"></div>
+    <section id="nz-location-hub-sheet" class="nz-location-hub-sheet" role="dialog" aria-modal="true" aria-labelledby="nz-location-hub-title" tabindex="-1">
+      <div class="nz-location-hub-header">
+        <div class="nz-location-hub-heading">
+          <span class="nz-location-hub-kicker" id="nz-location-hub-kicker">NAMAZ ZAMANI • KONUM</span>
+          <h2 id="nz-location-hub-title">Konum Merkezi</h2>
+          <p id="nz-location-hub-intro">GPS, kesin konum, koordinat, gemi saati ve tanılama</p>
+        </div>
+        <button type="button" id="nz-location-hub-close" class="nz-location-hub-close" aria-label="Konum Merkezini kapat">×</button>
+      </div>
+      <div class="nz-location-hub-body">
+  <section id="location-rescue" class="location-rescue" aria-label="Konum bulma yardımcısı">
+    <strong id="location-rescue-title">Konum bulunamadıysa</strong>
+    <p id="location-rescue-message">Telefonun konum izinlerini kontrol et veya koordinat gir.</p>
+    <div class="location-rescue-actions">
+      <button type="button" id="location-precise-button">Kesin Konum İzni</button>
+      <button type="button" id="location-manual-shortcut" class="secondary">Koordinat Gir</button>
+      <button type="button" id="location-app-settings-button" class="secondary">Uygulama İzinleri</button>
+      <button type="button" id="location-last-known" class="secondary" hidden>Son Kaydedilen Konumu Kullan</button>
     </div>
   </section>
-  <section class="panel location" id="location-detail" aria-label="Konum ayarları"><div class="small-label">Konum • Google konum servisi → GPS</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="reset-button" class="secondary">Uydu GPS ile yenile</button><button type="button" id="location-network-button" class="secondary">Google/ağ konumu (isteğe bağlı)</button><button type="button" id="location-settings-button" class="secondary">Konum ayarları</button></div>
+  <details class="nz-location-diagnostic-panel" id="nz-location-diagnostic-panel" open>
+    <summary id="nz-location-diagnostic-title">Konum tanılama ve onarım</summary>
+    <p id="nz-location-diagnostic-intro">GPS ve izin durumunu telefondan kontrol et.</p>
+    <button id="nz-location-smart" type="button">Akıllı konum bul (GPS + ağ)</button>
+    <button id="nz-location-diagnostic-refresh" class="secondary" type="button">Telefon konum durumunu kontrol et</button>
+    <div id="nz-location-diagnostic-results"></div>
+    <p id="nz-location-diagnostic-hint" aria-live="polite">Konum izinleri kontrol ediliyor…</p>
+    <button id="nz-location-diagnostic-copy" class="secondary" type="button">Konum raporunu kopyala</button>
+    <span id="nz-location-diagnostic-copy-status" aria-live="polite"></span>
+  </details>
+  <section class="panel location" id="location-detail" aria-label="Konum ayarları"><div class="small-label">Konum • Google konum servisi → GPS</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="location-network-button" class="secondary">Google/ağ konumu (isteğe bağlı)</button><button type="button" id="location-settings-button" class="secondary">Konum ayarları</button></div>
     <details id="manual-location-details"><summary>GPS çalışmazsa koordinatı elle gir</summary><div class="manual"><label>Enlem (−90 … 90)<input id="latitude" type="number" step="any" placeholder="3.13900" /></label><label>Boylam (−180 … 180)<input id="longitude" type="number" step="any" placeholder="101.68690" /></label><button id="manual-button" type="button">Bu koordinatı kullan</button></div></details>
     <div class="settings"><label>Hesaplama yöntemi<select id="method"><option value="MWL">Genel (18° / 17°)</option><option value="JAKIM">JAKIM yaklaşık (18° / 18°)</option></select></label><label>İkindi hesabı<select id="asr-method"><option value="1">Standart</option><option value="2">Hanefî</option></select></label></div>
     <details open><summary>⏰ Saat dilimi (gemi saati için önemli)</summary>
@@ -202,9 +232,20 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       </div><p class="loc-sub">Gemi saati, telefon saat dilimi ve boylama göre otomatik deniz saati farklı olabilir. Geminin kullandığı saat için UTC farkını ayarla. Bu ayar namaz vakitlerinin gösterimini de değiştirir.</p>
     </details>
   </section>
+      </div>
+      <div class="nz-location-hub-footer">
+        <span id="nz-location-hub-footnote">Konum güncellemeleri yalnızca isteğinle internet kullanır.</span>
+      </div>
+    </section>
+  </div>
   <section class="panel location" id="nz-dua-learning" aria-label="Daily supplication"></section>
+  <details class="nz-study-drawer" id="nz-study-drawer">
+    <summary id="nz-study-label">◈ Sureler ve Esmaül Hüsna</summary>
+    <div class="nz-study-drawer-body">
   <section class="panel location" id="nz-surah-learning" aria-label="Prayer surah memorization"></section>
   <section class="panel location" id="nz-esma-learning" aria-label="Beautiful names of Allah"></section>
+    </div>
+  </details>
   <section class="wisdom-stack" aria-label="Daily Quran verse and related hadith">
     <div class="wisdom-box" id="verse-card">
       <div class="wisdom-head"><strong id="verse-heading">Günün Ayeti</strong><span id="verse-ref">Kur'an</span></div>
@@ -217,12 +258,13 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
     </div>
     <p id="wisdom-explain" class="wisdom-caption">Anlam özeti · kaynakları kontrol edebilirsiniz</p>
   </section>
-  <p class="note">Google Haritalar uygulaması veya Google Maps API anahtarı gerekmez; Google Play Hizmetleri üzerinden Wi-Fi/ağ destekli konum alınmaya çalışılır. <b>Gemi uydu interneti kendi başına gerçek gemi koordinatını vermez.</b> Açık denizde ağ konumu yoksa GPS veya manuel koordinat gereklidir. Vakitler seçilen saat dilimine ve doğrulanmış koordinatlara göre <b>internetsiz yaklaşık astronomik hesapla</b> belirlenir; resmî veya bölgesel takvimlerle belirgin dakika farkları olabilir. Gemide ilerledikçe konum yenilenir. Kıble pusulası için telefonu mümkünse düz tut; metal yüzeyler, gemi donanımı ve manyetik sapma yönü etkileyebilir. <span class="warn">GPS alınamazsa önceki kayıt güncel konum sayılmaz.</span></p>
+  <details class="nz-help-drawer"><summary id="nz-help-label">Bilgi ve kullanım notları</summary><p class="note">Google Haritalar uygulaması veya Google Maps API anahtarı gerekmez; Google Play Hizmetleri üzerinden Wi-Fi/ağ destekli konum alınmaya çalışılır. <b>Gemi uydu interneti kendi başına gerçek gemi koordinatını vermez.</b> Açık denizde ağ konumu yoksa GPS veya manuel koordinat gereklidir. Vakitler seçilen saat dilimine ve doğrulanmış koordinatlara göre <b>internetsiz yaklaşık astronomik hesapla</b> belirlenir; resmî veya bölgesel takvimlerle belirgin dakika farkları olabilir. Gemide ilerledikçe konum yenilenir. Kıble pusulası için telefonu mümkünse düz tut; metal yüzeyler, gemi donanımı ve manyetik sapma yönü etkileyebilir. <span class="warn">GPS alınamazsa önceki kayıt güncel konum sayılmaz.</span></p></details>
 <p id="nz-developer-note"></p>
 <p style="text-align:center;margin:12px 0 26px"><a id="privacy-policy-link" href="privacy-policy.html" style="color:#bcd8d7;text-decoration:underline">Gizlilik Politikası</a></p></main>
 <script src="daily_i18n.js"></script>
 <script src="full_ui_i18n.js"></script>
 <script src="location_diagnostics.js"></script>
+<script src="location_hub.js"></script>
 <script src="daily_dua_library.js"></script>
 <script src="learning_content.js"></script>
 <script src="esma_i18n.js"></script>
@@ -430,11 +472,11 @@ function renderLocationRescue(){
  $('location-last-known').textContent=trl[5];
  const offline=offlineWords();
  $('gps-button').textContent=offline[3];
- $('reset-button').textContent=offline[3];
  $('location-network-button').textContent=offline[4];
 }
 function updateLocationPanel(){
  updateHeroLocation();
+ window.NamazLocationHub?.refresh?.();
  renderLocationRescue();
  if(state.lat===null){
    $('coords').textContent=tr('noCoords');
@@ -940,6 +982,13 @@ function startCompass(){
 function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();updateNeedle();renderSunShadow();renderManualReference();renderQiblaOnline();}
 window.NamazApp={
  activeDayKey:function(){return localDateKey(displayDateParts(new Date()));},
+ locationHubStatus:function(){
+   return {
+     available:validLocation(),stale:locationIsStale(),
+     manual:state.source==='manual',source:state.source,
+     accuracy:state.accuracy
+   };
+ },
  prepareLocationSearch:function(){
   // Allow real GPS to replace an earlier manually entered fallback coordinate.
   state.manual=false;
@@ -954,7 +1003,7 @@ window.NamazApp={
   if(!Number.isFinite(when))return {allowed:false,reason:'unknown'};
   return {allowed:when<=stamp,reason:when<=stamp?'ready':'future',at:when};
  },
- refreshLocale:function(){updateLocationPanel();updateTimeStatus(new Date());updateNeedle();renderSunShadow();renderManualReference();renderQiblaOnline();}
+ refreshLocale:function(){updateLocationPanel();updateTimeStatus(new Date());updateNeedle();renderSunShadow();renderManualReference();renderQiblaOnline();window.NamazLocationHub?.refresh?.();}
 };
 function init(){
   if(window.NamazI18n)window.NamazI18n.init();
@@ -1003,7 +1052,6 @@ function init(){
     });
   }
   $('gps-button').addEventListener('click',()=>startGPS('satellite'));
-  $('reset-button').addEventListener('click',()=>startGPS('satellite'));
   $('location-network-button').addEventListener('click',()=>startGPS('network'));
   $('location-settings-button').addEventListener('click',()=>{
     if(window.GemiNative&&typeof window.GemiNative.openLocationSettings==='function')window.GemiNative.openLocationSettings();

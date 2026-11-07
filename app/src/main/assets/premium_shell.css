@@ -1,0 +1,157 @@
+/* Namaz Zamanı v0.22 · Premium Plus | 100% CSS / offline visual layer */
+:root{
+ --nz-ink:#061924;--nz-sapphire:#0a2736;--nz-sapphire-2:#123a43;
+ --nz-gold:#eed19a;--nz-gold-hot:#fff5cf;--nz-gold-deep:#987443;
+ --nz-mint:#91e3cc;--nz-stroke:#6a786a;
+}
+html{scroll-behavior:smooth}
+body{
+ background:
+  radial-gradient(ellipse 90% 22% at 60% -3%,#246c744d,transparent 85%),
+  radial-gradient(ellipse 72% 24% at -22% 68%,#0f665c35,transparent 82%),
+  linear-gradient(180deg,#081a28 0%,#071b29 50%,#071926 100%);
+}
+main{padding-top:19px;padding-bottom:max(31px,env(safe-area-inset-bottom))}
+header{margin-bottom:15px}
+.brand{letter-spacing:2.2px;font-size:10px;color:#a3e0d0}
+.app-title{font-size:clamp(24px,6.5vw,32px);font-weight:820;letter-spacing:-.65px;
+ text-shadow:0 2px 24px #d8ad6030}
+.offline{font-size:10px;background:#153b3980;border-color:#47785f70;max-width:43%;white-space:normal;text-align:center}
+.lang-switch{border-color:#816e4b88;background:linear-gradient(120deg,#102b3a,#0d2734);
+ box-shadow:inset 0 1px 0 #f2e0b519;margin-bottom:12px}
+.lang-switch select{border-color:#6a6d5b;background:#102839}
+.topline{font-size:12px}
+.panel.hero{border-color:#5f847c91;background:
+ radial-gradient(ellipse at 95% 6%,#2e716c40,transparent 55%),
+ linear-gradient(150deg,#123749,#0b2735 71%,#0b2630);
+ box-shadow:inset 0 1px 0 #e4f6dd29,0 17px 42px #0005}
+.hero .small-label{color:#c3d8cb;letter-spacing:2.2px}
+.hero .nextname{font-weight:850}
+.hero .bigtime{color:#f5dcaa;text-shadow:0 3px 26px #dcab624d}
+.hero-loc-status{background:#0e333d73;border-color:#5481757a;padding:9px 11px}
+.sectionhead{font-weight:800;letter-spacing:-.2px}
+.nz-location-entry{margin:13px 0 0}
+.nz-location-hub-launch{width:100%;display:flex;align-items:center;gap:15px;text-align:left;
+ border:1px solid #c3a473a6;border-radius:18px;min-height:77px;padding:13px 16px;
+ background:
+  linear-gradient(110deg,#ffd99517,transparent 42%),
+  linear-gradient(144deg,#143d41,#102d3c 55%,#162b33);
+ color:#fff2cc;box-shadow:inset 0 1px 0 #fff4c45c,0 8px 25px #0004;
+ position:relative;overflow:hidden;transition:transform .16s ease,border-color .16s ease}
+.nz-location-hub-launch:before{content:"";position:absolute;left:12px;right:12px;top:3px;height:1px;
+ background:linear-gradient(90deg,transparent,#fff0bd7d,transparent);pointer-events:none}
+.nz-location-hub-launch:active{transform:scale(.991)}
+.nz-location-hub-launch:focus-visible{outline:2px solid #ffdf97;outline-offset:3px}
+.nz-location-hub-glyph{display:grid;place-items:center;flex:none;width:46px;height:46px;
+ border-radius:15px;border:1px solid #e6c38d95;background:radial-gradient(circle at 30% 15%,#b7955b55,#113f3f 67%);
+ font-size:28px;line-height:1;color:#ffefbe;text-shadow:0 1px 11px #f0cb7977;
+ box-shadow:inset 0 1px 0 #fff3c67a,0 0 0 3px #071d28}
+.nz-location-hub-launch-copy{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.nz-location-hub-launch-copy strong{font-size:16px;line-height:1.3;font-weight:840;letter-spacing:.1px;color:#ffebb9}
+.nz-location-hub-launch-copy small{font-size:11px;font-weight:550;color:#bcd7d0;line-height:1.3}
+.nz-location-hub-chevron{font-size:32px;font-weight:400;line-height:1;color:#f4dca5}
+.nz-location-needs-attention .nz-location-hub-glyph{border-color:#efb78a}
+.nz-location-hub[hidden]{display:none!important}
+.nz-location-hub{position:fixed;inset:0;z-index:9000;display:flex;align-items:flex-end;
+ justify-content:center;padding:0;isolation:isolate}
+.nz-location-hub-backdrop{position:absolute;inset:0;background:#020c16ca;backdrop-filter:blur(9px);
+ -webkit-backdrop-filter:blur(9px)}
+.nz-location-hub-sheet{position:relative;z-index:1;width:min(100%,680px);
+ max-height:94vh;max-height:calc(100dvh - 16px);
+ display:flex;flex-direction:column;overflow:hidden;
+ background:radial-gradient(circle at 90% 0%,#3e786351,transparent 39%),linear-gradient(156deg,#163c48,#081f2d 65%,#071b29);
+ border:1px solid #bb965f;border-bottom:0;border-radius:28px 28px 0 0;
+ box-shadow:inset 0 1px 0 #fff0bf52,0 -18px 80px #000b}
+.nz-location-hub-sheet:focus{outline:none}
+.nz-location-hub-header{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;
+ padding:20px 18px 15px;border-bottom:1px solid #bca16e49;
+ box-shadow:inset 0 2px 0 #eed19a16;flex:none}
+.nz-location-hub-heading{min-width:0}
+.nz-location-hub-kicker{font-size:10px;font-weight:850;letter-spacing:2px;color:#a4e3d4}
+.nz-location-hub-heading h2{margin:5px 0;font-size:23px;font-weight:900;letter-spacing:-.6px;
+ background:linear-gradient(150deg,#fff8d7,#dab477 75%,#ffedd0);
+ -webkit-background-clip:text;background-clip:text;color:transparent}
+.nz-location-hub-heading p{margin:0;color:#c0d7cf;line-height:1.5;font-size:12px}
+.nz-location-hub-close{width:44px;height:44px;min-width:44px;padding:0;display:grid;place-items:center;
+ font-size:27px;font-weight:400;border-radius:14px;
+ color:#ffedbd;background:#163643;border:1px solid #c7a574}
+.nz-location-hub-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;padding:8px 15px 24px;scroll-padding-top:12px}
+.nz-location-hub-footer{flex:none;padding:11px 18px max(14px,env(safe-area-inset-bottom));
+ border-top:1px solid #c7ac7261;background:#092b34e0;
+ color:#a8cbbb;font-size:11px;text-align:center;line-height:1.4}
+body.nz-hub-modal-open{overflow:hidden;touch-action:none}
+body.nz-hub-modal-open .nz-location-hub-body{touch-action:pan-y}
+.nz-location-hub-body .location-rescue{margin:12px 0;padding:14px;box-shadow:0 4px 18px #0003}
+.nz-location-hub-body .nz-location-diagnostic-panel{margin:12px 0 6px;padding:12px}
+.nz-location-hub-body #location-detail{margin:12px 0;border:1px solid #796e55;border-radius:16px;padding:13px;
+ background:linear-gradient(145deg,#143846,#0c2534)}
+.nz-location-hub-body #location-detail .controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.nz-location-hub-body #location-detail .controls button{min-height:42px;margin:0;white-space:normal;line-height:1.4;font-size:12px;padding:9px}
+.nz-location-hub-body #location-detail details{border-top-color:#5b776d}
+.nz-location-hub-body #location-detail .settings{gap:9px}
+.nz-location-hub-body #location-detail .settings select{font-size:12px;padding:9px}
+.nz-location-hub-body #location-detail .loc-main{font-size:13px;color:#f1e0b7}
+.nz-location-hub-body #nz-location-diagnostic-panel:not([open]){min-height:48px}
+.nz-location-hub-body #nz-location-diagnostic-panel summary,
+.nz-location-hub-body #manual-location-details summary{font-size:14px}
+/* The main compass stays impressive while tools fold into a single control. */
+.compass-card.compass-proplus{border-color:#c6a364b0;box-shadow:inset 0 1px 0 #fff0b74b,0 22px 44px #0007;
+ background:radial-gradient(circle at 0 0,#337f7c42,transparent 60%),linear-gradient(144deg,#113443,#081c2b 75%)}
+.compass-card.compass-proplus .pro-compass-caption{color:#eedbad}
+.nz-compass-tools{grid-column:1/-1;margin-top:3px;border:1px solid #ac86517a;border-radius:15px;
+ background:linear-gradient(138deg,#133941,#102733);padding:13px 14px}
+.nz-compass-tools>summary{color:#f2d39a;line-height:1.5;font-size:13px;font-weight:850}
+.nz-compass-tools>p{font-size:11px;line-height:1.55;color:#bdd7d1;margin:9px 0}
+.nz-compass-tools>details{margin-top:10px}
+.nz-compass-tools #compass-calibrate{display:block;width:100%;margin-top:12px}
+.nz-compass-tools .compass-quality{color:#e1d7aa}
+.nz-study-drawer{margin:15px 0 0;border:1px solid #797754;border-radius:18px;
+ padding:15px 14px;background:linear-gradient(145deg,#13353f,#0b2635);
+ box-shadow:inset 0 1px 0 #f9e4ad26}
+.nz-study-drawer>summary{font-size:15px;font-weight:850;color:#ebd4a4;line-height:1.5}
+.nz-study-drawer-body{margin-top:14px}
+.nz-study-drawer .panel{margin-top:12px;padding:15px}
+.nz-help-drawer{margin:19px 2px 9px;padding:11px;border:1px solid #506e70;border-radius:12px;background:#0b2531}
+.nz-help-drawer>summary{font-size:12px;color:#c0d2c9}
+.nz-help-drawer .note{margin:9px 0 0}
+.nz-calendar-panel{box-shadow:inset 0 1px 0 #e7d6a02f,0 14px 33px #0003;border-color:#a18c5e9e}
+.wisdom-box{box-shadow:inset 0 1px 0 #f2d9a72b,0 12px 30px #0003}
+/* Consistent, accessible touch areas and reduced motion. */
+button,summary{touch-action:manipulation}
+@media(min-width:681px){
+ .nz-location-hub{align-items:center;padding:20px}
+ .nz-location-hub-sheet{border-bottom:1px solid #bb965f;border-radius:25px;max-height:calc(100dvh - 40px)}
+ .nz-location-hub-footer{padding-bottom:14px}
+}
+@media(max-width:410px){
+ .nz-location-hub-launch{gap:11px;padding:10px 12px;min-height:72px}
+ .nz-location-hub-glyph{height:42px;width:42px;border-radius:13px}
+ .nz-location-hub-launch-copy strong{font-size:15px}
+ .nz-location-hub-header{padding:17px 14px 13px}
+ .nz-location-hub-body{padding:6px 10px 18px}
+ .nz-compass-tools{padding:11px}
+ .lang-switch{padding:7px 9px}
+}
+@media(max-width:350px){
+ .nz-location-hub-body #location-detail .controls{grid-template-columns:1fr}
+ .nz-location-hub-launch-copy small{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ .nz-location-hub-launch{transition:none}
+ .premium-dial.pro-dial .needle-wrap{transition:none}
+}
+
+/* Compact monthly planner: open on demand, retain date editing. */
+.nz-calendar-drawer{border-top:1px solid #b89964;margin-top:13px}
+.nz-calendar-drawer>summary{list-style:none;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+ padding:0 2px;color:#f4d8a2;font-size:15px;font-weight:840;line-height:1.5}
+.nz-calendar-drawer>summary::-webkit-details-marker{display:none}
+.nz-calendar-drawer>summary span{font-weight:500;font-size:11px;color:#b4ccc2;margin-left:auto}
+.nz-calendar-drawer[open]>summary{padding-bottom:12px;border-bottom:1px solid #8c79594a;margin-bottom:12px}
+.nz-calendar-drawer:not([open]){padding:17px 14px;border-radius:18px}
+.nz-calendar-drawer .nz-month-calendar{padding:3px 0 0}
+@media(max-width:380px){
+ .nz-calendar-drawer>summary span{margin-left:0;flex-basis:100%;padding-left:22px}
+}
