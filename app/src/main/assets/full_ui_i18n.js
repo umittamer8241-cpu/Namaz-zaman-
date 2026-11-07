@@ -40,6 +40,7 @@ function textNode(selector,value){
 }
 function apply(){
  const code=locale();document.body.dir=(code==="ar"||code==="ur")?"rtl":"ltr";document.documentElement.lang=code;
+ set("#privacy-policy-link",({"tr":"Gizlilik Politikası","en":"Privacy Policy","ms":"Dasar Privasi","id":"Kebijakan Privasi","ar":"سياسة الخصوصية","ru":"Политика конфиденциальности","fr":"Politique de confidentialité","de":"Datenschutzerklärung","es":"Política de privacidad","pt":"Política de Privacidade","az":"Məxfilik siyasəti","ur":"رازداری کی پالیسی"})[code]||"Privacy Policy");
  set(".brand",t("brand"));
  set(".compass-card .qsub",t("qiblaWaiting"));
  set(".location details:last-of-type p.loc-sub",t("timeHelp"));
