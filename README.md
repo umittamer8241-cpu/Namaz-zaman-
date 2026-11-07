@@ -1,4 +1,4 @@
-# Namaz Zamanı v0.7 — Çok Dilli Günlük Ayet ve Hadis
+# Namaz Zamanı v0.13 — Namaz Takvimi ve Pro Plus Pusula
 
 ## İçerik
 - 12 dil: Türkçe, İngilizce, Malayca, Endonezce, Arapça, Rusça, Fransızca, Almanca, İspanyolca, Portekizce, Azerbaycanca, Urduca.
@@ -30,3 +30,13 @@ Bu kodu çalıştırmak için APK test derlemesi yeterli; **Google Play yayın p
 Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetleri / GPS) çağırır. Kullanıcının konumunu kendi sunucumuza aktaran bir sistem bulunmaz; ancak Google Play Hizmetleri kendi konum işlemleri için ağ kullanabilir. Geçerli konum yerel cihazda saklanır. İnternet/gemi Wi-Fi tek başına gemi koordinatını garanti etmez.
 
 İbadet vakitleri resmî bölgesel takvim yerine geçmeyen astronomik yaklaşık hesaptır; cihazın/geminin zaman dilimi doğru seçilmelidir.
+
+
+## Güncel test sürümü v0.13
+
+- Aylık takip takvimi: beş vakit/gün ilerleme, geçmiş gün ayrıntısı ve geleceğe kayıt kilidi.
+- Bugünkü namaz işaretleri için konumu doğrulanmış, hesaplanmış vakit şartı.
+- Pro Plus kıble pusulası; sensör varsa canlı yön ve Kâbe farkı.
+- Ezan sesleri, dinleme sekmeleri, arka plan alarmı ve ses servisleri projeden çıkarıldı.
+- 12 dilde günlük tek Esmaül Hüsna; 702 dua ve dört kısa sure ses kaydı korunur.
+- Bu APK Android test önizlemesidir. Gerçek cihaz/sensör ve dinî içerik QA tamamlanmadan Play Store yayını yapılmaz.

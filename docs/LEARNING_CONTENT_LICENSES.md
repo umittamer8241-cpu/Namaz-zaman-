@@ -25,7 +25,7 @@ Her iki dosya da ilgili Commons sayfasında yükleyenin kendi çalışması olar
 
 ## Özellik sınırları / final öncesi kontrol
 
-- Dört surenin (Fâtiha, İhlâs, Felak, Nâs) paket içi CC0 sesleri kullanıcı dokunduğunda çalar; 1, 3 veya 5 tekrar ayarı vardır. Otomatik ezan ayrı bir Android ses/alarm servisidir.
+- Dört surenin (Fâtiha, İhlâs, Felak, Nâs) paket içi CC0 sesleri kullanıcı dokunduğunda çalar; 1, 3 veya 5 tekrar ayarı vardır. Ezan ses dosyaları, menüleri ve arka plan otomatik çalma sistemi v0.13 itibarıyla tamamen kaldırıldı; bu sesler yalnızca sure okumaya aittir.
 - 702 günlük dua için Android'in Arapça **metin seslendirme motoru** ile Okunuşu dinle/durdur eklendi. Bu bir hafız kaydı / tecvidli Kur'an tilaveti **değildir**. Arabic TTS ses paketi bulunmayan telefonda çalışmayabilir, bu durumda kurulum ve kalite testi gerekir. İbadet için örnek profesyonel ses kaydı yerine geçmez.
 - Esmaül Hüsna yalnızca bir isim/gün gösterir; 99 isim sırasıyla döner. Öğrenildi işaretlerinin eski kayıtları saklanır.
 - Beş namaz takibi ayrı panel yerine günlük vakit kartlarında işaretlenir; geçmiş cihaz kayıtları korunur.
@@ -33,5 +33,14 @@ Her iki dosya da ilgili Commons sayfasında yükleyenin kendi çalışması olar
 - Kullanıcının verileri cihazdan silinirse bu işaretler de silinebilir; yedekleme henüz yok.
 - Dört surenin Arapça imlası, ayet sayısı, yaklaşık Türkçe sesletimi, harf/tecvid hassasiyeti ve duanın kelime kelime doğruluğu, gerçek dinî içerik uzmanı tarafından bağımsız şekilde **son kalite kontrolü** gerektirir.
 - **v0.12:** Esmaül Hüsna başlığı, günlük tek isim açıklaması, öğrenme düğmeleri, kaynak metni ve 99 ismin kısa anlamları Türkçe, İngilizce, Malayca, Endonezce, Arapça, Rusça, Fransızca, Almanca, İspanyolca, Portekizce, Azerbaycanca ve Urduca için ayrı ayrı eklendi. Dil değişince aynı günün ismi korunur, metinler anında yerelleşir ve öğrenme kayıtları silinmez. Sesli sure ve günlük dua bölümlerinin Türkçe/İngilizce ağırlıklı açıklamaları ayrı bir tam yerelleştirme işi olarak açık kalır.
-- Dünya birincisi ezan okuyucularının izin bekleyen kayıtları bu modüle veya APK/AAB dosyasına eklenmedi.
+- Bu sürümde ezan sesi, ezan ayar menüsü, ezan oynatma servisi veya otomatik alarm izni yoktur.
 - Mali / reklamsız açıklaması: FSO kişisel Google Play hesabı, şimdilik ücretsiz ve reklamsız yayın hedefi. Uygulamanın henüz Google Play'de yayımlanmadığı açıkça belirtilir.
+
+
+## v0.13 — Aylık namaz takibi, vakit kilidi ve Pro Plus pusula
+
+- Kılındı kutuları beş namaz için günün doğrulanmış astronomik vakti gelmeden devreye girmez. Geçerli konum/vakit verisi bulunmadığında bugünkü kutular da kilitlenir. Kontrol hem görsel kutuda hem yerel kaydı değiştiren işlevde yapılır.
+- Kullanıcı onayı olmadan namaz otomatik kılınmış sayılmaz. Güneş doğuşu takip işaretine dahil edilmez.
+- Aylık takvimde her gün 0–5 ilerleme görünür; geçmiş günler elle düzeltilebilir, gelecek günler seçilemez. Kayıt anahtarı `nz_prayer_check_v09` korunur; önceki günler silinmez.
+- Pusulanın derece halkaları, altın–turkuaz iğnesi, Kâbe madalyonu, yön açısı ve hedef farkı tasarımı yenilendi. Sensör ve kıble hesaplaması mevcut kodu kullanır; ekran görüntüsü kalibrasyon veya navigasyon doğruluğunu garanti etmez.
+- Ezan ses kaynakları ve native arka plan servisi kaldırıldı. Yalnızca Fâtiha/İhlâs/Felak/Nâs tilavet sesleri ve dua TTS sistemi kaldı.

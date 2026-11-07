@@ -55,29 +55,51 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
     <div class="nz-prayer-today-head"><span id="nz-prayer-summary-label">✓ Namaz takibi · Kıldığın vakti işaretle</span><strong id="nz-prayer-progress">Kılınan: 0/5</strong></div>
     <section class="schedule" id="schedule" aria-label="Günlük namaz vakitleri ve namaz takibi"></section>
   </div>
-  <section class="panel compass-card compass-luxe" aria-label="Kıble yönü">
-    <div class="dial premium-dial" aria-label="Kıble pusulası">
-      <div class="compass-halo" aria-hidden="true"></div>
-      <div class="compass-face" aria-hidden="true"></div>
-      <span class="tick n">K</span><span class="tick s">G</span><span class="tick e">D</span><span class="tick w">B</span>
-      <span class="compass-point ne">•</span><span class="compass-point nw">•</span>
-      <span class="compass-point se">•</span><span class="compass-point sw">•</span>
-      <div class="needle-wrap" id="needle">
-        <svg class="premium-needle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <defs><linearGradient id="needleGold" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#fff2c7"/><stop offset=".52" stop-color="#d4a753"/><stop offset="1" stop-color="#75522f"/>
-          </linearGradient><linearGradient id="needleTeal" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#affff0"/><stop offset="1" stop-color="#256e73"/>
-          </linearGradient></defs>
-          <path d="M50 3L64 54L50 45L36 54Z" fill="url(#needleGold)" stroke="#fff4ca" stroke-width="1.1"/>
-          <path d="M50 3L50 45L36 54Z" fill="#fff1ba" opacity=".85"/>
-          <path d="M50 97L64 46L50 55L36 46Z" fill="url(#needleTeal)" stroke="#64ddcc" stroke-width=".7"/>
-          <circle cx="50" cy="50" r="10" fill="#061521" stroke="#d8b66f" stroke-width="1.6"/>
-          <circle cx="50" cy="50" r="4" fill="#fff0bd"/>
-        </svg>
+  <section class="panel nz-calendar-panel" aria-label="Monthly prayer tracking">
+    <div id="nz-month-calendar" class="nz-month-calendar" aria-live="off"></div>
+  </section>
+  <section class="panel compass-card compass-proplus" aria-label="Kıble pusulası">
+    <div class="pro-compass-shell">
+      <div class="dial premium-dial pro-dial" aria-label="Kâbe yönüne dönen pusula iğnesi">
+        <div class="pro-dial-metal" aria-hidden="true"></div>
+        <div class="pro-dial-degree-ring" aria-hidden="true"></div>
+        <div class="compass-halo" aria-hidden="true"></div>
+        <div class="compass-face" aria-hidden="true"></div>
+        <span class="tick n">K</span><span class="tick s">G</span><span class="tick e">D</span><span class="tick w">B</span>
+        <span class="pro-diagonal ne" aria-hidden="true">•</span>
+        <span class="pro-diagonal nw" aria-hidden="true">•</span>
+        <span class="pro-diagonal se" aria-hidden="true">•</span>
+        <span class="pro-diagonal sw" aria-hidden="true">•</span>
+        <div class="needle-wrap" id="needle">
+          <svg class="premium-needle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="needleGold" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#fff5d8"/><stop offset=".5" stop-color="#efc776"/><stop offset="1" stop-color="#93612e"/></linearGradient>
+              <linearGradient id="needleTeal" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#b2fff4"/><stop offset="1" stop-color="#257b79"/></linearGradient>
+            </defs>
+            <path d="M50 1L66 52L50 43L34 52Z" fill="url(#needleGold)" stroke="#fff4cb" stroke-width="1.2"/>
+            <path d="M50 1L50 43L34 52Z" fill="#fff5cc" opacity=".89"/>
+            <path d="M50 99L64 49L50 57L36 49Z" fill="url(#needleTeal)" stroke="#84eee1" stroke-width=".9"/>
+            <path d="M50 99L50 57L36 49Z" fill="#0d595e" opacity=".66"/>
+            <circle cx="50" cy="50" r="9.5" fill="#061725" stroke="#d7b16c" stroke-width="2"/>
+            <circle cx="50" cy="50" r="4" fill="#fff0b9"/>
+          </svg>
+        </div>
+        <div class="pro-compass-center" aria-hidden="true"><svg viewBox="0 0 36 36"><path fill="#090d14" stroke="#ebc783" stroke-width="1.2" d="M9 12L19 7L28 12L28 26L18 31L9 26Z"/><path d="M9 12L18 17L28 12M18 17V31" fill="none" stroke="#deb86a" stroke-width="1.1"/><path d="M9 17L18 22L28 17" fill="none" stroke="#f4da9c" stroke-width="2"/></svg></div>
       </div>
+      <div class="pro-compass-caption">Q I B L A <span>•</span> 360°</div>
     </div>
-    <div class="compass-readout"><div class="small-label">Kıble yönü · Canlı pusula</div><div class="qval" id="bearing">---°</div><div class="qsub" id="bearing-note">GPS ile Kâbe yönü hesaplanıyor.</div><div class="compass-status" id="compass-status">Pusula sensörü bekleniyor…</div><button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button></div>
+    <div class="compass-readout pro-compass-readout">
+      <div class="pro-accuracy-tag"><span class="pro-status-dot"></span><span id="pro-compass-label">KIBLE • YÖN BULUCU</span></div>
+      <div class="small-label">Kıble yönü</div>
+      <div class="qval" id="bearing">---°</div>
+      <div class="qsub" id="bearing-note">GPS ile Kâbe yönü hesaplanıyor.</div>
+      <div class="pro-compass-data">
+        <div><span id="pro-compass-heading-label">Telefon yönü</span><strong id="pro-compass-heading">—</strong></div>
+        <div><span id="pro-compass-difference-label">Kâbe farkı</span><strong id="pro-compass-difference">—</strong></div>
+      </div>
+      <div class="compass-status" id="compass-status">Pusula sensörü bekleniyor…</div>
+      <button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button>
+    </div>
   </section>
   <section class="panel location" aria-label="Konum ayarları"><div class="small-label">Konum • Google konum servisi → GPS</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="reset-button" class="secondary">Yeniden konum bul</button><button type="button" id="location-settings-button" class="secondary">Konum ayarları</button></div>
     <details><summary>GPS çalışmazsa koordinatı elle gir</summary><div class="manual"><label>Enlem (−90 … 90)<input id="latitude" type="number" step="any" placeholder="3.13900" /></label><label>Boylam (−180 … 180)<input id="longitude" type="number" step="any" placeholder="101.68690" /></label><button id="manual-button" type="button">Bu koordinatı kullan</button></div></details>
@@ -89,7 +111,6 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       </div><p class="loc-sub">Gemi saati, telefon saat dilimi ve boylama göre otomatik deniz saati farklı olabilir. Geminin kullandığı saat için UTC farkını ayarla. Bu ayar namaz vakitlerinin gösterimini de değiştirir.</p>
     </details>
   </section>
-  <section class="panel location" id="adhan-settings-container" aria-label="Adhan sound settings"></section>
   <section class="panel location" id="nz-dua-learning" aria-label="Daily supplication"></section>
   <section class="panel location" id="nz-surah-learning" aria-label="Prayer surah memorization"></section>
   <section class="panel location" id="nz-esma-learning" aria-label="Beautiful names of Allah"></section>
@@ -110,7 +131,6 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 <p style="text-align:center;margin:12px 0 26px"><a id="privacy-policy-link" href="privacy-policy.html" style="color:#bcd8d7;text-decoration:underline">Gizlilik Politikası</a></p></main>
 <script src="daily_i18n.js"></script>
 <script src="full_ui_i18n.js"></script>
-<script src="adhan_settings.js"></script>
 <script src="daily_dua_library.js"></script>
 <script src="learning_content.js"></script>
 <script src="esma_i18n.js"></script>
@@ -319,7 +339,27 @@ function renderClock(){
   document.querySelectorAll('[data-prayer]').forEach(el=>el.classList.toggle('current',el.getAttribute('data-prayer')===current));
 }
 
+const COMPASS_TEXT={
+ tr:['KIBLE • CANLI YÖN','Telefon yönü','Kâbe farkı'],
+ en:['QIBLA • LIVE BEARING','Phone heading','Kaaba difference'],
+ ms:['KIBLAT • ARAH SEMASA','Arah telefon','Beza kiblat'],
+ id:['KIBLAT • ARAH AKTUAL','Arah ponsel','Selisih kiblat'],
+ ar:['القبلة • الاتجاه المباشر','اتجاه الهاتف','فرق اتجاه الكعبة'],
+ ru:['КИБЛА • НАПРАВЛЕНИЕ','Курс телефона','Отклонение от Каабы'],
+ fr:['QIBLA • CAP EN DIRECT','Cap du téléphone','Écart vers la Kaaba'],
+ de:['QIBLA • LIVE-RICHTUNG','Handy-Ausrichtung','Abweichung zur Kaaba'],
+ es:['QIBLA • DIRECCIÓN EN VIVO','Rumbo del móvil','Diferencia hacia la Kaaba'],
+ pt:['QIBLA • DIREÇÃO EM TEMPO REAL','Rumo do telefone','Diferença para a Caaba'],
+ az:['QİBLƏ • CANLI İSTİQAMƏT','Telefon istiqaməti','Kəbə fərqi'],
+ ur:['قبلہ • براہ راست سمت','فون کی سمت','کعبہ کی سمت کا فرق']
+};
+function updateCompassLanguage(){
+ const locale=window.NamazI18n?.getLanguage?.()||'tr',words=COMPASS_TEXT[locale]||COMPASS_TEXT.en;
+ const ids=['pro-compass-label','pro-compass-heading-label','pro-compass-difference-label'];
+ ids.forEach((id,i)=>{const element=$(id);if(element)element.textContent=words[i];});
+}
 function updateNeedle(){
+ updateCompassLanguage();
  if(!validLocation()){
     $('compass-status').textContent=state.heading===null?tr('compassWait'):tr('qiblaWaiting');
     $('bearing-note').textContent=tr('qiblaWaiting');
@@ -332,6 +372,9 @@ function updateNeedle(){
  $('compass-status').textContent=h===null?tr('compassNoData'):
     tr('compassDirection',{n:Math.round(h)})+' · '+
     (Math.abs(wrap(bearing-h+180,360)-180)<8?tr('compassAligned'):tr('compassTurn'));
+ const displayHeading=$('pro-compass-heading'),difference=$('pro-compass-difference');
+ if(displayHeading)displayHeading.textContent=h===null?'—':Math.round(h)+'°';
+ if(difference)difference.textContent=h===null?'—':Math.round(Math.abs(wrap(bearing-h+180,360)-180))+'°';
 }
 
 function nativeHeading(degrees){if(Number.isFinite(degrees)){state.heading=wrap(degrees,360);if(!validLocation())$('compass-status').textContent=tr('qiblaWaiting');updateNeedle();}}
@@ -372,10 +415,20 @@ function startCompass(){
   if(typeof DeviceOrientationEvent.requestPermission==='function')$('compass-permission').style.display='inline-block';
 }
 function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();updateNeedle();}
-window.NamazApp={activeDayKey:function(){return localDateKey(displayDateParts(new Date()));},refreshLocale:function(){updateLocationPanel();updateTimeStatus(new Date());updateNeedle();if(window.NamazAdhan)window.NamazAdhan.refreshLocale();}};
+window.NamazApp={
+ activeDayKey:function(){return localDateKey(displayDateParts(new Date()));},
+ prayerMarkGate:function(id,stamp=Date.now()){
+  const day=localDateKey(displayDateParts(new Date(stamp)));
+  if(!PRAYERS.some(([prayer])=>prayer===id))return {allowed:false,reason:'unknown'};
+  if(!validLocation(stamp)||!state.times||!state.calcKey.startsWith(day+'|'))return {allowed:false,reason:'unknown'};
+  const when=state.times[id];
+  if(!Number.isFinite(when))return {allowed:false,reason:'unknown'};
+  return {allowed:when<=stamp,reason:when<=stamp?'ready':'future',at:when};
+ },
+ refreshLocale:function(){updateLocationPanel();updateTimeStatus(new Date());updateNeedle();}
+};
 function init(){
   if(window.NamazI18n)window.NamazI18n.init();
-  if(window.NamazAdhan)window.NamazAdhan.init();
   const cached=saved('location',null);
   state.method=METHODS[saved('method','MWL')]?saved('method','MWL'):'MWL';
   state.asr=saved('asr',1)===2?2:1;

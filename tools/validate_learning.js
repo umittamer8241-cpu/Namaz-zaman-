@@ -4,7 +4,7 @@ const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypt
 const root=path.join(__dirname,'..'),dir=path.join(root,'app','src','main','assets');
 function ok(x,msg){if(!x)throw new Error(msg);}
 function file(p){return fs.readFileSync(path.join(dir,p),'utf8');}
-for(const p of ['learning_content.js','learning_ui.js','prayer_tracker.js','adhan_settings.js'])new vm.Script(file(p),{filename:p});
+for(const p of ['learning_content.js','learning_ui.js','prayer_tracker.js'])new vm.Script(file(p),{filename:p});
 const ctx={window:{}};
 new vm.Script(file('daily_dua_library.js'),{filename:'daily_dua_library.js'});
 vm.runInNewContext(file('daily_dua_library.js'),ctx,{filename:'daily_dua_library.js'});
