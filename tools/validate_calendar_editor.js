@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,'..'),assets=path.join(root,'app/src/main/asse
 const ui=fs.readFileSync(path.join(assets,'prayer_tracker.js'),'utf8');
 const css=fs.readFileSync(path.join(assets,'learning_styles.css'),'utf8');
 const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
-assert(gradle.includes("versionCode 22")&&gradle.includes("applicationId 'com.geminamaz.app'"));
+assert(Number(gradle.match(/versionCode\s+(\d+)/)[1])>=22&&gradle.includes("applicationId 'com.geminamaz.app'"));
 for(const text of ['editorOpen=true','openSelected(day)','nz-cal-editor','nz-cal-editor-close','autoSave','closeEditor',
   'if(dayStamp(day)>dayStamp(today()))return','if(!eligible(day,id).allowed)return false',
   'input.disabled=!permission.allowed','selected=day;editorOpen=true;renderCalendar()']){

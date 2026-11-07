@@ -7,8 +7,8 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 22
-        versionName '0.21-resume-gps-fix-preview'
+        versionCode 23
+        versionName '0.22-location-backup-preview'
     }
     buildTypes {
         debug {

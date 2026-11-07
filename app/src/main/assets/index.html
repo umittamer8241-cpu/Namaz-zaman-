@@ -364,6 +364,10 @@ function setLocation(lat,lon,accuracy,source,stamp=Date.now(),live=true,provider
     window.GemiNative.setCompassLocation(lat,lon);
   }
   store('location',{lat,lon,accuracy,stamp,source,provider});
+  if(window.GemiNative&&typeof window.GemiNative.saveLocationBackup==='function'){
+    window.GemiNative.saveLocationBackup(lat,lon,Number.isFinite(accuracy)?accuracy:0,
+      Number.isFinite(stamp)?stamp:Date.now(),source,provider);
+  }
   // Prayer times depend on local coordinates and time only, never on the
   // availability of network/GPS updates after a fix.
   state.calcKey='';renderAll();
@@ -898,7 +902,15 @@ function nativeHeading(degrees){
    updateNeedle();
  }
 }
-function nativeLocation(lat,lon,accuracy,cached,timestamp,provider){if(state.manual)return;state.gpsMessage='';setLocation(lat,lon,accuracy,cached?'previous':'native',timestamp||Date.now(),!cached,provider||'gps');}
+function nativeLocation(lat,lon,accuracy,cached,timestamp,provider){
+  if(state.manual)return;
+  state.gpsMessage='';
+  // A manual location restored from the native backup stays a manual location.
+  const manual=provider==='manual';
+  if(manual)state.manual=true;
+  setLocation(lat,lon,accuracy,manual?'manual':cached?'previous':'native',
+    timestamp||Date.now(),!cached,provider||'gps');
+}
 function nativeError(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
 function nativeSearching(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
 window.nativeHeading=nativeHeading;window.nativeHeadingData=nativeHeadingData;window.nativeCompassDiagnostic=nativeCompassDiagnostic;window.nativeQiblaOnlineResult=nativeQiblaOnlineResult;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;

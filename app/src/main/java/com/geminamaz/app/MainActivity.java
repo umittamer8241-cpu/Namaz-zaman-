@@ -3,6 +3,7 @@ package com.geminamaz.app;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.pm.PackageManager;
@@ -60,6 +61,7 @@ import java.nio.charset.StandardCharsets;
 public class MainActivity extends Activity implements LocationListener, SensorEventListener {
     private static final int REQ_LOCATION = 24;
     private static final int REQ_LOCATION_SETTINGS = 25;
+    private static final String LOCATION_BACKUP = "namaz_saved_location_v1";
     private static final long LOCATION_MAX_AGE_MS = 10 * 60 * 1000L;
     // Approximate-only Android permission can yield multi-kilometer fixes.
     // Accept moderate coarse estimates but expose their uncertainty in the UI.
@@ -109,6 +111,7 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         getWindow().setStatusBarColor(Color.rgb(6,21,36));
         getWindow().setNavigationBarColor(Color.rgb(6,21,36));
         locationManager=(LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        restoreNativeLocationBackup();
         sensors=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         rotation=sensors==null?null:sensors.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         if(rotation==null&&sensors!=null)rotation=sensors.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
@@ -167,6 +170,11 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 }
                 sendLocationDiagnostics();
             });
+        }
+        // Keep a local native copy even if Android evicts WebView storage.
+        @JavascriptInterface public void saveLocationBackup(double lat,double lon,
+                double accuracy,long timestamp,String source,String provider){
+            runOnUiThread(()->persistLocationBackup(lat,lon,accuracy,timestamp,source,provider));
         }
         @JavascriptInterface public void getLocationDiagnostics(){
             runOnUiThread(()->sendLocationDiagnostics());
@@ -357,6 +365,46 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         pendingStatus=message;
         js("window.nativeError("+JSONObject.quote(message)+");");
     }
+    // Saved coordinates are a fallback, NOT proof of a current GPS fix.
+    private void persistLocationBackup(double lat,double lon,double accuracy,
+            long timestamp,String source,String provider){
+        if(!Double.isFinite(lat)||!Double.isFinite(lon)||
+                Math.abs(lat)>90d||Math.abs(lon)>180d)return;
+        long now=System.currentTimeMillis();
+        long safeTime=timestamp>0&&timestamp<=now+60000L?timestamp:now;
+        SharedPreferences prefs=getSharedPreferences(LOCATION_BACKUP,MODE_PRIVATE);
+        long oldTime=prefs.getLong("timestamp",0L);
+        // Avoid replacing a newer native GPS fix with an older WebView cache.
+        if(oldTime>safeTime+15000L&&!"manual".equals(source))return;
+        SharedPreferences.Editor edit=prefs.edit()
+            .putString("lat",Double.toString(lat))
+            .putString("lon",Double.toString(lon))
+            .putLong("timestamp",safeTime)
+            .putString("source",source==null?"previous":source)
+            .putString("provider",provider==null?"":provider);
+        if(Double.isFinite(accuracy)&&accuracy>0&&accuracy<1000000d)
+            edit.putFloat("accuracy",(float)accuracy);
+        else edit.remove("accuracy");
+        edit.apply();
+    }
+    private void restoreNativeLocationBackup(){
+        try{
+            SharedPreferences p=getSharedPreferences(LOCATION_BACKUP,MODE_PRIVATE);
+            if(!p.contains("lat")||!p.contains("lon"))return;
+            double lat=Double.parseDouble(p.getString("lat",""));
+            double lon=Double.parseDouble(p.getString("lon",""));
+            if(!Double.isFinite(lat)||!Double.isFinite(lon)||
+                Math.abs(lat)>90d||Math.abs(lon)>180d)return;
+            Location cached=new Location("saved");
+            cached.setLatitude(lat);cached.setLongitude(lon);
+            cached.setTime(p.getLong("timestamp",0L));
+            if(p.contains("accuracy"))cached.setAccuracy(p.getFloat("accuracy",0f));
+            latest=cached;
+            latestSource=p.getString("source","previous");
+            compassLat=lat;compassLon=lon;
+            pendingStatus="Kayıtlı konum geri yüklendi. Güncel konum için GPS aramasını başlat.";
+        }catch(Exception ignored){}
+    }
     private void sendLocationDiagnostics(){
         if(!nativeReady||webView==null)return;
         try{
@@ -426,6 +474,8 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         }
         latest=location;latestSource=source;
         compassLat=location.getLatitude();compassLon=location.getLongitude();
+        persistLocationBackup(location.getLatitude(),location.getLongitude(),
+            location.hasAccuracy()?location.getAccuracy():0d,location.getTime(),source,location.getProvider());
         if(!cached){
             freshFix=true;
             resumePendingGpsSearch=false;
