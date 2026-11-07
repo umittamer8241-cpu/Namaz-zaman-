@@ -5,7 +5,7 @@ const java=fs.readFileSync(path.join(root,'app/src/main/java/com/geminamaz/app/M
 const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
 const html=fs.readFileSync(path.join(root,'app/src/main/assets/index.html'),'utf8');
 assert(Number(gradle.match(/versionCode\s+(\d+)/)[1])>=22);
-assert(/versionName '0\.2(?:1|2)[^']*'/.test(gradle));
+assert(/versionName '0\.2(?:1|2|3)[^']*'/.test(gradle));
 const pause=java.slice(java.indexOf('@Override protected void onPause(){'),java.indexOf('@Override protected void onActivityResult(',java.indexOf('@Override protected void onPause(){')));
 assert(pause.indexOf('resumePendingGpsSearch=working&&!freshFix')<pause.indexOf('stopSources();'),
  'Resume flag must be saved before stopSources clears working.');
