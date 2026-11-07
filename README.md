@@ -74,3 +74,18 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Tanı paneli: Kâbe sabit yönü, Google açı, Android açı, fark, tahmini hata, ekran dönüşü, eğim, yana yatma ve manyetik sapma. Yalnızca kullanıcı düğmeye basarsa kopyalanır; tam enlem-boylam rapora yazılmaz.
 - Bu, **gerçek cihaz doğruluk testi yerine geçmez**. Aynı yönde tutulan iki cihazın sonuçlarını karşılaştırmak ve metal parazit sorunu araştırmak içindir.
 - Yan yana kurulan Debug uygulamanın adı “Namaz Zamanı Pusula Test”; asıl Namaz Zamanı veya onun kayıtları kaldırılmaz.
+
+
+## v0.17 Tam APK (mevcut sürümü kaldıran kullanıcı için)
+- Normal uygulama kimliği: `com.geminamaz.app`, uygulama adı: **Namaz Zamanı**.
+- `fullPreview` APK, mevcut dualar, 99 Esma (12 dil), 702 günlük dua, namaz takvimi, sesli sureler ve kalibrasyon kontrollü Royal Qibla pusulasını birlikte içerir.
+- `debug` tanı sürümü ayrı kalır: `com.geminamaz.app.pusulatest`.
+- Tam APK, **debug anahtarıyla imzalanmış dahili test paketidir**. Google Play üretim imzası değildir; ileride Play Store sürümüne geçerken kullanıcı verilerini taşımak gerekebilir.
+- Kaldırılmış uygulamanın özel verileri ve işaretlenmiş namaz kayıtları otomatik geri gelmez; ancak bir yedekten geri yüklenebilir.
+
+
+### v0.17 — Takvim gününe dokunarak düzenleme
+- Aylık takvimde tarihi seçince açılır düzenleme kartı görünür; geçmiş günlerin beş namazı işaretlenebilir ve geri kaldırılabilir.
+- Bugünün namazlarında yalnızca o namazın vakti girdikten sonra işaret değiştirilebilir. Yarın ve gelecek günler seçilemez.
+- Kartta tarih, işaretlenmiş namaz sayısı, otomatik kayıt açıklaması ve kapatma denetimi vardır. Kaydet düğmesine basmak gerekmez; kayıtlar `nz_prayer_check_v09` anahtarında tutulur.
+- 12 dil için düzenleme yönergeleri vardır. Takvime basma, kayıt, kapatma ve kilit davranışları Edge ortamında test edildi.

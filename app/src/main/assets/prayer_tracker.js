@@ -21,12 +21,30 @@ pt:{track:"Registo de orações · Marcar após o horário",done:"Concluídas",m
 az:{track:"Namaz izləmə · Vaxtı gələndən sonra işarələ",done:"Qılınan",mark:"Qıldım",wait:"Vaxtı gəlməyib",unknown:"Namaz vaxtı gözlənilir",calendar:"Aylıq namaz təqvimi",completed:"Qılınan",day:"Günün təfərrüatı",future:"Gələcək gün",hint:"Vaxtı çatmayan namazları işarələmək olmaz.",today:"Bu gün",back:"Əvvəlki ay",forward:"Sonrakı ay"},
 ur:{track:"نماز کی نگرانی · وقت کے بعد نشان لگائیں",done:"ادا شدہ",mark:"ادا کی",wait:"ابھی وقت نہیں ہوا",unknown:"اوقات کا انتظار",calendar:"ماہانہ نماز کیلنڈر",completed:"ادا شدہ",day:"دن کی تفصیل",future:"آنے والا دن",hint:"نماز کا وقت آنے سے پہلے نشان نہیں لگا سکتے۔",today:"آج",back:"پچھلا مہینہ",forward:"اگلا مہینہ"}
 };
+const CAL_EDITOR_I18N={
+tr:["Günü seçerek namazlarını düzenle","Namazları düzenle","Bu gün kıldığın namazları seç. Vakti gelmeyen namazlar kilitlidir.","Değişiklikler otomatik kaydedildi.","Düzenlemeyi kapat"],
+en:["Tap a date to edit prayers","Edit prayers","Mark the prayers you completed. Future prayer times remain locked.","Changes saved automatically.","Close editor"],
+ms:["Tekan tarikh untuk ubah solat","Ubah solat","Tandakan solat yang telah ditunaikan. Waktu yang belum tiba dikunci.","Perubahan disimpan secara automatik.","Tutup"],
+id:["Ketuk tanggal untuk mengubah salat","Ubah salat","Tandai salat yang telah dilakukan. Waktu yang belum tiba dikunci.","Perubahan tersimpan otomatis.","Tutup"],
+ar:["اضغط على يوم لتعديل الصلوات","تعديل الصلوات","حدّد الصلوات التي أديتها. الأوقات التي لم تدخل بعد مقفلة.","تُحفظ التغييرات تلقائياً.","إغلاق"],
+ru:["Нажмите на день, чтобы изменить молитвы","Изменить молитвы","Отметьте совершённые молитвы. Будущие молитвы заблокированы.","Изменения сохраняются автоматически.","Закрыть"],
+fr:["Touchez un jour pour modifier les prières","Modifier les prières","Cochez les prières effectuées. Les heures à venir restent verrouillées.","Enregistrement automatique.","Fermer"],
+de:["Tag antippen, um Gebete zu bearbeiten","Gebete bearbeiten","Verrichtete Gebete markieren. Künftige Gebetszeiten bleiben gesperrt.","Änderungen automatisch gespeichert.","Schließen"],
+es:["Toca un día para editar las oraciones","Editar oraciones","Marca las oraciones realizadas. Los horarios futuros están bloqueados.","Cambios guardados automáticamente.","Cerrar"],
+pt:["Toque num dia para editar orações","Editar orações","Marque as orações feitas. Horários futuros ficam bloqueados.","Alterações guardadas automaticamente.","Fechar"],
+az:["Namazları dəyişmək üçün günə toxun","Namazları dəyiş","Qıldığın namazları işarələ. Vaxtı gəlməmiş namazlar bağlıdır.","Dəyişikliklər avtomatik saxlanır.","Bağla"],
+ur:["نمازیں بدلنے کے لیے تاریخ دبائیں","نمازوں میں ترمیم","ادا کی گئی نمازوں پر نشان لگائیں۔ آنے والے اوقات بند رہیں گے۔","تبدیلیاں خودکار محفوظ ہو گئیں۔","بند کریں"]
+};
 function lang(){return window.NamazI18n?.getLanguage?.()||"tr";}
-function t(key){return (STRINGS[lang()]||STRINGS.en)[key]||STRINGS.en[key]||key;}
+function t(key){
+ const ci=["tapDay","editDay","editInstruction","autoSave","closeEditor"].indexOf(key);
+ if(ci>=0)return (CAL_EDITOR_I18N[lang()]||CAL_EDITOR_I18N.en)[ci];
+ return (STRINGS[lang()]||STRINGS.en)[key]||STRINGS.en[key]||key;
+}
 function el(tag,text,cls){const x=document.createElement(tag);if(text!==undefined&&text!==null)x.textContent=text;if(cls)x.className=cls;return x;}
 function btn(label,fn,cls){const x=el("button",label,cls||"secondary");x.type="button";x.addEventListener("click",fn);return x;}
 function load(){try{const x=JSON.parse(localStorage.getItem(STORAGE)||"{}");return x&&typeof x==="object"&&!Array.isArray(x)?x:{};}catch(_){return {};}}
-let journal=load(),seenToday="",viewYear=null,viewMonth=null,selected=null;
+let journal=load(),seenToday="",viewYear=null,viewMonth=null,selected=null,editorOpen=false;
 function save(){try{localStorage.setItem(STORAGE,JSON.stringify(journal));}catch(_){}}
 function dayParts(key){const v=String(key||"").split("-").map(Number);return v.length===3?v:null;}
 function dayStamp(key){const p=dayParts(key);return p?Date.UTC(p[0],p[1]-1,p[2]):NaN;}
@@ -91,14 +109,16 @@ function calendarDate(y,m,d){return new Date(Date.UTC(y,m,d));}
 function readableDate(key){const d=dayParts(key);return d?new Intl.DateTimeFormat(lang(),{timeZone:"UTC",day:"numeric",month:"long",year:"numeric"}).format(calendarDate(d[0],d[1]-1,d[2])):"";}
 function openSelected(day){
  if(dayStamp(day)>dayStamp(today()))return;
- selected=day;renderCalendar();
+ selected=day;editorOpen=true;renderCalendar();
+ const detail=document.querySelector(".nz-cal-detail");
+ if(detail&&typeof detail.scrollIntoView==="function")detail.scrollIntoView({behavior:"smooth",block:"nearest"});
 }
 function monthMove(diff){
  const next=calendarDate(viewYear,viewMonth+diff,1);
  const current=monthBounds(today());
  if(next.getUTCFullYear()>current.year||(next.getUTCFullYear()===current.year&&next.getUTCMonth()>current.month))return;
  viewYear=next.getUTCFullYear();viewMonth=next.getUTCMonth();
- selected=keyFor(viewYear,viewMonth,1);
+ selected=keyFor(viewYear,viewMonth,1);editorOpen=false;
  renderCalendar();
 }
 function renderCalendar(){
@@ -106,9 +126,10 @@ function renderCalendar(){
  const cur=today(),curParts=monthBounds(cur);
  if(viewYear===null||viewMonth===null){viewYear=curParts.year;viewMonth=curParts.month;selected=cur;}
  if(viewYear>curParts.year||(viewYear===curParts.year&&viewMonth>curParts.month)){viewYear=curParts.year;viewMonth=curParts.month;selected=cur;}
- if(!selected||dayStamp(selected)>dayStamp(cur))selected=cur;
+ if(!selected||dayStamp(selected)>dayStamp(cur)){selected=cur;editorOpen=false;}
  host.replaceChildren();
  host.appendChild(el("h2",t("calendar"),"nz-cal-title"));
+ host.appendChild(el("p",t("tapDay"),"nz-cal-tap-hint"));
  const navigation=el("div",null,"nz-cal-navigation");
  const prev=btn("‹",()=>monthMove(-1));prev.setAttribute("aria-label",t("back"));
  const title=el("strong",new Intl.DateTimeFormat(lang(),{timeZone:"UTC",month:"long",year:"numeric"}).format(calendarDate(viewYear,viewMonth,1)),"nz-cal-month-title");
@@ -130,7 +151,8 @@ function renderCalendar(){
   const cell=btn("",()=>openSelected(key),"nz-cal-day");
   cell.dataset.dateKey=key;cell.disabled=future;
   cell.classList.toggle("is-today",key===cur);
-  cell.classList.toggle("is-selected",key===selected);
+  cell.classList.toggle("is-selected",editorOpen&&key===selected);
+  cell.setAttribute("aria-pressed",editorOpen&&key===selected?"true":"false");
   cell.classList.toggle("is-complete",number===5);
   cell.classList.toggle("is-future",future);
   cell.setAttribute("aria-label",readableDate(key)+" · "+number+"/5");
@@ -140,8 +162,20 @@ function renderCalendar(){
   grid.appendChild(cell);
  }
  host.appendChild(grid);
- const detail=el("div",null,"nz-cal-detail");
- detail.appendChild(el("div",readableDate(selected),"nz-cal-detail-heading"));
+ if(!editorOpen)return;
+ const detail=el("div",null,"nz-cal-detail nz-cal-editor");
+ detail.id="nz-cal-editor";
+ detail.setAttribute("role","region");
+ detail.setAttribute("aria-label",t("editDay")+" "+readableDate(selected));
+ const titleRow=el("div",null,"nz-cal-editor-header");
+ const labels=el("div",null,"nz-cal-editor-titles");
+ labels.appendChild(el("strong",t("editDay"),"nz-cal-editor-label"));
+ labels.appendChild(el("div",readableDate(selected),"nz-cal-detail-heading"));
+ titleRow.appendChild(labels);
+ const close=btn("×",()=>{editorOpen=false;renderCalendar();},"nz-cal-editor-close");
+ close.setAttribute("aria-label",t("closeEditor"));titleRow.appendChild(close);
+ detail.appendChild(titleRow);
+ detail.appendChild(el("p",t("editInstruction"),"nz-cal-instruction"));
  const row=el("div",null,"nz-cal-detail-grid");
  for(const id of IDS){
    const permission=eligible(selected,id);
@@ -155,6 +189,8 @@ function renderCalendar(){
    row.appendChild(option);
  }
  detail.appendChild(row);
+ detail.appendChild(el("div",t("done")+": "+count(selected)+"/5","nz-cal-editor-count"));
+ detail.appendChild(el("p",t("autoSave"),"nz-cal-editor-saved"));
  detail.appendChild(el("p",t("hint"),"loc-sub"));
  host.appendChild(detail);
 }
@@ -172,7 +208,7 @@ function start(){
  render();
  setInterval(()=>{
   const old=seenToday,now=today();
-  if(now!==old){selected=now;const m=monthBounds(now);viewYear=m.year;viewMonth=m.month;render();}
+  if(now!==old){selected=now;editorOpen=false;const m=monthBounds(now);viewYear=m.year;viewMonth=m.month;render();}
   else {renderTiles();const current=document.querySelector('#nz-cal-detail input:disabled');if(current||selected===now)renderCalendar();}
  },12000);
  document.addEventListener("visibilitychange",()=>{if(!document.hidden)render();});

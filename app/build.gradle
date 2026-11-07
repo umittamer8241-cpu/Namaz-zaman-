@@ -7,14 +7,20 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 17
-        versionName '0.16-dual-heading-diagnostic-preview'
+        versionCode 18
+        versionName '0.17-full-app-calendar-editor-preview'
     }
     buildTypes {
         debug {
             // Standalone QA app: never overwrite the user's existing prayer records.
             applicationIdSuffix '.pusulatest'
             versionNameSuffix '-side-by-side'
+        }
+        fullPreview {
+            // Complete installable APK under the normal Namaz Zamani package ID.
+            // Debug-signed for internal testing only; NOT a Play Store release.
+            initWith release
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {

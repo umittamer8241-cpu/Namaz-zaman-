@@ -48,8 +48,10 @@ jobs:
           node tools/validate_compass_heading.js
           node tools/validate_test_installer.js
           node tools/validate_v016_diagnostics.js
+          node tools/validate_full_apk.js
+          node tools/validate_calendar_editor.js
       - name: Play önizleme APK ve AAB derle
-        run: gradle --no-daemon --stacktrace :app:assembleDebug :app:bundleRelease
+        run: gradle --no-daemon --stacktrace :app:assembleDebug :app:assembleFullPreview :app:bundleRelease
       - name: Debug APK test paket adını doğrula
         run: |
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep -q "name='com.geminamaz.app.pusulatest'"
@@ -58,6 +60,15 @@ jobs:
         with:
           name: Namaz-Zamani-Pusula-SideBySide-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - name: Normal Namaz Zamanı APK paket kimliğini doğrula
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/fullPreview/app-fullPreview.apk | grep -q "name='com.geminamaz.app'"
+      - name: Normal uygulama adıyla tam Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Namaz-Zamani-v0.16-Tam-APK
+          path: app/build/outputs/apk/fullPreview/app-fullPreview.apk
           if-no-files-found: error
       - name: İmzasız AAB önizleme
         uses: actions/upload-artifact@v4
