@@ -1,0 +1,40 @@
+name: v0.24 Pusula Sensor Test APK Yayimla
+
+on:
+  push:
+    tags:
+      - 'v0.24.0-sensor-test'
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish-tested-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Basarili Android derlemesinden test APK indir
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifact
+          gh run download 42391091705 \
+            --repo "${{ github.repository }}" \
+            --name Namaz-Zamani-v0.24-Sensorlu-Pusula-Test-APK \
+            --dir artifact
+          test -s artifact/app-debug.apk
+          mv artifact/app-debug.apk artifact/Namaz-Zamani-v0.24-Sensor-Test.apk
+          sha256sum artifact/Namaz-Zamani-v0.24-Sensor-Test.apk
+
+      - name: Direkt indirilebilir test surumu yayinla
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            artifact/Namaz-Zamani-v0.24-Sensor-Test.apk \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Namaz Zamani v0.24 - Gercek Sensor Pusula Testi" \
+            --prerelease \
+            --notes "Test APK (com.geminamaz.app.pusulatest24): diger Namaz Zamani surumlerinden ayri kurulur. Google FOP hata payi yuksekse Android alternatif yon sensoru denenir. Ivmeolcer+manyetik sensor ile hareketli YAKLASIK kip desteklenir; bu kip dogrulanmis kible yonu sayilmaz. Sensor raporu model, sayac ve manyetik alan gucu gosterir; koordinat eklemez. Kalibre edilmis Google/Android pusulasi yonu ayrica dogrulanir. Fiziksel cihazda olumlu sonuc garantisi verilmez, Google Play yayini degildir."
