@@ -34,6 +34,9 @@ jobs:
           gradle-version: '8.13'
       - name: 12 dil ve metin tamlığı testi
         run: node tools/validate_localization.js
+      - name: Lisansli ezan dosyalari, hash ve 12 dil kontrolu
+        if: github.ref_name == 'v0.9-adhan-library'
+        run: node tools/validate_adhan.js
       - name: Play önizleme APK ve AAB derle
         run: gradle --no-daemon --stacktrace :app:assembleDebug :app:bundleRelease
       - name: İç test APK

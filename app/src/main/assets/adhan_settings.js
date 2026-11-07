@@ -29,7 +29,7 @@ function selected(prayer){
  try{const value=localStorage.getItem('gn_adhan_'+prayer);return ALLOWED.has(value)?value:'beautiful';}catch(e){return 'beautiful';}
 }
 function save(prayer,value){if(!ALLOWED.has(value))return;try{localStorage.setItem('gn_adhan_'+prayer,value);}catch(e){}}
-function stopAudio(){if(audio){audio.pause();audio.currentTime=0;audio.src='';audio=null;}playingId=null;paintStatus('');}
+function stopAudio(){if(audio){const old=audio;audio=null;old.onplaying=null;old.onerror=null;old.onended=null;old.pause();old.removeAttribute('src');old.load();}playingId=null;paintStatus('');}
 function paintStatus(message){
  const label=document.getElementById('adhan-playback-status');if(label)label.textContent=message;
  const btn=document.getElementById('adhan-preview-btn');if(btn)btn.textContent=playingId?t('stop'):t('preview');
