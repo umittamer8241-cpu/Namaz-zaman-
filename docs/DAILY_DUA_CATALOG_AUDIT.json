@@ -1,0 +1,49 @@
+{
+  "upstreamCommit": "5b615c53c271f348432cc8913b81f7a220aea114",
+  "sourceFiles": 1001,
+  "sourceComplete": 900,
+  "uniqueExternal": 695,
+  "originals": 7,
+  "total": 702,
+  "duplicateCount": 205,
+  "rejectedMissingFields": 101,
+  "englishFallback": 0,
+  "bytes": 902356,
+  "first": [
+    {
+      "id": 2,
+      "title": "Namazdan Sonra Rızık ve Yardım için Dua",
+      "ref": "Buhârî: 844"
+    },
+    {
+      "id": 3,
+      "title": "Lâ İlâhe İllallah'ın Gücü (Köle Azat Etme)",
+      "ref": "Buhârî: 6404"
+    },
+    {
+      "id": 4,
+      "title": "Hidayet için Dua (Fâtiha Suresinin Okunması)",
+      "ref": "Fâtiha Suresi 1:5"
+    },
+    {
+      "id": 5,
+      "title": "Hidayet için Nebevî Dua (Sahîh-i Müslim)",
+      "ref": "Müslim: 770"
+    },
+    {
+      "id": 6,
+      "title": "İbadette Yardım için Namazdan Sonra Dua",
+      "ref": "Sahîh (Elbânî). Ebû Dâvûd: 1522"
+    }
+  ],
+  "last": [
+    {
+      "id": 998,
+      "title": "Allah'tan Bağışlanma ve Korunma Duası (Rabbenâ Duası)"
+    },
+    {
+      "id": 1001,
+      "title": "Allah'a Şükür İçin Güçlü Akşam Duası"
+    }
+  ]
+}

@@ -39,9 +39,22 @@ function currentDay(){
  if(window.NamazApp && typeof window.NamazApp.activeDayKey==="function") return window.NamazApp.activeDayKey();
  const d=new Date(); return [d.getFullYear(),d.getMonth()+1,d.getDate()].join("-");
 }
+function dayOrdinal(key){
+ const parts=String(key||"").split("-").map(Number);
+ if(parts.length!==3||!Number.isInteger(parts[0])||!Number.isInteger(parts[1])||!Number.isInteger(parts[2]))return NaN;
+ const millis=Date.UTC(parts[0],parts[1]-1,parts[2]);
+ const dt=new Date(millis);
+ return dt.getUTCFullYear()===parts[0]&&dt.getUTCMonth()===parts[1]-1&&dt.getUTCDate()===parts[2] ? Math.floor(millis/86400000) : NaN;
+}
 function dailyIndex(day,n){
- const parts=day.split("-").map(Number), utc=Date.UTC(parts[0],parts[1]-1,parts[2]);
- return (Math.floor(utc/86400000)%n+n)%n;
+ if(!Number.isInteger(n)||n<1)return 0;
+ const current=dayOrdinal(day),key="nz_dua_sequence_start_v09";
+ let first=null;
+ try{first=localStorage.getItem(key);}catch(_){}
+ if(!Number.isFinite(dayOrdinal(first))){first=day;try{localStorage.setItem(key,first);}catch(_){}}
+ const start=dayOrdinal(first);
+ if(!Number.isFinite(current)||!Number.isFinite(start))return 0;
+ return Math.max(0,current-start)%n;
 }
 function stopAudio(){
  if(playing){try{playing.pause();playing.currentTime=0;playing.onended=null;}catch(_){}}
@@ -124,8 +137,12 @@ function renderSurah(){
 function renderDua(force){
  const host=$("nz-dua-learning");if(!host)return;
  const day=currentDay();if(!force&&day===lastDuaDay)return;lastDuaDay=day;
- const dua=DATA.duas[dailyIndex(day,DATA.duas.length)];
+ const position=dailyIndex(day,DATA.duas.length);
+ const dua=DATA.duas[position];
  buildSectionTitle(host,t("dua"),t("newDay"));
+ const counter=lang()==="tr" ? "Dua "+(position+1)+" / "+DATA.duas.length+" · Her gün sıradaki dua" : "Dua "+(position+1)+" / "+DATA.duas.length+" · One per day, in order";
+ host.appendChild(el("p",counter,"nz-progress nz-dua-progress"));
+ if(dua.title)host.appendChild(el("h3",dua.title,"nz-dua-title"));
  const ar=el("p",dua.ar,"nz-arabic nz-dua-arabic");ar.lang="ar";ar.dir="rtl";host.appendChild(ar);
  host.appendChild(el("p",dua.latin,"nz-phonetic"));
  host.appendChild(el("div",t("meaning"),"nz-mini-label"));

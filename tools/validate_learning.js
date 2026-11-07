@@ -5,10 +5,16 @@ const root=path.join(__dirname,'..'),dir=path.join(root,'app','src','main','asse
 function ok(x,msg){if(!x)throw new Error(msg);}
 function file(p){return fs.readFileSync(path.join(dir,p),'utf8');}
 for(const p of ['learning_content.js','learning_ui.js','prayer_tracker.js','adhan_settings.js'])new vm.Script(file(p),{filename:p});
-const ctx={window:{}};vm.runInNewContext(file('learning_content.js'),ctx,{filename:'learning_content.js'});
+const ctx={window:{}};
+new vm.Script(file('daily_dua_library.js'),{filename:'daily_dua_library.js'});
+vm.runInNewContext(file('daily_dua_library.js'),ctx,{filename:'daily_dua_library.js'});
+vm.runInNewContext(file('learning_content.js'),ctx,{filename:'learning_content.js'});
 const data=ctx.window.NamazLearningContent;
 ok(data&&data.surahs.length===4,'Exactly 4 reviewed surahs');
-ok(data.duas.length===7,'Seven daily duas');
+const audit=JSON.parse(fs.readFileSync(path.join(root,'docs','DAILY_DUA_CATALOG_AUDIT.json'),'utf8'));
+ok(audit.sourceFiles===1001&&audit.originals===7&&audit.uniqueExternal>=600,'Incomplete source audit');
+ok(data.duas.length===audit.total&&data.duas.length>=700,'Full sequential daily duas must replace 7-item weekly loop');
+for(const dua of data.duas)ok(dua.ar&&dua.latin&&dua.tr&&dua.en&&dua.ref&&/^https:\/\//.test(dua.url),'Incomplete daily dua');
 ok(data.names.length===99,'99 names');
 ok(new Set(Array.from(data.names,x=>x.name)).size===99,'No duplicate name');
 ok(new Set(Array.from(data.surahs,x=>x.id)).size===4,'Unique surahs');
@@ -19,7 +25,7 @@ for(const surah of data.surahs){
  for(const verse of surah.verses)ok(verse[0].length>9&&verse[1].length>6,'Incomplete verse '+surah.id);
 }
 for(const dua of data.duas){
- ok(/^https:\/\/quran\.com\/\d+\/\d+$/.test(dua.url),'Uncited dua');
+ ok(/^https:\/\/(quran\.com\/\d+\/\d+|github\.com\/islamicapi\/masnun-dua\/blob\/)/.test(dua.url),'Uncited dua');
  ok(dua.ar&&dua.tr&&dua.en&&dua.latin,'Incomplete dua '+dua.ref);
 }
 const expected={
@@ -45,4 +51,4 @@ const ui=file('learning_ui.js'),tracker=file('prayer_tracker.js');
 ok(ui.includes('localStorage')&&tracker.includes('localStorage'),'Offline progress missing');
 ok(!ui.includes('innerHTML')&&!tracker.includes('innerHTML'),'Unsafe HTML interpolation in new modules');
 ok(!ui.includes('Hafiz_Mustafa_Ozcan')&&!ui.includes('Muhsin_Kara'),'Unlicensed voice linked');
-console.log('PASS: 4 surahs (22 verses), 7 daily Quran duas, 99 Esma names, 2 CC0 audios (SHA256), 5 prayer tracker IDs, offline progress, UI wiring.');
+console.log('PASS: 4 surahs (22 verses), '+data.duas.length+' ordered daily duas, 99 Esma names, 2 CC0 audios (SHA256), 5 prayer tracker IDs, offline progress, UI wiring.');

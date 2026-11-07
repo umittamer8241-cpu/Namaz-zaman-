@@ -19,8 +19,8 @@ Her iki dosya da ilgili Commons sayfasında yükleyenin kendi çalışması olar
 ## Metin kaynakları
 
 - Arapça sure metinleri: [Kur'an 1](https://quran.com/1), [112](https://quran.com/112), [113](https://quran.com/113), [114](https://quran.com/114); Diyanet Kur'an Portalı ile ikinci kaynak kontrolü yapıldı.
-- Yedi dua Kur'an ayetlerinden alınmıştır: 2:201, 20:114, 3:8, 23:118, 21:87, 28:24, 14:41. [Quran.com](https://quran.com/) üzerinden ayet bağlantıları uygulamada gösterilir.
-- Türkçe/İngilizce sure anlamları ve dua açıklamaları **özgün, kısa anlam özetleridir**; resmî veya kelime kelime meal olarak tanıtılmaz.
+- İlk yedi dua Kur'an ayetlerinden alınmıştır: 2:201, 20:114, 3:8, 23:118, 21:87, 28:24, 14:41. Bunlara 695 tekrarsız kaynaklı dua eklenmiştir (toplam 702); ayrıntılı lisans ve doğruluk notları için `docs/DAILY_DUA_CATALOG.md` dosyasına bakın. [Quran.com](https://quran.com/) üzerinden ayet bağlantıları uygulamada gösterilir.
+- Sure anlamları ile başlangıçtaki yedi duanın anlamları özgün kısa özetlerdir; 695 ek duanın Türkçe ve İngilizce metinleri kaynak depodaki açık kullanımlı veri setinden alınmıştır. Hiçbiri resmî Diyanet meali diye tanıtılmaz; uzman içerik kontrolü bekler.
 - Türkçe sesletim satırları öğretim kolaylığı için yaklaşık harf çevirisidir; tecvidli bir okumanın yerine geçmez.
 - Esmaül Hüsna 99 adının geleneksel Tirmizî rivayetinde yaygın sıralaması esas alındı; Türkçe kısa anlamlar özgün açıklamalardır. İsim listelerindeki kaynak farkları için [Diyanet, İslam'da İman Esasları](https://kurul.diyanet.gov.tr/yayinlarpdf/7.pdf) ve [Diyanet Esmaül Hüsna açıklaması](https://yayin.diyanet.gov.tr/File/Download?id=4155&path=4155_1.pdf) okunabilir.
 
