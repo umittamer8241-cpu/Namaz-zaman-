@@ -1,0 +1,49 @@
+/* Offline v0.9 prayer tracking and Qur'an learning modules — isolated styles */
+#nz-prayer-tracker,#nz-dua-learning,#nz-surah-learning,#nz-esma-learning{margin-top:16px}
+#nz-prayer-tracker .loc-sub,#nz-dua-learning .loc-sub,#nz-surah-learning .loc-sub,#nz-esma-learning .loc-sub{font-size:12px;line-height:1.55;margin:9px 0}
+.nz-learn-row{display:flex;align-items:center;gap:9px;justify-content:space-between;margin:13px 0}
+.nz-learn-row>select,.nz-learn-row>input{min-width:0;flex:1}
+.nz-progress{color:var(--mint);font-variant-numeric:tabular-nums;background:#133f43;padding:9px;border-radius:10px;font-size:13px;white-space:nowrap}
+.nz-arabic{font-family:'Noto Naskh Arabic','Amiri','Traditional Arabic',serif;font-size:clamp(23px,6.7vw,31px);line-height:2.05;text-align:right;color:#f9dfa0;direction:rtl;font-weight:500}
+.nz-basmala{text-align:center;font-size:25px;line-height:2;margin:10px 0}
+.nz-dua-arabic{margin:14px 0 7px;line-height:2.2}
+.nz-verse-list{display:grid;gap:8px;margin:12px 0}
+.nz-verse{background:#061b2a99;border:1px solid #355363;border-radius:14px;padding:8px 12px 10px;position:relative}
+.nz-verse-num{display:inline-flex;border:1px solid #486a65;color:var(--mint);font-size:11px;border-radius:20px;padding:2px 7px;margin:2px 0 0}
+.nz-verse .nz-arabic{margin-top:-8px}
+.nz-phonetic{color:#b8e1da;font-size:13px;line-height:1.75;letter-spacing:.1px}
+.nz-mini-label{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1.25px;font-weight:800;margin-top:16px}
+.nz-meaning{font-size:14px;line-height:1.7;color:#eff6f3;margin:5px 0 14px}
+.nz-learn-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+.nz-learn-controls button{padding:9px 12px}
+.nz-check-label{display:flex;align-items:center;gap:7px;font-size:13px;color:#cfe5df}
+.nz-check-label input{width:auto;accent-color:var(--mint)}
+.nz-repeat-label{display:flex;align-items:center;gap:7px;font-size:12px;color:#cfe5df}
+.nz-repeat-label select{width:80px;min-width:0;padding:8px}
+.nz-done{background:#144f42;border-color:#63c8a7;color:#dcffef}
+.nz-source-link{display:inline-block;color:#e7c988;text-decoration:underline;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.nz-source{margin-top:10px}
+.nz-esma-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+.nz-esma-item{padding:11px;border:1px solid #355363;border-radius:15px;background:#0b2534}
+.nz-esma-label{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.nz-esma-label strong{font-size:14px;color:#f5eccb}
+.nz-index{font-size:11px;color:var(--mint)}
+.nz-esma-ar{font-size:23px;line-height:1.3;display:block;width:100%;text-align:right;font-family:'Noto Naskh Arabic','Amiri',serif;color:#f4d48c}
+.nz-esma-meaning{font-size:12px;color:#c1d6d9;min-height:34px;line-height:1.4}
+.nz-esma-item button{font-size:11px;padding:7px 9px;width:100%}
+#nz-esma-more{display:block;margin:12px auto}
+#nz-esma-more[hidden]{display:none}
+.nz-tracker-navigation{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0}
+.nz-tracker-navigation button{font-size:18px;padding:5px 13px}
+.nz-tracker-navigation button:disabled{opacity:.35}
+.nz-day-name{font-size:14px;text-align:center}
+.nz-tracker-progress{display:flex;align-items:center;gap:12px;color:var(--gold);font-size:12px;font-weight:700}
+.nz-progress-rail{background:#0b1c2a;border-radius:99px;height:8px;flex:1;overflow:hidden;border:1px solid #355363}
+.nz-progress-fill{background:linear-gradient(90deg,#52ad9d,#f4d48c);height:100%;border-radius:99px}
+.nz-track-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.nz-track-row{background:#0b2333;border:1px solid #365165;border-radius:12px;padding:11px;display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer}
+.nz-track-row input{width:auto;accent-color:var(--mint);flex:none}
+.nz-check-mark{margin-left:auto;color:var(--mint);font-weight:800}
+.nz-selected-prayer{box-shadow:0 0 0 2px var(--gold)}
+#nz-developer-note{font-size:11px;line-height:1.6;color:var(--muted);text-align:center;margin:20px 8px 8px;padding:12px;border-top:1px solid #355363}
+@media(max-width:380px){.nz-esma-grid{grid-template-columns:1fr}.nz-track-grid{grid-template-columns:1fr}.nz-learn-controls button{padding:8px}}
