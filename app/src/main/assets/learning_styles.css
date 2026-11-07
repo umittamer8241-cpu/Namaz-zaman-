@@ -323,3 +323,17 @@
  color:#f2d99d;margin:12px 0 6px}
 .nz-cal-editor-saved{text-align:center;font-size:11px;color:#96d9b5;margin:2px 0 4px}
 @media(max-width:410px){.nz-cal-detail.nz-cal-editor{padding:13px 7px}.nz-cal-editor .nz-cal-detail-item{font-size:10px;padding:10px 2px;min-height:68px}}
+
+
+/* v0.18: visible offline location fallback before the long prayer sections. */
+.location-rescue{margin:12px 0 15px;padding:15px;border-radius:17px;
+ border:1px solid #d0a368;background:linear-gradient(155deg,#2e302a,#172f37 65%,#102838);
+ box-shadow:inset 0 1px 0 #e9be6855,0 10px 26px #0003}
+.location-rescue[hidden],.location-rescue-actions button[hidden]{display:none!important}
+.location-rescue strong{display:block;color:#ffdfac;font-size:15px;margin-bottom:7px}
+.location-rescue p{font-size:12px;line-height:1.55;color:#d8e4dd;margin:0 0 12px}
+.location-rescue-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.location-rescue-actions button{white-space:normal;line-height:1.3;min-height:43px;font-size:12px;padding:9px 7px}
+.location-rescue-actions button:first-child{border-color:#d7ae6e;background:#3b4f45;color:#fff0ca}
+#manual-location-details[open]{scroll-margin:20px}
+@media(max-width:350px){.location-rescue-actions{grid-template-columns:1fr}}

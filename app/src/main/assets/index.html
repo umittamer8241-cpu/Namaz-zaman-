@@ -49,7 +49,17 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
   <div class="lang-switch"><label id="language-label" for="app-language">Dil / Language</label><select id="app-language" aria-label="Language"></select></div>
   <div class="topline"><span id="today">Tarih alınıyor…</span><span id="clock">--:--:--</span></div>
   <div class="loc-sub" id="time-status" style="margin-bottom:12px;color:var(--mint)">Saat dilimi kontrol ediliyor...</div>
-  <section class="panel hero" aria-label="Sıradaki namaz vakti"><div class="small-label">Sıradaki namaz vakti</div><div class="nextname" id="next-name">Konum bekleniyor</div><div class="bigtime" id="next-time">--:--</div><div class="subtext">Kalan süre: <span class="countdown" id="countdown">--:--:--</span></div><div id="hero-location-status" class="hero-loc-status">Google konumu aranıyor (Wi-Fi / ağ)...</div></section>
+  <section class="panel hero" aria-label="Sıradaki namaz vakti"><div class="small-label">Sıradaki namaz vakti</div><div class="nextname" id="next-name">Konum bekleniyor</div><div class="bigtime" id="next-time">--:--</div><div class="subtext">Kalan süre: <span class="countdown" id="countdown">--:--:--</span></div><div id="hero-location-status" class="hero-loc-status">Google ve GPS konumu aranıyor...</div></section>
+  <section id="location-rescue" class="location-rescue" aria-label="Konum bulma yardımcısı">
+    <strong id="location-rescue-title">Konum bulunamadıysa</strong>
+    <p id="location-rescue-message">Telefonun konum izinlerini kontrol et veya koordinat gir.</p>
+    <div class="location-rescue-actions">
+      <button type="button" id="location-precise-button">Kesin Konum İzni</button>
+      <button type="button" id="location-manual-shortcut" class="secondary">Koordinat Gir</button>
+      <button type="button" id="location-app-settings-button" class="secondary">Uygulama İzinleri</button>
+      <button type="button" id="location-last-known" class="secondary" hidden>Son Kaydedilen Konumu Kullan</button>
+    </div>
+  </section>
   <div class="sectionhead">Bugünün vakitleri <span>Yalnızca günlük</span></div>
   <div id="nz-prayer-tracker" class="nz-prayer-inline" aria-label="Bugünün vakitleri ve namaz takibi">
     <div class="nz-prayer-today-head"><span id="nz-prayer-summary-label">✓ Namaz takibi · Kıldığın vakti işaretle</span><strong id="nz-prayer-progress">Kılınan: 0/5</strong></div>
@@ -125,8 +135,8 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       <button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button>
     </div>
   </section>
-  <section class="panel location" aria-label="Konum ayarları"><div class="small-label">Konum • Google konum servisi → GPS</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="reset-button" class="secondary">Yeniden konum bul</button><button type="button" id="location-settings-button" class="secondary">Konum ayarları</button></div>
-    <details><summary>GPS çalışmazsa koordinatı elle gir</summary><div class="manual"><label>Enlem (−90 … 90)<input id="latitude" type="number" step="any" placeholder="3.13900" /></label><label>Boylam (−180 … 180)<input id="longitude" type="number" step="any" placeholder="101.68690" /></label><button id="manual-button" type="button">Bu koordinatı kullan</button></div></details>
+  <section class="panel location" id="location-detail" aria-label="Konum ayarları"><div class="small-label">Konum • Google konum servisi → GPS</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="reset-button" class="secondary">Yeniden konum bul</button><button type="button" id="location-settings-button" class="secondary">Konum ayarları</button></div>
+    <details id="manual-location-details"><summary>GPS çalışmazsa koordinatı elle gir</summary><div class="manual"><label>Enlem (−90 … 90)<input id="latitude" type="number" step="any" placeholder="3.13900" /></label><label>Boylam (−180 … 180)<input id="longitude" type="number" step="any" placeholder="101.68690" /></label><button id="manual-button" type="button">Bu koordinatı kullan</button></div></details>
     <div class="settings"><label>Hesaplama yöntemi<select id="method"><option value="MWL">Genel (18° / 17°)</option><option value="JAKIM">JAKIM yaklaşık (18° / 18°)</option></select></label><label>İkindi hesabı<select id="asr-method"><option value="1">Standart</option><option value="2">Hanefî</option></select></label></div>
     <details open><summary>⏰ Saat dilimi (gemi saati için önemli)</summary>
       <div class="settings">
@@ -294,8 +304,37 @@ function updateHeroLocation(){
  $('next-name').removeAttribute('data-prayer');
  $('next-time').textContent='--:--';$('countdown').textContent='--:--:--';
 }
+const LOCATION_RESCUE_TEXT={
+ tr:['Konum alınamadıysa','İzinleri kontrol et, GPS’i yeniden dene veya koordinatları elle gir. Gemi Wi-Fi bağlantısı gerçek konum sağlamayabilir.','Kesin konum izni','Koordinat gir','Uygulama izinleri','Son kayıtlı konumu kullan','Bu koordinatlar artık güncel olmayabilir. Gemi hareket ettiyse yanlış namaz vakti oluşabilir. Yine de bu koordinatları elle kullanmak istiyor musun?','Yaklaşık konum; ±',' km. Kesin konumu açarsan daha doğru hesaplanabilir.'],
+ en:['Can’t find your location?','Check permissions, retry GPS, or enter coordinates. Ship Wi-Fi might not provide location.','Precise location','Enter coordinates','App permissions','Use last saved coordinates','The last recorded coordinates may be stale, especially aboard a moving ship. Use them manually anyway?','Approximate location; ±',' km. Enable precise location for better accuracy.'],
+ ms:['Lokasi tidak ditemui?','Semak kebenaran, cuba GPS lagi atau masukkan koordinat. Wi-Fi kapal mungkin tidak memberi lokasi.','Lokasi tepat','Masuk koordinat','Kebenaran aplikasi','Guna koordinat terdahulu','Koordinat lama mungkin tidak tepat, terutamanya jika kapal bergerak. Gunakan?','Lokasi anggaran ±',' km.'],
+ id:['Lokasi tidak ditemukan?','Periksa izin, coba GPS lagi atau masukkan koordinat. Wi-Fi kapal mungkin tidak menyediakan lokasi.','Lokasi akurat','Masukkan koordinat','Izin aplikasi','Gunakan koordinat lama','Koordinat tersimpan mungkin sudah usang. Tetap gunakan?','Perkiraan lokasi ±',' km.'],
+ ar:['لم يتم العثور على الموقع؟','تحقق من الأذونات أو أعد تجربة GPS أو أدخل الإحداثيات. شبكة السفينة لا تحدد موقعها بالضرورة.','الموقع الدقيق','إدخال الإحداثيات','أذونات التطبيق','استخدام آخر إحداثيات','قد تكون الإحداثيات قديمة خصوصاً إذا تحركت السفينة. هل تريد استخدامها؟','الموقع التقريبي ±',' كم.'],
+ ru:['Не удаётся найти местоположение?','Проверьте разрешения, повторите GPS или введите координаты. Судовой Wi-Fi не всегда определяет местоположение.','Точная геолокация','Ввести координаты','Разрешения','Последние координаты','Координаты могут устареть, особенно на движущемся судне. Использовать?','Примерно ±',' км.'],
+ fr:['Impossible de trouver la position ?','Vérifiez les autorisations, réessayez le GPS ou saisissez les coordonnées. Le Wi-Fi du navire ne fournit pas forcément la position.','Position précise','Saisir les coordonnées','Autorisations','Dernières coordonnées','Ces coordonnées peuvent être périmées, surtout en mer. Les utiliser ?','Position estimée ±',' km.'],
+ de:['Standort nicht gefunden?','Berechtigungen prüfen, GPS wiederholen oder Koordinaten eingeben. Schiffs-WLAN liefert nicht unbedingt die Position.','Genauer Standort','Koordinaten eingeben','App-Berechtigungen','Letzte Koordinaten','Die gespeicherte Position kann veraltet sein. Trotzdem verwenden?','Ungefähr ±',' km.'],
+ es:['¿No se encuentra la ubicación?','Revisa permisos, reintenta GPS o introduce coordenadas. El Wi-Fi del barco puede no dar la ubicación.','Ubicación precisa','Introducir coordenadas','Permisos','Últimas coordenadas','La ubicación guardada puede estar desactualizada, sobre todo en el mar. ¿Usarla?','Ubicación aproximada ±',' km.'],
+ pt:['Não encontra a localização?','Verifica permissões, tenta GPS novamente ou introduz coordenadas. O Wi-Fi do navio pode não ter localização.','Localização precisa','Inserir coordenadas','Permissões','Últimas coordenadas','A localização pode estar desatualizada, especialmente no navio. Usar?','Localização aproximada ±',' km.'],
+ az:['Məkan tapılmadı?','İcazələri yoxla, GPS-i yenidən yoxla və ya koordinatları yaz. Gəmi Wi-Fi dəqiq məkan verməyə bilər.','Dəqiq məkan','Koordinat daxil et','Tətbiq icazələri','Son koordinat','Gəmi hərəkət edibsə köhnə koordinat səhv ola bilər. Yenə də istifadə edilsin?','Təxmini məkan ±',' km.'],
+ ur:['مقام نہیں ملا؟','اجازت چیک کریں، GPS دوبارہ آزمائیں یا نقاط درج کریں۔ جہاز کا Wi-Fi صحیح مقام نہیں دیتا۔','درست مقام','نقاط درج کریں','ایپ کی اجازتیں','آخری محفوظ مقام','آخری مقام پرانا ہو سکتا ہے خصوصاً جہاز پر۔ پھر بھی استعمال کریں؟','تقریبی مقام ±',' کلومیٹر۔']
+};
+function rescueWords(){return LOCATION_RESCUE_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||LOCATION_RESCUE_TEXT.en;}
+function renderLocationRescue(){
+ const panel=$('location-rescue');if(!panel)return;
+ const trl=rescueWords();
+ const approximate=validLocation()&&Number.isFinite(state.accuracy)&&state.accuracy>2500;
+ panel.hidden=validLocation()&&!approximate;
+ $('location-rescue-title').textContent=trl[0];
+ $('location-rescue-message').textContent=approximate?
+     trl[7]+Math.round(state.accuracy/1000)+trl[8]:trl[1];
+ $('location-precise-button').textContent=trl[2];
+ $('location-manual-shortcut').textContent=trl[3];
+ $('location-app-settings-button').textContent=trl[4];
+ $('location-last-known').textContent=trl[5];
+}
 function updateLocationPanel(){
  updateHeroLocation();
+ renderLocationRescue();
  if(state.lat===null){
    $('coords').textContent=tr('noCoords');
    $('location-status').textContent=trStatus(state.gpsMessage||'@preparing');
@@ -604,6 +643,31 @@ function init(){
   $('method').value=state.method;$('asr-method').value=String(state.asr);
   $('schedule').innerHTML=TIMES.map(([id,label])=>`<div class="time-tile"><div class="time-label">${window.NamazI18n?window.NamazI18n.prayer(id):label}</div><div class="time-num">--:--</div></div>`).join('');
   if(cached&&Number.isFinite(cached.lat)&&Number.isFinite(cached.lon))setLocation(cached.lat,cached.lon,cached.accuracy,'previous',cached.stamp,false,cached.provider||'');
+  const jumpToManual=()=>{
+    const details=$('manual-location-details');
+    if(details){details.open=true;details.scrollIntoView({behavior:'smooth',block:'center'});}
+    $('latitude').focus();
+  };
+  $('location-manual-shortcut').addEventListener('click',jumpToManual);
+  $('location-precise-button').addEventListener('click',()=>{
+    if(window.GemiNative?.requestPreciseLocation)window.GemiNative.requestPreciseLocation();
+    else jumpToManual();
+  });
+  $('location-app-settings-button').addEventListener('click',()=>{
+    if(window.GemiNative?.openAppLocationPermissionSettings)
+      window.GemiNative.openAppLocationPermissionSettings();
+    else alert(rescueWords()[1]);
+  });
+  const lastKnown=$('location-last-known');
+  if(cached&&Number.isFinite(cached.lat)&&Number.isFinite(cached.lon)&&Math.abs(cached.lat)<=90&&Math.abs(cached.lon)<=180){
+    lastKnown.hidden=false;
+    lastKnown.addEventListener('click',()=>{
+      if(!window.confirm(rescueWords()[6]))return;
+      state.manual=true;
+      $('latitude').value=String(cached.lat);$('longitude').value=String(cached.lon);
+      setLocation(cached.lat,cached.lon,null,'manual',Date.now(),true);
+    });
+  }
   $('gps-button').addEventListener('click',startGPS);
   $('reset-button').addEventListener('click',startGPS);
   $('location-settings-button').addEventListener('click',()=>{

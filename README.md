@@ -89,3 +89,11 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Bugünün namazlarında yalnızca o namazın vakti girdikten sonra işaret değiştirilebilir. Yarın ve gelecek günler seçilemez.
 - Kartta tarih, işaretlenmiş namaz sayısı, otomatik kayıt açıklaması ve kapatma denetimi vardır. Kaydet düğmesine basmak gerekmez; kayıtlar `nz_prayer_check_v09` anahtarında tutulur.
 - 12 dil için düzenleme yönergeleri vardır. Takvime basma, kayıt, kapatma ve kilit davranışları Edge ortamında test edildi.
+
+## v0.18 — Konum izni, GPS ve kapalı deniz ortamı için kurtarma
+- Kullanıcının izin verdiği hâllerde Google konumu, ağ ve **doğrudan GPS eşzamanlı** aranır. 28 saniyelik GPS başlangıç gecikmesi kaldırıldı; açık güvertede GNSS fix daha erken mümkün olabilir.
+- Android'de yaklaşık konum izni de desteklenir: 20 km'ye kadar kaba çözünürlükte sonuçlar güçlü uyarıyla gösterilir. Kesin konum istenirken hem FINE hem COARSE izinleri birlikte talep edilir.
+- Ana sayfada konum eksik/çok yaklaşık olduğunda görünür bir yardım kartı bulunur: kesin konum izni, uygulama izinleri, manuel koordinat girişi. En son kayıtlı koordinatlar yalnız açık kullanıcı onayından sonra **manuel konum** olarak kullanılabilir; otomatik güncel kabul edilmez.
+- Konum araması başarısız olduğu söylense dahi arama bitmez; Android konum callback'leri daha sonra gelirse kabul edilir. Son iki dakikalık geçerli önbellek düzeltme önerisine engel olmaz.
+- Gemi Wi-Fi bağlantısının konumu vermesi garanti değildir. Metal gemi gövdesi ve kapalı kabin uydu sinyalini etkileyebilir. Gerçek Android cihazında ve gerçek GPS izniyle saha testi henüz yapılmadı.
+- Bu sürüm tam Namaz Zamanı APK'sıdır; aylık takvim, dualar, sure sesleri, Royal Qibla, 12 dil ve Esmaül Hüsna korunur.

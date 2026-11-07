@@ -7,8 +7,8 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 18
-        versionName '0.17-full-app-calendar-editor-preview'
+        versionCode 19
+        versionName '0.18-location-recovery-full-preview'
     }
     buildTypes {
         debug {
