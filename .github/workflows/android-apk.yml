@@ -20,8 +20,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Android SDK kur
-        uses: android-actions/setup-android@v3
+      - name: Android SDK kontrol et
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          command -v sdkmanager
+          sdkmanager --version
       - name: SDK 35 paketlerini kur
         run: |
           sdkmanager --install 'platforms;android-35' 'build-tools;35.0.0'
