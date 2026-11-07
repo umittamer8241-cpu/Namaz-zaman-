@@ -1,22 +1,32 @@
-# Namaz Zamanı v0.4 — Google konumunu kendisi etkinleştirir
+# Namaz Zamanı v0.7 — Çok Dilli Günlük Ayet ve Hadis
 
-Android 7+ cihazlarda günlük namaz vakitleri ve aynı ekranda kıble pusulası.
+## İçerik
+- 12 dil: Türkçe, İngilizce, Malayca, Endonezce, Arapça, Rusça, Fransızca, Almanca, İspanyolca, Portekizce, Azerbaycanca, Urduca.
+- Kullanıcının telefon dilini algılar, uygulama içinden değiştirmeye izin verir ve seçimi cihazda saklar.
+- Günlük namaz vakitleri, geri sayım, Google konum servisi, GPS yedeği, kıble pusulası ve saat dilimi seçenekleri v0.6'dan korunur.
+- **Günün Ayeti** ve hemen altında konuyla ilgili **İlgili Hadis** kutusu.
+- Doğrulanmış 7 ayet ve hadis çifti, seçili gemi/telefon saatine göre **her yerel gün değişiminde** otomatik dönüşür. 7 çift tamamlandığında döngü yeniden başlar. Günlük değişim internet istemez.
+- Her günün ayetinin Arapça özgün ayetinden **bir kesit**, 12 dilde kısa **anlam özeti** ve **Kur'an sure:ayet** kaynağı.
+- Eşleşen hadis için 12 dilde kısa **anlam özeti**, Sahih el-Buhârî veya Sahih Müslim referansı.
+- Metinler resmî birebir tercüme veya hadislerin tam lafzı değildir. Araştırma/doğrulama için kaynak numaraları ekrandadır.
+- Ekranların ana başlıkları, namaz adları ve temel kontroller çok dilli olarak düzenlendi.
 
-## Konum sistemi
-Uygulama açılınca Google Play Hizmetleri'nin **yüksek doğruluklu Fused Location Provider** konum aramasını otomatik başlatır (Google Haritalar uygulamasını açmaz). Wi-Fi, mobil ağ ve GPS gibi kaynakları cihazın sağlayıcısı birleştirir. İlk aşamada yaklaşık modla sınırlı değildir.
+## Doğrulanmış kaynak havuzu
+1. Kur'an 2:153 — Sahih al-Bukhari 1469 (sabır)
+2. Kur'an 13:28 — Sahih Muslim 2675a (zikir)
+3. Kur'an 14:7 — Sahih Muslim 2999 (şükür)
+4. Kur'an 3:134 — Sahih al-Bukhari 6114 (öfke)
+5. Kur'an 17:23 — Sahih al-Bukhari 5971 (anne-baba)
+6. Kur'an 29:45 — Sahih al-Bukhari 528 (namaz)
+7. Kur'an 49:13 — Sahih al-Bukhari 13 (insanlık ve kardeşlik)
 
-- Google konumunun yeni bir ölçüm üretmesi için yüksek doğruluklu tek seferlik konum isteği.
-- Daha hızlı veri için yüksek doğruluklu konum güncellemeleri.
-- Eksik telefon ayarı varsa Android'in izin/onay penceresini gösterebilir; kullanıcı onayı olmadan ayarları değiştirmez.
-- Google konumu bulunmazsa 28 saniye sonra yerel GPS yedeği de devreye girer.
-- Konumun doğruluğu, zamanı ve kaynağı ekranda gösterilir; eski koordinatın güncel olduğu iddia edilmez.
-- Gerçek Google Maps uygulaması veya Google Maps API anahtarı gerekmez.
+Kur'an kaynakları: https://quran.com/
+Hadis kaynakları: https://sunnah.com/
 
-**Önemli:** Açık denizde Wi-Fi interneti bulunması gerçek gemi koordinatının Google'a bildirildiği anlamına gelmez. İnternet yönlendirme sunucusunun IP coğrafyası geminin koordinatı değildir. Telefon konum servisi çözüm üretmiyorsa açık güvertede GPS veya manuel gemi koordinatı gereklidir.
+## Google Play
+Bu kodu çalıştırmak için APK test derlemesi yeterli; **Google Play yayın paketi ayrıca AAB biçiminde, kalıcı yükleme anahtarıyla imzalanmalı ve güncel API gereksinimlerine uymalıdır**. Test APK Google Play'e doğrudan yayınlanacak paket değildir.
 
-Vakitler yaklaşık astronomik hesaba dayanır; resmî JAKIM/Diyanet takviminin yerine geçmez. Gemi saati için UTC farkı doğru seçilmelidir.
+## Gizlilik ve notlar
+Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetleri / GPS) çağırır. Kullanıcının konumunu kendi sunucumuza aktaran bir sistem bulunmaz; ancak Google Play Hizmetleri kendi konum işlemleri için ağ kullanabilir. Geçerli konum yerel cihazda saklanır. İnternet/gemi Wi-Fi tek başına gemi koordinatını garanti etmez.
 
-## Kurulum
-Android 7.0+ için GitHub Releases sayfasından APK'yi indir. Debug test imzası önceki sürümle uyuşmazsa v0.3'ü kaldırıp yenisini kur (kayıtlı yerel ayarlar sıfırlanır).
-
-Kaynak proje: https://github.com/umittamer8241-cpu/Namaz-zaman-
+İbadet vakitleri resmî bölgesel takvim yerine geçmeyen astronomik yaklaşık hesaptır; cihazın/geminin zaman dilimi doğru seçilmelidir.

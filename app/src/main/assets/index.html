@@ -37,12 +37,15 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 .manual{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding-top:11px}input,select{background:#071e2d;border:1px solid #446173;border-radius:11px;padding:10px 11px;width:100%;font-size:14px;min-width:0}.manual label{display:grid;gap:5px;font-size:11px;color:var(--muted)}.manual button{grid-column:1/-1}
 .settings{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:10px}.settings label{font-size:11px;color:var(--muted);display:grid;gap:6px}
 .note{color:#b0c3d1;font-size:11px;line-height:1.55;margin:17px 4px 0}.warn{color:var(--warning)}
+.lang-switch{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 15px;padding:8px 12px;background:#103044a0;border:1px solid #35556a;border-radius:14px}.lang-switch label{font-size:12px;color:var(--mint);font-weight:700}.lang-switch select{width:auto;max-width:70%;min-width:135px;padding:7px 9px}
+.wisdom-stack{margin-top:22px}.wisdom-box{border-radius:22px;border:1px solid #48616d;padding:18px 18px 15px;background:linear-gradient(135deg,#143345ee,#0d2839ee);margin-top:11px}.wisdom-box.hadith-box{border-color:#426962;background:linear-gradient(135deg,#0d3a3cee,#11283aee)}.wisdom-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.wisdom-head strong{font-size:16px;color:var(--gold)}.wisdom-head span{font-size:11px;color:var(--muted);direction:ltr;unicode-bidi:plaintext}.wisdom-arabic{font-family:'Noto Naskh Arabic','Noto Sans Arabic',serif;font-size:20px;color:#f2d5a1;line-height:1.9;margin-top:12px;text-align:right;direction:rtl}.wisdom-text{font-size:15px;line-height:1.7;margin-top:10px}.wisdom-caption{font-size:11px;line-height:1.5;color:var(--muted);margin:9px 2px 0}
 @media(max-width:410px){.compass-card{grid-template-columns:43% 1fr;gap:9px}.panel{padding:16px}.qval{font-size:35px}.schedule{gap:7px}.time-tile{padding:11px 3px}.app-title{font-size:24px}}@media(max-width:340px){.compass-card{grid-template-columns:1fr}.dial{max-width:220px;margin:auto}.settings{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main>
   <header><div><div class="brand">Açık deniz • Seyir yardımcısı</div><div class="app-title">Namaz Zamanı <span style="color:var(--gold)">☾</span></div></div><span class="offline">◉ Vakit hesabı çevrimdışı</span></header>
+  <div class="lang-switch"><label id="language-label" for="app-language">Dil / Language</label><select id="app-language" aria-label="Language"></select></div>
   <div class="topline"><span id="today">Tarih alınıyor…</span><span id="clock">--:--:--</span></div>
   <div class="loc-sub" id="time-status" style="margin-bottom:12px;color:var(--mint)">Saat dilimi kontrol ediliyor...</div>
   <section class="panel hero" aria-label="Sıradaki namaz vakti"><div class="small-label">Sıradaki namaz vakti</div><div class="nextname" id="next-name">Konum bekleniyor</div><div class="bigtime" id="next-time">--:--</div><div class="subtext">Kalan süre: <span class="countdown" id="countdown">--:--:--</span></div><div id="hero-location-status" class="hero-loc-status">Google konumu aranıyor (Wi-Fi / ağ)...</div></section>
@@ -58,8 +61,21 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       </div><p class="loc-sub">Gemi saati, telefon saat dilimi ve boylama göre otomatik deniz saati farklı olabilir. Geminin kullandığı saat için UTC farkını ayarla. Bu ayar namaz vakitlerinin gösterimini de değiştirir.</p>
     </details>
   </section>
+  <section class="wisdom-stack" aria-label="Daily Quran verse and related hadith">
+    <div class="wisdom-box" id="verse-card">
+      <div class="wisdom-head"><strong id="verse-heading">Günün Ayeti</strong><span id="verse-ref">Kur'an</span></div>
+      <div class="wisdom-arabic" id="verse-arabic" dir="rtl"></div>
+      <div class="wisdom-text" id="verse-body"></div>
+    </div>
+    <div class="wisdom-box hadith-box" id="hadith-card">
+      <div class="wisdom-head"><strong id="hadith-heading">İlgili Hadis</strong><span id="hadith-ref">Hadis</span></div>
+      <div class="wisdom-text" id="hadith-body"></div>
+    </div>
+    <p id="wisdom-explain" class="wisdom-caption">Anlam özeti · kaynakları kontrol edebilirsiniz</p>
+  </section>
   <p class="note">Google Haritalar uygulaması veya Google Maps API anahtarı gerekmez; Google Play Hizmetleri üzerinden Wi-Fi/ağ destekli konum alınmaya çalışılır. <b>Gemi uydu interneti kendi başına gerçek gemi koordinatını vermez.</b> Açık denizde ağ konumu yoksa GPS veya manuel koordinat gereklidir. Vakitler seçilen saat dilimine ve doğrulanmış koordinatlara göre <b>internetsiz yaklaşık astronomik hesapla</b> belirlenir; resmî veya bölgesel takvimlerle belirgin dakika farkları olabilir. Gemide ilerledikçe konum yenilenir. Kıble pusulası için telefonu mümkünse düz tut; metal yüzeyler, gemi donanımı ve manyetik sapma yönü etkileyebilir. <span class="warn">GPS alınamazsa önceki kayıt güncel konum sayılmaz.</span></p>
 </main>
+<script src="daily_i18n.js"></script>
 <script>
 'use strict';
 // This file intentionally has NO network calls, external imports, or remote dependencies.
@@ -91,16 +107,17 @@ function displayDateParts(now){
 function displayTime(timestamp){
   if(timestamp===null||!Number.isFinite(timestamp))return '—';
   const d=new Date(timestamp);
-  if(state.tzMode==='phone')return d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',hour12:false});
+  if(state.tzMode==='phone')return d.toLocaleTimeString((window.NamazI18n&&window.NamazI18n.getLanguage())||'tr',{hour:'2-digit',minute:'2-digit',hour12:false});
   return new Date(timestamp+activeOffsetMinutes(d)*60000).toISOString().slice(11,16);
 }
 function displayClock(now){
-  if(state.tzMode==='phone')return now.toLocaleTimeString('tr-TR',{hour12:false});
+  if(state.tzMode==='phone')return now.toLocaleTimeString((window.NamazI18n&&window.NamazI18n.getLanguage())||'tr',{hour12:false});
   return new Date(now.getTime()+activeOffsetMinutes(now)*60000).toISOString().slice(11,19);
 }
 function displayDay(now){
   const d=state.tzMode==='phone'?now:new Date(now.getTime()+activeOffsetMinutes(now)*60000);
-  return d.toLocaleDateString('tr-TR',{timeZone:state.tzMode==='phone'?undefined:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const locale=(window.NamazI18n&&window.NamazI18n.getLanguage())||'tr';
+  return d.toLocaleDateString(locale,{timeZone:state.tzMode==='phone'?undefined:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
 function formatUtc(min){
   const sign=min<0?'-':'+';const a=Math.abs(min);
@@ -204,7 +221,7 @@ function updateTimeStatus(now){
   $('utc-offset').disabled=state.tzMode!=='manual';
 }
 function clearSchedule(){
-  $('schedule').innerHTML=TIMES.map(([,label])=>`<div class="time-tile"><div class="time-label">${label}</div><div class="time-num">--:--</div></div>`).join('');
+  $('schedule').innerHTML=TIMES.map(([,label])=>`<div class="time-tile"><div class="time-label">${window.NamazI18n?window.NamazI18n.prayer(id):label}</div><div class="time-num">--:--</div></div>`).join('');
   $('next-name').textContent='Güncel konum bekleniyor';$('next-time').textContent='--:--';$('countdown').textContent='--:--:--';
   $('bearing').textContent='---°';$('bearing-note').textContent='Konum doğrulanınca kıble hesaplanacak.';
   $('compass-status').textContent='Konum güncel değil';
@@ -218,13 +235,14 @@ function refreshCalculations(now){
   const nextDayUTC=new Date(Date.UTC(day.y,day.m,day.day+1));
   const nextDay={y:nextDayUTC.getUTCFullYear(),m:nextDayUTC.getUTCMonth(),day:nextDayUTC.getUTCDate()};
   state.tomorrow=prayerTimes(nextDay,state.lat,state.lon,state.method,state.asr);
-  $('schedule').innerHTML=TIMES.map(([id,label])=>`<div class="time-tile" data-prayer="${id}"><div class="time-label">${label}</div><div class="time-num">${fmtTime(state.times[id])}</div></div>`).join('');
+  $('schedule').innerHTML=TIMES.map(([id,label])=>`<div class="time-tile" data-prayer="${id}"><div class="time-label">${window.NamazI18n?window.NamazI18n.prayer(id):label}</div><div class="time-num">${fmtTime(state.times[id])}</div></div>`).join('');
   $('bearing').textContent=`${qibla(state.lat,state.lon).toFixed(1)}°`;
   $('bearing-note').textContent='Gerçek kuzeyden saat yönünde Kâbe açısı';
   updateNeedle();
 }
 function renderClock(){
   const now=new Date();
+  if(window.NamazI18n)window.NamazI18n.renderWisdom();
   $('clock').textContent=displayClock(now);$('today').textContent=displayDay(now);
   updateTimeStatus(now);
   if(!validLocation(now.getTime())){refreshCalculations(now);return;}
@@ -233,7 +251,7 @@ function renderClock(){
   let upcoming=PRAYERS.map(([id,name])=>({id,name,time:state.times[id]})).filter(x=>x.time!==null&&x.time>now.getTime()).sort((a,b)=>a.time-b.time);
   if(!upcoming.length)upcoming=PRAYERS.map(([id,name])=>({id,name,time:state.tomorrow[id]})).filter(x=>x.time!==null&&x.time>now.getTime()).sort((a,b)=>a.time-b.time);
   const next=upcoming[0];
-  if(next){$('next-name').textContent=next.name;$('next-time').textContent=fmtTime(next.time);$('countdown').textContent=formatDuration(next.time-now.getTime());}
+  if(next){$('next-name').dataset.prayer=next.id;$('next-name').textContent=window.NamazI18n?window.NamazI18n.prayer(next.id):next.name;$('next-time').textContent=fmtTime(next.time);$('countdown').textContent=formatDuration(next.time-now.getTime());}
   else{$('next-name').textContent='Vakit hesaplanamadı';$('next-time').textContent='—';$('countdown').textContent='—';}
   const current=PRAYERS.filter(([id])=>state.times[id]!==null&&state.times[id]<=now.getTime()).slice(-1)[0]?.[0];
   document.querySelectorAll('[data-prayer]').forEach(el=>el.classList.toggle('current',el.getAttribute('data-prayer')===current));
@@ -284,6 +302,7 @@ function startCompass(){
 }
 function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();}
 function init(){
+  if(window.NamazI18n)window.NamazI18n.init();
   const cached=saved('location',null);
   state.method=METHODS[saved('method','MWL')]?saved('method','MWL'):'MWL';
   state.asr=saved('asr',1)===2?2:1;
@@ -294,7 +313,7 @@ function init(){
   list.value=String(state.utcOffset);
   $('timezone-mode').value=state.tzMode;
   $('method').value=state.method;$('asr-method').value=String(state.asr);
-  $('schedule').innerHTML=TIMES.map(([,label])=>`<div class="time-tile"><div class="time-label">${label}</div><div class="time-num">--:--</div></div>`).join('');
+  $('schedule').innerHTML=TIMES.map(([,label])=>`<div class="time-tile"><div class="time-label">${window.NamazI18n?window.NamazI18n.prayer(id):label}</div><div class="time-num">--:--</div></div>`).join('');
   if(cached&&Number.isFinite(cached.lat)&&Number.isFinite(cached.lon))setLocation(cached.lat,cached.lon,cached.accuracy,'previous',cached.stamp,false,cached.provider||'');
   $('gps-button').addEventListener('click',startGPS);
   $('reset-button').addEventListener('click',startGPS);
