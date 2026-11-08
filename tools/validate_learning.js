@@ -4,11 +4,12 @@ const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypt
 const root=path.join(__dirname,'..'),dir=path.join(root,'app','src','main','assets');
 function ok(x,msg){if(!x)throw new Error(msg);}
 function file(p){return fs.readFileSync(path.join(dir,p),'utf8');}
-for(const p of ['extra_surahs.js','learning_content.js','learning_ui.js','prayer_tracker.js'])new vm.Script(file(p),{filename:p});
+for(const p of ['extra_surahs.js','dua_latin_tr_fixes.js','learning_content.js','learning_ui.js','prayer_tracker.js'])new vm.Script(file(p),{filename:p});
 const ctx={window:{}};
 new vm.Script(file('daily_dua_library.js'),{filename:'daily_dua_library.js'});
 vm.runInNewContext(file('daily_dua_library.js'),ctx,{filename:'daily_dua_library.js'});
 vm.runInNewContext(file('extra_surahs.js'),ctx,{filename:'extra_surahs.js'});
+vm.runInNewContext(file('dua_latin_tr_fixes.js'),ctx,{filename:'dua_latin_tr_fixes.js'});
 vm.runInNewContext(file('learning_content.js'),ctx,{filename:'learning_content.js'});
 const data=ctx.window.NamazLearningContent;
 ok(data&&data.surahs.length===18,'Exactly 18 bundled short surahs');

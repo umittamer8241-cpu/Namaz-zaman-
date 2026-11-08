@@ -8,8 +8,8 @@ const native=fs.readFileSync(path.join(root,'app/src/main/java/com/geminamaz/app
 assert(native.includes('@JavascriptInterface public void requestAutoLocation()'),'Auto GPS bridge required for v0.25 front end');
 assert(!native.includes('startArabicSpeech')&&!native.includes('speakArabic('),'Dua text-to-speech must be removed');
 assert(gradle.includes("applicationId 'com.geminamaz.app'"));
-assert(gradle.includes("applicationIdSuffix '.dailytest26'"));
+assert(gradle.includes("applicationIdSuffix '.readingtest27'"));
 assert(gradle.includes("versionNameSuffix '-side-by-side'"));
 assert(release.includes('android:label="Namaz Zamanı"'));
-assert(debug.includes('android:label="Namaz Zamanı Günlük İçerik Test v0.26"'));
+assert(debug.includes('android:label="Namaz Zamanı Dua Okunuş Test v0.27"'));
 console.log('PASS: debug installs beside main app; release package unchanged; clearly labeled test app.');

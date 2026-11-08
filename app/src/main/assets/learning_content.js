@@ -170,5 +170,5 @@ const NAMES = RAW_NAMES.map((line, index) => {
   const [name, ar, meaningTr] = line.split("|");
   return {number:index+1, name, ar, meaningTr};
 });
-window.NamazLearningContent = Object.freeze({surahs:SURAH.slice(0,1).concat(window.NamazExtraSurahs||[],SURAH.slice(1)),duas:DUAS.concat(window.NamazDuaLibrary||[]),names:NAMES});
+window.NamazLearningContent = Object.freeze({surahs:SURAH.slice(0,1).concat(window.NamazExtraSurahs||[],SURAH.slice(1)),duas:DUAS.concat(window.NamazDuaLibrary||[]).map(d=>({...d,latin:window.NamazDuaLatinTR.correct(d)})),names:NAMES});
 })();

@@ -1,0 +1,52 @@
+name: Namaz Zamani v0.27 Turkish Dua Readings APK
+on:
+  push:
+    branches: [fix/dua-turkce-okunus-v027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android-v027:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+          log-accepted-android-sdk-licenses: 'false'
+      - run: sdkmanager --install 'platforms;android-36' 'build-tools;36.0.0'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Check daily content and safety
+        run: |
+          node --check app/src/main/assets/extra_surahs.js
+          node --check app/src/main/assets/dua_latin_tr_fixes.js
+          node --check app/src/main/assets/learning_content.js
+          node --check app/src/main/assets/learning_ui.js
+          node tools/validate_learning.js
+          node tools/validate_dua_sequence.js
+          node tools/validate_dua_latin_tr_v027.js
+          node tools/validate_full_apk.js
+          node tools/validate_test_installer.js
+      - name: Build side-by-side daily test APK and normal ID preview
+        run: gradle --no-daemon --stacktrace :app:assembleDebug :app:assembleFullPreview
+      - name: Verify test package
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep -q "name='com.geminamaz.app.readingtest27'"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/fullPreview/app-fullPreview.apk | grep -q "name='com.geminamaz.app'"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Namaz-Zamani-v027-Turkce-Dua-Test-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Namaz-Zamani-v027-Normal-Preview-APK
+          path: app/build/outputs/apk/fullPreview/app-fullPreview.apk
+          if-no-files-found: error

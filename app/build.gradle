@@ -7,13 +7,13 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 26
-        versionName '0.26-daily-content-fix'
+        versionCode 27
+        versionName '0.27-dua-turkish-readings'
     }
     buildTypes {
         debug {
             // Standalone QA app: never overwrite the user's existing prayer records.
-            applicationIdSuffix '.dailytest26'
+            applicationIdSuffix '.readingtest27'
             versionNameSuffix '-side-by-side'
         }
         fullPreview {

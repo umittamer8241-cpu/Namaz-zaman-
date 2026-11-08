@@ -163,7 +163,11 @@ function renderDua(force){
  host.appendChild(el("p",counter,"nz-progress nz-dua-progress"));
  if(dua.title)host.appendChild(el("h3",dua.title,"nz-dua-title"));
  const ar=el("p",dua.ar,"nz-arabic nz-dua-arabic");ar.lang="ar";ar.dir="rtl";host.appendChild(ar);
- host.appendChild(el("p",dua.latin,"nz-phonetic"));
+ host.appendChild(el("div",lang()==="tr"?"Türkçe okunuş (yaklaşık)":"Turkish pronunciation aid (approximate)","nz-mini-label"));
+ host.appendChild(el("p",dua.latin,"nz-phonetic nz-dua-pronunciation"));
+ host.appendChild(el("p",lang()==="tr"
+  ?"Latin harfleri Arapçadaki bütün sesleri karşılamaz. Doğru telaffuz için Arapça metni ve uzman öğreticiyi esas al."
+  :"Latin letters cannot reproduce every Arabic sound. Use the Arabic original and qualified recitation guidance.","loc-sub"));
  host.appendChild(el("div",t("meaning"),"nz-mini-label"));
  host.appendChild(el("p",lang()==="tr"?dua.tr:dua.en,"nz-meaning"));
  host.appendChild(makeLink(dua.url,dua.ref+" · "+t("source")));
