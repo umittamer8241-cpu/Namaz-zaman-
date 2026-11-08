@@ -160,6 +160,13 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             waitingSatellitePermission=false;
             beginLocation();
         });}
+        // v0.25 automatic location bootstrap: respect a previously granted permission.
+        @JavascriptInterface public void requestAutoLocation(){
+            runOnUiThread(()->{
+                // Android requests location permission only when not yet granted.
+                if(!working){beginLocation();sendLocationDiagnostics();}
+            });
+        }
         @JavascriptInterface public void requestSmartLocation(){
             runOnUiThread(()->{
                 waitingSatellitePermission=false;
