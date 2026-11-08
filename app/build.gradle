@@ -2,13 +2,26 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'com.geminamaz.app'
-    compileSdk 35
+    compileSdk 36
     defaultConfig {
         applicationId 'com.geminamaz.app'
         minSdk 24
-        targetSdk 34
-        versionCode 8
-        versionName '0.8'
+        targetSdk 36
+        versionCode 26
+        versionName '0.26-daily-content-fix'
+    }
+    buildTypes {
+        debug {
+            // Standalone QA app: never overwrite the user's existing prayer records.
+            applicationIdSuffix '.dailytest26'
+            versionNameSuffix '-side-by-side'
+        }
+        fullPreview {
+            // Complete installable APK under the normal Namaz Zamani package ID.
+            // Debug-signed for internal testing only; NOT a Play Store release.
+            initWith release
+            signingConfig signingConfigs.debug
+        }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17

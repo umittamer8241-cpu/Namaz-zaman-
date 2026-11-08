@@ -41,6 +41,8 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 .wisdom-stack{margin-top:22px}.wisdom-box{border-radius:22px;border:1px solid #48616d;padding:18px 18px 15px;background:linear-gradient(135deg,#143345ee,#0d2839ee);margin-top:11px}.wisdom-box.hadith-box{border-color:#426962;background:linear-gradient(135deg,#0d3a3cee,#11283aee)}.wisdom-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.wisdom-head strong{font-size:16px;color:var(--gold)}.wisdom-head span{font-size:11px;color:var(--muted);direction:ltr;unicode-bidi:plaintext}.wisdom-arabic{font-family:'Noto Naskh Arabic','Noto Sans Arabic',serif;font-size:20px;color:#f2d5a1;line-height:1.9;margin-top:12px;text-align:right;direction:rtl}.wisdom-text{font-size:15px;line-height:1.7;margin-top:10px}.wisdom-caption{font-size:11px;line-height:1.5;color:var(--muted);margin:9px 2px 0}
 @media(max-width:410px){.compass-card{grid-template-columns:43% 1fr;gap:9px}.panel{padding:16px}.qval{font-size:35px}.schedule{gap:7px}.time-tile{padding:11px 3px}.app-title{font-size:24px}}@media(max-width:340px){.compass-card{grid-template-columns:1fr}.dial{max-width:220px;margin:auto}.settings{grid-template-columns:1fr}}
 </style>
+<link rel="stylesheet" href="learning_styles.css" />
+<link rel="stylesheet" href="premium_shell.css" />
 </head>
 <body>
 <main>
@@ -48,11 +50,192 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
   <div class="lang-switch"><label id="language-label" for="app-language">Dil / Language</label><select id="app-language" aria-label="Language"></select></div>
   <div class="topline"><span id="today">Tarih alınıyor…</span><span id="clock">--:--:--</span></div>
   <div class="loc-sub" id="time-status" style="margin-bottom:12px;color:var(--mint)">Saat dilimi kontrol ediliyor...</div>
-  <section class="panel hero" aria-label="Sıradaki namaz vakti"><div class="small-label">Sıradaki namaz vakti</div><div class="nextname" id="next-name">Konum bekleniyor</div><div class="bigtime" id="next-time">--:--</div><div class="subtext">Kalan süre: <span class="countdown" id="countdown">--:--:--</span></div><div id="hero-location-status" class="hero-loc-status">Google konumu aranıyor (Wi-Fi / ağ)...</div></section>
-  <div class="sectionhead">Bugünün vakitleri <span>Yalnızca günlük</span></div><section class="schedule" id="schedule" aria-label="Günlük namaz vakitleri"></section>
-  <section class="panel compass-card" aria-label="Kıble yönü"><div class="dial" aria-label="Kıble pusulası"><span class="tick n">K</span><span class="tick s">G</span><span class="tick e">D</span><span class="tick w">B</span><div class="needle-wrap" id="needle"><div class="needle"><svg viewBox="0 0 28 150" aria-hidden="true"><path d="M14 0 L28 80 L14 68 L0 80 Z" fill="#f4d48c"/><path d="M14 0L14 68L0 80Z" fill="#fff6d9"/><path d="M14 68 L23 112 L14 102 L5 112Z" fill="#77d9cb" opacity=".7" /></svg></div></div></div><div><div class="small-label">Kıble yönü</div><div class="qval" id="bearing">---°</div><div class="qsub" id="bearing-note">GPS ile Kâbe yönü hesaplanıyor.</div><div class="compass-status" id="compass-status">Pusula sensörü bekleniyor…</div><button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button></div></section>
-  <section class="panel location" aria-label="Konum ayarları"><div class="small-label">Konum • Google konum servisi → GPS</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="reset-button" class="secondary">Yeniden konum bul</button><button type="button" id="location-settings-button" class="secondary">Konum ayarları</button></div>
-    <details><summary>GPS çalışmazsa koordinatı elle gir</summary><div class="manual"><label>Enlem (−90 … 90)<input id="latitude" type="number" step="any" placeholder="3.13900" /></label><label>Boylam (−180 … 180)<input id="longitude" type="number" step="any" placeholder="101.68690" /></label><button id="manual-button" type="button">Bu koordinatı kullan</button></div></details>
+  <section class="panel hero" aria-label="Sıradaki namaz vakti"><div class="small-label">Sıradaki namaz vakti</div><div class="nextname" id="next-name">Konum bekleniyor</div><div class="bigtime" id="next-time">--:--</div><div class="subtext">Kalan süre: <span class="countdown" id="countdown">--:--:--</span></div><div id="hero-location-status" class="hero-loc-status">Google ve GPS konumu aranıyor...</div></section>
+  <!-- Single premium entry point: every location control lives in the sheet. -->
+  <section class="nz-location-entry" aria-label="Konum merkezi">
+    <button type="button" id="nz-location-hub-open" class="nz-location-hub-launch" aria-haspopup="dialog" aria-controls="nz-location-hub" aria-expanded="false">
+      <span class="nz-location-hub-glyph" aria-hidden="true">⌖<span id="nz-location-blue-dot" class="nz-location-blue-dot" data-status="waiting"></span></span>
+      <span class="nz-location-hub-launch-copy">
+        <strong id="nz-location-hub-button-label">Konum Merkezi</strong>
+        <small id="nz-location-hub-caption">Konum ve gemi saati ayarlarını yönet</small>
+      </span>
+      <span class="nz-location-hub-chevron" aria-hidden="true">›</span>
+    </button>
+  </section>
+  <div class="sectionhead">Bugünün vakitleri <span>Yalnızca günlük</span></div>
+  <div id="nz-prayer-tracker" class="nz-prayer-inline" aria-label="Bugünün vakitleri ve namaz takibi">
+    <div class="nz-prayer-today-head"><span id="nz-prayer-summary-label">✓ Namaz takibi · Kıldığın vakti işaretle</span><strong id="nz-prayer-progress">Kılınan: 0/5</strong></div>
+    <section class="schedule" id="schedule" aria-label="Günlük namaz vakitleri ve namaz takibi"></section>
+  </div>
+  <details class="panel nz-calendar-panel nz-calendar-drawer" id="nz-calendar-drawer" aria-label="Monthly prayer tracking">
+    <summary id="nz-calendar-label">◈ Aylık Namaz Çizelgesi <span>Günleri düzenlemek için aç</span></summary>
+    <div id="nz-month-calendar" class="nz-month-calendar" aria-live="off"></div>
+  </details>
+  <section class="panel compass-card compass-proplus" aria-label="Kıble pusulası">
+    <div class="pro-compass-shell">
+      <div class="dial premium-dial pro-dial ornate-compass-dial" aria-label="Canlı kıble yönünü gösteren tek ok">
+        <img class="ornate-compass-frame" src="compass_ornate_frame.svg" alt="" aria-hidden="true" />
+        <div class="ornate-compass-silk" aria-hidden="true"></div>
+        <div class="ornate-compass-rose" aria-hidden="true"></div>
+        <span class="tick n">K</span><span class="tick s">G</span><span class="tick e">D</span><span class="tick w">B</span>
+        <div class="needle-wrap ornate-single-needle" id="needle">
+          <svg class="premium-needle" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="needleGold" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#7e4216"/>
+                <stop offset=".18" stop-color="#dca650"/>
+                <stop offset=".47" stop-color="#fff7d7"/>
+                <stop offset=".65" stop-color="#f9cd72"/>
+                <stop offset="1" stop-color="#87551c"/>
+              </linearGradient>
+              <linearGradient id="needleSpine" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#f4d08d"/>
+                <stop offset=".52" stop-color="#fff6ce"/>
+                <stop offset="1" stop-color="#b47c2f"/>
+              </linearGradient>
+            </defs>
+            <path d="M50 3 L68 49 L56 47 L56 87 Q50 95 44 87 L44 47 L32 49 Z"
+                  fill="#4b270c" stroke="#0b0f13" stroke-width="2.6" stroke-linejoin="round"/>
+            <path d="M50 3 L68 49 L56 47 L56 87 Q50 95 44 87 L44 47 L32 49 Z"
+                  fill="url(#needleGold)" stroke="#ffe6a2" stroke-width="1.15" stroke-linejoin="round"/>
+            <path d="M50 4 L50 85" stroke="url(#needleSpine)" stroke-width="1.75" stroke-linecap="round"/>
+            <path d="M50 9 L55.7 42 L50 40 Z" fill="#fff5ce" opacity=".58"/>
+            <path d="M50 9 L44.3 42 L50 40 Z" fill="#6e3c13" opacity=".54"/>
+            <path d="M46 58 L54 58 M46 65 L54 65 M46 72 L54 72" stroke="#8a541d" stroke-width=".65" opacity=".65"/>
+            <circle cx="50" cy="50" r="5.7" fill="#6d4017" stroke="#fff4c3" stroke-width="1.2"/>
+            <circle cx="50" cy="50" r="3.6" fill="#e3b45e"/>
+          </svg>
+        </div>
+        <div class="pro-compass-center ornate-compass-center" aria-hidden="true">
+          <svg viewBox="0 0 36 36">
+            <path fill="#101219" stroke="#ffe5a3" stroke-width="1.2" d="M9 12L19 7L28 12L28 26L18 31L9 26Z"/>
+            <path d="M9 12L18 17L28 12M18 17V31" fill="none" stroke="#eabf6a" stroke-width="1.1"/>
+            <path d="M9 17L18 22L28 17" fill="none" stroke="#fff0ba" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+      <div class="pro-compass-caption">Q I B L A <span>•</span> 360°</div>
+    </div>
+    <div class="compass-readout pro-compass-readout">
+      <div class="pro-accuracy-tag"><span class="pro-status-dot"></span><span id="pro-compass-label">KIBLE • YÖN BULUCU</span></div>
+      <div class="small-label">Kıble yönü</div>
+      <div class="qval" id="bearing">---°</div>
+      <div class="qsub" id="bearing-note">GPS ile Kâbe yönü hesaplanıyor.</div>
+      <div class="pro-compass-data">
+        <div><span id="pro-compass-heading-label">Telefon yönü</span><strong id="pro-compass-heading">—</strong></div>
+        <div><span id="pro-compass-difference-label">Kâbe farkı</span><strong id="pro-compass-difference">—</strong></div>
+      </div>
+      <div class="compass-status" id="compass-status">Pusula sensörü bekleniyor…</div>
+      <div class="compass-quality" id="compass-quality" aria-live="polite">Sensör doğruluğu kontrol ediliyor…</div>
+      <button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button>
+    </div>
+      <details id="nz-compass-tools" class="nz-compass-tools" hidden inert aria-hidden="true">
+        <summary id="nz-compass-tools-label">◈ Kıble doğrulama ve alternatif yöntemler</summary>
+        <p id="nz-compass-tools-hint">Pusula şüpheliyse gölge, gerçek kuzey veya bağımsız çevrim içi kontrolü kullan.</p>
+      <details id="sun-shadow-method" class="sun-shadow-method">
+        <summary id="sun-shadow-title">☀ Sensörsüz kıble — Gölge yöntemi</summary>
+        <p id="sun-shadow-instructions">Dik bir nesnenin gölgesinin UZANDIĞI yöne telefonun üst kenarını doğrult. Telefon yatay dururken Gölgeye hizaladım düğmesine bas.</p>
+        <div id="sun-shadow-status" class="sun-shadow-status" aria-live="polite">Güneşin konumu hesaplanıyor…</div>
+        <div class="sun-shadow-actions">
+          <button type="button" id="sun-shadow-align">Gölgeye hizaladım</button>
+          <button type="button" id="sun-shadow-reset" class="secondary">Sensörlü pusulaya dön</button>
+        </div>
+        <p id="sun-shadow-caution">Güneşe doğrudan bakma. Ok sabittir: telefonu çevirirsen yeniden hizala. Gece veya gölge yokken kullanılmaz.</p>
+      </details>
+      <details id="manual-reference-methods" class="manual-reference-methods">
+        <summary id="manual-reference-title">◎ Diğer sensörsüz kıble yöntemleri</summary>
+        <p id="manual-reference-intro">Bu yöntemler yalnızca doğruluğunu bildiğin bir dış yön referansıyla çalışır. Telefonun üst kenarını referansın fiziksel yönüne çevirip hizala.</p>
+        <div class="manual-reference-choice">
+          <strong id="manual-north-title">1. Gerçek kuzey yöntemi</strong>
+          <p id="manual-north-help">Güvenilir bir harita/işaretle doğruladığın GERÇEK KUZEY yönüne telefonun ÜST KENARINI hizala. Manyetik kuzey veya GPS gidiş yönünü kullanma.</p>
+          <button type="button" id="manual-north-align">Gerçek kuzeye hizaladım</button>
+        </div>
+        <div class="manual-reference-choice">
+          <strong id="manual-heading-title">2. Doğrulanmış yön açısı</strong>
+          <p id="manual-heading-help">Harici güvenilir bir kaynaktan alınan gerçek kuzeye göre yön açısını yaz. Gemide yalnız TRUE HEADING uygundur; COG (gidiş yönü) uygun değildir. Telefon üst kenarı o yönü göstermelidir.</p>
+          <label class="manual-reference-field"><span id="manual-heading-label">Gerçek yön (0–359,9°)</span><input id="manual-heading-input" type="number" step="0.1" min="0" max="359.9" placeholder="125.0" inputmode="decimal" /></label>
+          <button type="button" id="manual-heading-align">Bu doğrultuya hizaladım</button>
+        </div>
+        <div class="manual-reference-choice">
+          <strong id="manual-landmark-title">3. Koordinatı bilinen görünür işaret</strong>
+          <p id="manual-landmark-help">Gördüğün iskele, kule veya belirgin bir yapının koordinatlarını yaz. Telefonun üst kenarını GERÇEKTE o yapıya doğrult. Uygulama iki noktanın yön açısını internetsiz hesaplar.</p>
+          <div class="manual-reference-coords">
+            <label><span id="manual-landmark-lat-label">İşaretin enlemi</span><input id="manual-landmark-lat" type="number" step="any" min="-90" max="90" placeholder="40.97" inputmode="decimal"/></label>
+            <label><span id="manual-landmark-lon-label">İşaretin boylamı</span><input id="manual-landmark-lon" type="number" step="any" min="-180" max="180" placeholder="29.1" inputmode="decimal"/></label>
+          </div>
+          <button type="button" id="manual-landmark-align">Gördüğüm işarete hizaladım</button>
+        </div>
+        <label class="manual-reference-confirm"><input type="checkbox" id="manual-reference-confirm"/>
+          <span id="manual-reference-confirm-label">Telefonun üst kenarı gerçek referans yönüne hizalıdır.</span>
+        </label>
+        <p id="manual-reference-message" class="manual-reference-message" aria-live="polite"></p>
+        <button type="button" id="manual-reference-reset" class="secondary" disabled>Elle hizalamayı bitir</button>
+      </details>
+      <details id="qibla-online-verify" class="qibla-online-verify">
+        <summary id="qibla-online-title">🌐 İnternetle kıble açısını karşılaştır</summary>
+        <p id="qibla-online-intro">İnternet yalnızca düğmeye bastığında kullanılır: yerel hesaplama iki ayrı kıble API'siyle karşılaştırılır. Telefonun baktığı fiziksel yön internetten doğrulanamaz.</p>
+        <button type="button" id="qibla-online-button">İki kaynaktan kontrol et (küçük veri kullanır)</button>
+        <div id="qibla-online-status" class="qibla-online-status" aria-live="polite">Henüz çevrim içi doğrulama yapılmadı.</div>
+        <div id="qibla-online-results" class="qibla-online-results"></div>
+        <p id="qibla-online-caution">Konum güncel değilse çevrim içi kaynaklar da eski koordinata göre sonuç verir. Kaynakların uyuşması pusula sensörünü doğrulamaz.</p>
+      </details>
+      <button type="button" id="compass-calibrate" class="secondary">Pusulayı kalibre et</button>
+      <div id="compass-calibration-guide" class="compass-calibration-guide" hidden></div>
+      <details id="compass-diagnostics" class="compass-diagnostics">
+        <summary id="compass-diagnostics-title">İki telefon karşılaştırma raporu</summary>
+        <div class="compass-debug-data" id="compass-diagnostics-data" aria-live="polite">Sensör verisi bekleniyor…</div>
+        <button type="button" class="secondary" id="compass-diagnostics-copy">Tanı raporunu kopyala</button>
+        <div id="compass-diagnostics-copy-status" class="loc-sub"></div>
+      </details>
+      </details>
+  </section>
+  <!-- Fixed sheet, not part of the scroll height when closed. -->
+  <div id="nz-location-hub" class="nz-location-hub" hidden aria-hidden="true">
+    <div class="nz-location-hub-backdrop" id="nz-location-hub-backdrop"></div>
+    <section id="nz-location-hub-sheet" class="nz-location-hub-sheet" role="dialog" aria-modal="true" aria-labelledby="nz-location-hub-title" tabindex="-1">
+      <div class="nz-location-hub-header">
+        <div class="nz-location-hub-heading">
+          <span class="nz-location-hub-kicker" id="nz-location-hub-kicker">NAMAZ ZAMANI • KONUM</span>
+          <h2 id="nz-location-hub-title">Konum Merkezi</h2>
+          <p id="nz-location-hub-intro">GPS, kesin konum, koordinat, gemi saati ve tanılama</p>
+        </div>
+        <button type="button" id="nz-location-hub-close" class="nz-location-hub-close" aria-label="Konum Merkezini kapat">×</button>
+      </div>
+      <div class="nz-location-hub-body">
+        <section class="nz-auto-qibla-privacy" aria-label="Automatic online Qibla verification consent">
+          <label class="nz-auto-qibla-label">
+            <input type="checkbox" id="nz-auto-qibla-online-consent"/>
+            <strong id="nz-auto-qibla-online-title">Otomatik internetli kıble denetimi</strong>
+          </label>
+          <p id="nz-auto-qibla-online-disclosure">Bu özellik açıkken güncel enlem ve boylamın AlAdhan ve MyQuran'a gönderilir.</p>
+          <small id="nz-auto-qibla-local-note">İnternetsiz doğrulama her zaman otomatik çalışır.</small>
+        </section>
+        <div id="nz-location-live-indicator" class="nz-location-live-indicator" role="status" aria-live="polite">
+          <span class="nz-location-live-dot" id="nz-location-live-dot" data-status="waiting" aria-hidden="true"></span>
+          <span id="nz-location-live-text">Konum ölçümü bekleniyor...</span>
+        </div>
+  <section id="location-rescue" class="location-rescue" aria-label="Konum bulma yardımcısı">
+    <strong id="location-rescue-title">Konum bulunamadıysa</strong>
+    <p id="location-rescue-message">Telefonun konum izinlerini kontrol et veya koordinat gir.</p>
+    <div class="location-rescue-actions">
+      <button type="button" id="location-precise-button">Kesin Konum İzni</button>
+      <button type="button" id="location-manual-shortcut" class="secondary">Koordinat Gir</button>
+      <button type="button" id="location-app-settings-button" class="secondary">Uygulama İzinleri</button>
+      <button type="button" id="location-last-known" class="secondary" hidden>Son Kaydedilen Konumu Kullan</button>
+    </div>
+  </section>
+  <details class="nz-location-diagnostic-panel" id="nz-location-diagnostic-panel" open>
+    <summary id="nz-location-diagnostic-title">Konum tanılama ve onarım</summary>
+    <p id="nz-location-diagnostic-intro">GPS ve izin durumunu telefondan kontrol et.</p>
+    <button id="nz-location-smart" type="button">Akıllı konum bul (GPS + ağ)</button>
+    <button id="nz-location-diagnostic-refresh" class="secondary" type="button">Telefon konum durumunu kontrol et</button>
+    <div id="nz-location-diagnostic-results"></div>
+    <p id="nz-location-diagnostic-hint" aria-live="polite">Konum izinleri kontrol ediliyor…</p>
+    <button id="nz-location-diagnostic-copy" class="secondary" type="button">Konum raporunu kopyala</button>
+    <span id="nz-location-diagnostic-copy-status" aria-live="polite"></span>
+  </details>
+  <section class="panel location" id="location-detail" aria-label="Konum ayarları"><div class="small-label">Konum • Google konum servisi → GPS</div><div class="loc-main" id="coords">GPS konumu aranıyor…</div><div class="loc-sub" id="location-status">Telefonun konum izni gerekebilir.</div><div class="controls"><button type="button" id="gps-button">⌖ GPS konumunu al</button><button type="button" id="location-network-button" class="secondary">Google/ağ konumu (isteğe bağlı)</button><button type="button" id="location-settings-button" class="secondary">Konum ayarları</button></div>
+    <details id="manual-location-details"><summary>GPS çalışmazsa koordinatı elle gir</summary><div class="manual"><label>Enlem (−90 … 90)<input id="latitude" type="number" step="any" placeholder="3.13900" /></label><label>Boylam (−180 … 180)<input id="longitude" type="number" step="any" placeholder="101.68690" /></label><button id="manual-button" type="button">Bu koordinatı kullan</button></div></details>
     <div class="settings"><label>Hesaplama yöntemi<select id="method"><option value="MWL">Genel (18° / 17°)</option><option value="JAKIM">JAKIM yaklaşık (18° / 18°)</option></select></label><label>İkindi hesabı<select id="asr-method"><option value="1">Standart</option><option value="2">Hanefî</option></select></label></div>
     <details open><summary>⏰ Saat dilimi (gemi saati için önemli)</summary>
       <div class="settings">
@@ -61,6 +244,20 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       </div><p class="loc-sub">Gemi saati, telefon saat dilimi ve boylama göre otomatik deniz saati farklı olabilir. Geminin kullandığı saat için UTC farkını ayarla. Bu ayar namaz vakitlerinin gösterimini de değiştirir.</p>
     </details>
   </section>
+      </div>
+      <div class="nz-location-hub-footer">
+        <span id="nz-location-hub-footnote">Konum güncellemeleri yalnızca isteğinle internet kullanır.</span>
+      </div>
+    </section>
+  </div>
+  <section class="panel location" id="nz-dua-learning" aria-label="Daily supplication"></section>
+  <details class="nz-study-drawer" id="nz-study-drawer">
+    <summary id="nz-study-label">◈ Sureler ve Esmaül Hüsna</summary>
+    <div class="nz-study-drawer-body">
+  <section class="panel location" id="nz-surah-learning" aria-label="Prayer surah memorization"></section>
+  <section class="panel location" id="nz-esma-learning" aria-label="Beautiful names of Allah"></section>
+    </div>
+  </details>
   <section class="wisdom-stack" aria-label="Daily Quran verse and related hadith">
     <div class="wisdom-box" id="verse-card">
       <div class="wisdom-head"><strong id="verse-heading">Günün Ayeti</strong><span id="verse-ref">Kur'an</span></div>
@@ -73,10 +270,22 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
     </div>
     <p id="wisdom-explain" class="wisdom-caption">Anlam özeti · kaynakları kontrol edebilirsiniz</p>
   </section>
-  <p class="note">Google Haritalar uygulaması veya Google Maps API anahtarı gerekmez; Google Play Hizmetleri üzerinden Wi-Fi/ağ destekli konum alınmaya çalışılır. <b>Gemi uydu interneti kendi başına gerçek gemi koordinatını vermez.</b> Açık denizde ağ konumu yoksa GPS veya manuel koordinat gereklidir. Vakitler seçilen saat dilimine ve doğrulanmış koordinatlara göre <b>internetsiz yaklaşık astronomik hesapla</b> belirlenir; resmî veya bölgesel takvimlerle belirgin dakika farkları olabilir. Gemide ilerledikçe konum yenilenir. Kıble pusulası için telefonu mümkünse düz tut; metal yüzeyler, gemi donanımı ve manyetik sapma yönü etkileyebilir. <span class="warn">GPS alınamazsa önceki kayıt güncel konum sayılmaz.</span></p>
+  <details class="nz-help-drawer"><summary id="nz-help-label">Bilgi ve kullanım notları</summary><p class="note">Google Haritalar uygulaması veya Google Maps API anahtarı gerekmez; Google Play Hizmetleri üzerinden Wi-Fi/ağ destekli konum alınmaya çalışılır. <b>Gemi uydu interneti kendi başına gerçek gemi koordinatını vermez.</b> Açık denizde ağ konumu yoksa GPS veya manuel koordinat gereklidir. Vakitler seçilen saat dilimine ve doğrulanmış koordinatlara göre <b>internetsiz yaklaşık astronomik hesapla</b> belirlenir; resmî veya bölgesel takvimlerle belirgin dakika farkları olabilir. Gemide ilerledikçe konum yenilenir. Kıble pusulası için telefonu mümkünse düz tut; metal yüzeyler, gemi donanımı ve manyetik sapma yönü etkileyebilir. <span class="warn">GPS alınamazsa önceki kayıt güncel konum sayılmaz.</span></p></details>
+<p id="nz-developer-note"></p>
 <p style="text-align:center;margin:12px 0 26px"><a id="privacy-policy-link" href="privacy-policy.html" style="color:#bcd8d7;text-decoration:underline">Gizlilik Politikası</a></p></main>
 <script src="daily_i18n.js"></script>
 <script src="full_ui_i18n.js"></script>
+<script src="location_diagnostics.js"></script>
+<script src="location_hub.js"></script>
+<script src="daily_dua_library.js"></script>
+<script src="extra_surahs.js"></script>
+<script src="learning_content.js"></script>
+<script src="esma_i18n.js"></script>
+<script src="learning_ui.js"></script>
+<script src="prayer_tracker.js"></script>
+<script src="sun_qibla.js"></script>
+<script src="manual_qibla.js"></script>
+<script src="auto_qibla.js"></script>
 <script>
 'use strict';
 // This file intentionally has NO network calls, external imports, or remote dependencies.
@@ -89,7 +298,7 @@ const KAABA = { lat: 21.422487, lon: 39.826206 };
 const METHODS = { MWL: { fajr:18, isha:17 }, JAKIM: {fajr:18, isha:18} };
 const TIMES = [['fajr','Sabah'],['sunrise','Güneş'],['dhuhr','Öğle'],['asr','İkindi'],['maghrib','Akşam'],['isha','Yatsı']];
 const PRAYERS = [['fajr','Sabah'],['dhuhr','Öğle'],['asr','İkindi'],['maghrib','Akşam'],['isha','Yatsı']];
-const state = {lat:null,lon:null,accuracy:null,stamp:0,live:false,heading:null,source:'',provider:'',manual:false,calcKey:'',times:null,watchId:null,method:'MWL',asr:1,compassRequested:false,tzMode:'phone',utcOffset:8,gpsMessage:''};
+const state = {lat:null,lon:null,accuracy:null,stamp:0,live:false,heading:null,headingError:180,headingSource:'',headingTrusted:false,headingUpdatedAt:0,source:'',provider:'',manual:false,calcKey:'',times:null,watchId:null,method:'MWL',asr:1,compassRequested:false,tzMode:'phone',utcOffset:8,gpsMessage:''};
 const rad = x=>x*Math.PI/180, deg=x=>x*180/Math.PI;
 const sind=x=>Math.sin(rad(x)), cosd=x=>Math.cos(rad(x));
 const wrap=(v,n)=>((v%n)+n)%n;
@@ -133,10 +342,27 @@ function formatUtc(min){
   const sign=min<0?'-':'+';const a=Math.abs(min);
   return 'UTC'+sign+String(Math.floor(a/60)).padStart(2,'0')+':'+String(a%60).padStart(2,'0');
 }
-function validLocation(now=Date.now()){
-  if(state.lat===null)return false;
-  if(state.source==='manual')return true;
-  return Number.isFinite(state.stamp)&&state.stamp>0&&now-state.stamp<=10*60000&&now-state.stamp>=-60000;
+// Usability and freshness are separate. Cached coordinates remain usable for
+// OFFLINE calculations but are NEVER labelled current after their age expires.
+function validLocation(){
+ return Number.isFinite(state.lat)&&Number.isFinite(state.lon)
+    &&Math.abs(state.lat)<=90&&Math.abs(state.lon)<=180;
+}
+function locationFresh(now=Date.now()){
+ if(!validLocation())return false;
+ if(state.source==='manual')return false; // user-fixed, no live GPS claim
+ return Number.isFinite(state.stamp)&&state.stamp>0
+    &&now-state.stamp<=10*60000&&now-state.stamp>=-60000
+    &&state.source!=='previous';
+}
+function locationIsStale(now=Date.now()){
+ // Manual position is intentionally fixed by the user. It is not a live GPS
+ // measurement, but is not automatically expired by the timer either.
+ return validLocation()&&state.source!=='manual'&&!locationFresh(now);
+}
+function locationAgeMinutes(now=Date.now()){
+ return Number.isFinite(state.stamp)&&state.stamp>0
+ ?Math.max(0,Math.floor((now-state.stamp)/60000)):null;
 }
 function solar(baseUTC, hourUTC){
   const D=(baseUTC-Date.UTC(2000,0,1,12))/86400000+hourUTC/24;
@@ -190,8 +416,14 @@ function setLocation(lat,lon,accuracy,source,stamp=Date.now(),live=true,provider
   if(state.manual&&source!=='manual')return;
   if(source==='manual')state.gpsMessage='';
   state.lat=lat;state.lon=lon;state.accuracy=accuracy;state.source=source;state.stamp=stamp;state.live=live;state.provider=provider;
+  if(window.GemiNative&&typeof window.GemiNative.setCompassLocation==='function'){
+    window.GemiNative.setCompassLocation(lat,lon);
+  }
   store('location',{lat,lon,accuracy,stamp,source,provider});
+  // Prayer times depend on local coordinates and time only, never on the
+  // availability of network/GPS updates after a fix.
   state.calcKey='';renderAll();
+  maybeAutoVerifyQibla();
 }
 
 function updateHeroLocation(){
@@ -199,7 +431,8 @@ function updateHeroLocation(){
  if(validLocation()){
    const src=state.source==='manual'?'sourceManual':state.source==='previous'?'sourceOld':state.provider==='google'?'sourceGoogle':state.provider==='network'?'sourceNetwork':state.provider==='gps'?'sourceGPS':'sourceGoogle';
    const accuracy=Number.isFinite(state.accuracy)&&state.accuracy>0?' · '+tr('accuracy',{n:Math.round(state.accuracy)}):'';
-   node.textContent='✓ '+tr('locationFound',{source:tr(src),accuracy});
+   node.textContent=(locationFresh()?'✓ ':'⚠ ')+tr('locationFound',{source:tr(src),accuracy})
+     +(locationIsStale()?' · '+offlineWords()[0]:'');
    return;
  }
  const msg=trStatus(state.gpsMessage||'@preparing');
@@ -208,15 +441,65 @@ function updateHeroLocation(){
  $('next-name').removeAttribute('data-prayer');
  $('next-time').textContent='--:--';$('countdown').textContent='--:--:--';
 }
+const LOCATION_RESCUE_TEXT={
+ tr:['Konum alınamadıysa','İzinleri kontrol et, GPS’i yeniden dene veya koordinatları elle gir. Gemi Wi-Fi bağlantısı gerçek konum sağlamayabilir.','Kesin konum izni','Koordinat gir','Uygulama izinleri','Son kayıtlı konumu kullan','Bu koordinatlar artık güncel olmayabilir. Gemi hareket ettiyse yanlış namaz vakti oluşabilir. Yine de bu koordinatları elle kullanmak istiyor musun?','Yaklaşık konum; ±',' km. Kesin konumu açarsan daha doğru hesaplanabilir.'],
+ en:['Can’t find your location?','Check permissions, retry GPS, or enter coordinates. Ship Wi-Fi might not provide location.','Precise location','Enter coordinates','App permissions','Use last saved coordinates','The last recorded coordinates may be stale, especially aboard a moving ship. Use them manually anyway?','Approximate location; ±',' km. Enable precise location for better accuracy.'],
+ ms:['Lokasi tidak ditemui?','Semak kebenaran, cuba GPS lagi atau masukkan koordinat. Wi-Fi kapal mungkin tidak memberi lokasi.','Lokasi tepat','Masuk koordinat','Kebenaran aplikasi','Guna koordinat terdahulu','Koordinat lama mungkin tidak tepat, terutamanya jika kapal bergerak. Gunakan?','Lokasi anggaran ±',' km.'],
+ id:['Lokasi tidak ditemukan?','Periksa izin, coba GPS lagi atau masukkan koordinat. Wi-Fi kapal mungkin tidak menyediakan lokasi.','Lokasi akurat','Masukkan koordinat','Izin aplikasi','Gunakan koordinat lama','Koordinat tersimpan mungkin sudah usang. Tetap gunakan?','Perkiraan lokasi ±',' km.'],
+ ar:['لم يتم العثور على الموقع؟','تحقق من الأذونات أو أعد تجربة GPS أو أدخل الإحداثيات. شبكة السفينة لا تحدد موقعها بالضرورة.','الموقع الدقيق','إدخال الإحداثيات','أذونات التطبيق','استخدام آخر إحداثيات','قد تكون الإحداثيات قديمة خصوصاً إذا تحركت السفينة. هل تريد استخدامها؟','الموقع التقريبي ±',' كم.'],
+ ru:['Не удаётся найти местоположение?','Проверьте разрешения, повторите GPS или введите координаты. Судовой Wi-Fi не всегда определяет местоположение.','Точная геолокация','Ввести координаты','Разрешения','Последние координаты','Координаты могут устареть, особенно на движущемся судне. Использовать?','Примерно ±',' км.'],
+ fr:['Impossible de trouver la position ?','Vérifiez les autorisations, réessayez le GPS ou saisissez les coordonnées. Le Wi-Fi du navire ne fournit pas forcément la position.','Position précise','Saisir les coordonnées','Autorisations','Dernières coordonnées','Ces coordonnées peuvent être périmées, surtout en mer. Les utiliser ?','Position estimée ±',' km.'],
+ de:['Standort nicht gefunden?','Berechtigungen prüfen, GPS wiederholen oder Koordinaten eingeben. Schiffs-WLAN liefert nicht unbedingt die Position.','Genauer Standort','Koordinaten eingeben','App-Berechtigungen','Letzte Koordinaten','Die gespeicherte Position kann veraltet sein. Trotzdem verwenden?','Ungefähr ±',' km.'],
+ es:['¿No se encuentra la ubicación?','Revisa permisos, reintenta GPS o introduce coordenadas. El Wi-Fi del barco puede no dar la ubicación.','Ubicación precisa','Introducir coordenadas','Permisos','Últimas coordenadas','La ubicación guardada puede estar desactualizada, sobre todo en el mar. ¿Usarla?','Ubicación aproximada ±',' km.'],
+ pt:['Não encontra a localização?','Verifica permissões, tenta GPS novamente ou introduz coordenadas. O Wi-Fi do navio pode não ter localização.','Localização precisa','Inserir coordenadas','Permissões','Últimas coordenadas','A localização pode estar desatualizada, especialmente no navio. Usar?','Localização aproximada ±',' km.'],
+ az:['Məkan tapılmadı?','İcazələri yoxla, GPS-i yenidən yoxla və ya koordinatları yaz. Gəmi Wi-Fi dəqiq məkan verməyə bilər.','Dəqiq məkan','Koordinat daxil et','Tətbiq icazələri','Son koordinat','Gəmi hərəkət edibsə köhnə koordinat səhv ola bilər. Yenə də istifadə edilsin?','Təxmini məkan ±',' km.'],
+ ur:['مقام نہیں ملا؟','اجازت چیک کریں، GPS دوبارہ آزمائیں یا نقاط درج کریں۔ جہاز کا Wi-Fi صحیح مقام نہیں دیتا۔','درست مقام','نقاط درج کریں','ایپ کی اجازتیں','آخری محفوظ مقام','آخری مقام پرانا ہو سکتا ہے خصوصاً جہاز پر۔ پھر بھی استعمال کریں؟','تقریبی مقام ±',' کلومیٹر۔']
+};
+const OFFLINE_LOCATION_TEXT={
+ tr:['Son konum (internetsiz)','Son kaydedilen konum ve namaz vakitleri saklandı. Gemi hareket ettiyse koordinatı güncelle; internet kullanmadan uydu GPS ile yenileyebilirsin.','dakika önce','Uydu GPS (internetsiz)','Google/ağ konumu (isteğe bağlı)'],
+ en:['Saved offline coordinates','The saved location and prayer times remain available offline. If the ship moved, update your position using satellite GPS without network.','minutes ago','Satellite GPS (offline)','Google/network location (optional)'],
+ ms:['Koordinat tersimpan di luar talian','Lokasi dan waktu solat disimpan. Jika kapal bergerak, kemas kini GPS tanpa internet.','minit lalu','GPS satelit (luar talian)','Lokasi rangkaian (pilihan)'],
+ id:['Koordinat tersimpan offline','Lokasi dan jadwal salat tersimpan. Jika kapal bergerak, perbarui melalui GPS satelit.','menit lalu','GPS satelit (offline)','Lokasi jaringan (opsional)'],
+ ar:['إحداثيات محفوظة دون اتصال','الموقع والأوقات محفوظة. إذا تحركت السفينة، حدّث الموقع عبر GPS دون شبكة.','دقيقة مضت','GPS بالأقمار الصناعية','الموقع عبر الشبكة (اختياري)'],
+ ru:['Сохранённое местоположение','Положение и времена молитв доступны без интернета. Если судно переместилось, обновите GPS.','мин. назад','Спутниковый GPS','Сетевое определение (по выбору)'],
+ fr:['Position enregistrée hors ligne','Position et heures conservées. Si le navire a bougé, mettez à jour le GPS hors ligne.','min plus tôt','GPS satellite hors ligne','Localisation réseau facultative'],
+ de:['Offline gespeicherter Standort','Standort und Gebetszeiten bleiben gespeichert. Bei Schiffsbewegung GPS erneut abrufen.','Min. alt','Satelliten-GPS offline','Netzwerk-Ortung (optional)'],
+ es:['Posición guardada sin conexión','Se conservan la ubicación y los horarios. Si el barco se movió, actualiza el GPS sin red.','min antes','GPS satelital sin conexión','Ubicación de red (opcional)'],
+ pt:['Localização guardada offline','Localização e horários ficam guardados. Se o navio se moveu, atualiza o GPS offline.','min atrás','GPS de satélite offline','Localização de rede (opcional)'],
+ az:['Oflayn saxlanmış məkan','Məkan və namaz vaxtları saxlanıb. Gəmi hərəkət edibsə, peyk GPS ilə yenilə.','dəqiqə əvvəl','Peyk GPS (oflayn)','Şəbəkə konumu (istəyə bağlı)'],
+ ur:['آف لائن محفوظ مقام','محفوظ مقام اور نماز کے اوقات موجود ہیں۔ جہاز چلنے پر GPS سے تازہ کریں۔','منٹ پرانا','سیٹلائٹ GPS (آف لائن)','نیٹ ورک مقام (اختیاری)']
+};
+function offlineWords(){return OFFLINE_LOCATION_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||OFFLINE_LOCATION_TEXT.en;}
+function rescueWords(){return LOCATION_RESCUE_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||LOCATION_RESCUE_TEXT.en;}
+function renderLocationRescue(){
+ const panel=$('location-rescue');if(!panel)return;
+ const trl=rescueWords();
+ const approximate=validLocation()&&Number.isFinite(state.accuracy)&&state.accuracy>2500;
+ const stale=locationIsStale();
+ panel.hidden=validLocation()&&!approximate&&!stale;
+ $('location-rescue-title').textContent=trl[0];
+ $('location-rescue-message').textContent=stale?
+     offlineWords()[1]+(locationAgeMinutes()===null?'':(' ('+locationAgeMinutes()+' '+offlineWords()[2]+')')):
+     approximate?trl[7]+Math.round(state.accuracy/1000)+trl[8]:trl[1];
+ $('location-precise-button').textContent=trl[2];
+ $('location-manual-shortcut').textContent=trl[3];
+ $('location-app-settings-button').textContent=trl[4];
+ $('location-last-known').textContent=trl[5];
+ const offline=offlineWords();
+ $('gps-button').textContent=offline[3];
+ $('location-network-button').textContent=offline[4];
+}
 function updateLocationPanel(){
  updateHeroLocation();
+ window.NamazLocationHub?.refresh?.();
+ renderLocationRescue();
  if(state.lat===null){
    $('coords').textContent=tr('noCoords');
    $('location-status').textContent=trStatus(state.gpsMessage||'@preparing');
    return;
  }
  $('coords').textContent=state.lat.toFixed(5)+'°, '+state.lon.toFixed(5)+'°';
- const stale=!validLocation();
+ const stale=locationIsStale();
  const src=state.source==='manual'?'sourceManual':state.source==='previous'?'sourceOld':state.provider==='google'?'sourceGoogle':state.provider==='network'?'sourceNetwork':state.provider==='gps'?'sourceGPS':'sourceGoogle';
  const acc=Number.isFinite(state.accuracy)&&state.accuracy>0?' · '+tr('accuracy',{n:Math.round(state.accuracy)}):'';
  const age=state.source==='manual'?'':' · '+tr('age',{n:Math.max(0,Math.floor((Date.now()-state.stamp)/60000))});
@@ -280,43 +563,508 @@ function renderClock(){
   document.querySelectorAll('[data-prayer]').forEach(el=>el.classList.toggle('current',el.getAttribute('data-prayer')===current));
 }
 
-function updateNeedle(){
- if(!validLocation()){
-    $('compass-status').textContent=state.heading===null?tr('compassWait'):tr('qiblaWaiting');
-    $('bearing-note').textContent=tr('qiblaWaiting');
-    return;
- }
- const bearing=qibla(state.lat,state.lon),h=state.heading;
- const turn=h===null?bearing:wrap(bearing-h,360);
- $('needle').style.transform='rotate('+turn+'deg)';
- $('bearing-note').textContent=tr('qiblaNorth');
- $('compass-status').textContent=h===null?tr('compassNoData'):
-    tr('compassDirection',{n:Math.round(h)})+' · '+
-    (Math.abs(wrap(bearing-h+180,360)-180)<8?tr('compassAligned'):tr('compassTurn'));
+const ONLINE_QIBLA_UI={
+ tr:['🌐 İnternetle kıble açısını karşılaştır','Sadece düğmeye basınca internet kullanılır. Yerel kıble hesabı iki bağımsız çevrim içi servisle karşılaştırılır; telefonun baktığı yönü internet belirleyemez.','İki kaynaktan kontrol et (az veri)','Henüz çevrim içi doğrulama yapılmadı.','Kaynakların uyuşması pusula sensörünü veya geminin güncel konumunu doğrulamaz.','Önce koordinat gir veya GPS ile konum al.','Kayıtlı konum eski görünüyor; güncelle veya koordinatı elle doğrula.','İnternet kontrolü yapılıyor; iki küçük HTTPS isteği gönderildi...','Yerel hesap','AlAdhan','MyQuran','Kaynaklar arası fark','İki kaynak ve yerel hesap uyumlu (sadece açı doğrulandı).','Sonuçlar farklı! Konumu ve kaynağı tekrar kontrol et; oku otomatik değiştirmedim.','Tek kaynakla karşılaştırıldı; tam doğrulama değil.','Hiçbir kaynak yanıtlamadı; çevrim dışı hesap korunuyor.','İnternet kontrolü sadece kıble açısını karşılaştırır, telefonun fiziksel doğrultusunu değil.','Daha sonra yeniden kontrol et','Doğrulama yapılan koordinat değişti; eski sonuç gösterilmiyor.'],
+ en:['🌐 Compare Qibla using the internet','The internet is used only after you tap. Two independent online services are compared with the offline Qibla calculation. The phone’s physical heading is not validated online.','Check two sources (low data)','No online comparison yet.','Agreement does not validate the compass sensor or a ship’s changing location.','Enter coordinates or get a location first.','Saved location may be stale; update or manually verify coordinates.','Checking two HTTPS sources with small requests...','Offline result','AlAdhan','MyQuran','Difference between sources','Two services agree with the offline bearing (bearing only).','Readings disagree! Verify location; the arrow was not adjusted automatically.','Only one source replied; not a full cross-check.','Neither service replied; offline calculation remains available.','Online checking validates bearings, not physical phone orientation.','Check again later','Coordinates changed; outdated comparison hidden.'],
+ ms:['🌐 Semak kiblat melalui internet','Hanya apabila ditekan. Dua sumber dalam talian dibanding dengan kiraan luar talian; arah telefon tidak disahkan.','Semak dua sumber','Belum disemak.','Persetujuan tidak mengesahkan sensor atau lokasi kapal.','Masukkan koordinat dahulu.','Lokasi mungkin sudah lama.','Menyemak sumber HTTPS...','Kiraan luar talian','AlAdhan','MyQuran','Perbezaan','Dua sumber sepadan dengan kiraan.','Sumber berbeza. Semak koordinat.','Hanya satu sumber membalas.','Tiada jawapan, kiraan luar talian kekal.','Arah fizikal telefon tidak disahkan melalui internet.','Semak kemudian','Koordinat berubah.'],
+ id:['🌐 Verifikasi kiblat via internet','Hanya saat tombol ditekan. Dua layanan dibandingkan dengan hitungan offline, bukan arah ponsel.','Periksa dua sumber','Belum diperiksa.','Tidak memverifikasi sensor atau lokasi kapal.','Masukkan koordinat dulu.','Lokasi mungkin lama.','Memeriksa sumber HTTPS...','Hitungan offline','AlAdhan','MyQuran','Selisih','Dua sumber cocok dengan hitungan.','Sumber berbeda; periksa lokasi.','Hanya satu sumber menjawab.','Tidak ada jawaban; perhitungan offline tersedia.','Arah ponsel tidak diperiksa oleh internet.','Coba nanti','Koordinat berubah.'],
+ ar:['🌐 التحقق من القبلة عبر الإنترنت','عند الضغط فقط: مقارنة الحساب دون اتصال بخدمتين مستقلتين؛ لا تتحقق الشبكة من اتجاه الهاتف.','فحص مصدرين','لم يتم الفحص بعد.','اتفاق المصدرين لا يثبت دقة البوصلة أو موقع السفينة.','أدخل الإحداثيات أولاً.','الموقع قديم.','جارٍ فحص المصدرين...','الحساب المحلي','AlAdhan','MyQuran','فرق المصدرين','تتوافق الزاويتان مع الحساب المحلي.','النتائج مختلفة؛ تحقق من الموقع.','أجاب مصدر واحد فقط.','لا توجد استجابة، الحساب المحلي متاح.','الإنترنت لا يتحقق من اتجاه الهاتف الفعلي.','أعد المحاولة لاحقاً','تغير الموقع.'],
+ ru:['🌐 Проверить киблу через интернет','Только после нажатия: сравнение местного расчёта с двумя сервисами. Курс телефона не проверяется.','Проверить два источника','Пока не проверено.','Совпадение не подтверждает датчик или координаты корабля.','Сначала укажите координаты.','Координаты устарели.','Проверка источников...','Автономный расчёт','AlAdhan','MyQuran','Расхождение','Два источника совпадают с расчётом.','Источники расходятся; проверьте координаты.','Ответил один источник.','Нет ответа; расчёт доступен.','Интернет не проверяет физическое направление телефона.','Позже','Координаты изменились.'],
+ fr:['🌐 Vérifier la qibla en ligne','Uniquement sur demande : calcul local comparé à deux services. Le cap physique du téléphone n’est pas vérifié.','Vérifier deux sources','Pas encore vérifié.','Accord sans garantie de capteur ni position du navire.','Saisir les coordonnées.','Position peut être ancienne.','Vérification HTTPS...','Calcul local','AlAdhan','MyQuran','Écart','Les deux sources concordent.','Résultats différents ; vérifiez la position.','Une source a répondu.','Aucune réponse ; calcul local conservé.','Internet ne mesure pas le cap du téléphone.','Réessayer','Position modifiée.'],
+ de:['🌐 Qibla online überprüfen','Nur auf Knopfdruck: lokalen Winkel mit zwei Quellen vergleichen, nicht die Handy-Ausrichtung.','Zwei Quellen prüfen','Noch nicht überprüft.','Einigkeit bestätigt weder Sensor noch Schiffsposition.','Koordinaten zuerst angeben.','Position ist möglicherweise veraltet.','HTTPS-Quellen werden geprüft...','Lokale Rechnung','AlAdhan','MyQuran','Unterschied','Quellen stimmen überein.','Abweichung! Standort überprüfen.','Nur eine Antwort.','Keine Antwort; Offlinewert bleibt.','Die physische Handy-Ausrichtung kann nicht online geprüft werden.','Später prüfen','Koordinaten geändert.'],
+ es:['🌐 Verificar la qibla en línea','Solo al pulsar: comparar cálculo local con dos servicios; no verifica el rumbo físico del móvil.','Consultar dos fuentes','Sin verificar aún.','No valida sensor ni posición del barco.','Introduce coordenadas.','Ubicación posiblemente antigua.','Comprobando HTTPS...','Cálculo local','AlAdhan','MyQuran','Diferencia','Dos fuentes coinciden.','¡No coinciden! Verifica la posición.','Solo respondió una fuente.','Sin respuesta; cálculo offline disponible.','Internet no verifica el rumbo del móvil.','Reintentar después','Coordenadas cambiadas.'],
+ pt:['🌐 Verificar a qibla online','Só ao tocar: compara cálculo local a duas fontes, não a orientação física do telefone.','Verificar duas fontes','Ainda não verificado.','Não confirma sensor nem posição do navio.','Insere coordenadas.','Localização poderá ser antiga.','A verificar HTTPS...','Cálculo local','AlAdhan','MyQuran','Diferença','Duas fontes concordam.','Resultados diferentes! Revê a posição.','Só uma fonte respondeu.','Nenhuma resposta; cálculo offline disponível.','Internet não verifica a orientação do telefone.','Voltar a verificar','Coordenadas mudaram.'],
+ az:['🌐 Qibləni internetlə yoxla','Yalnız düyməyə basanda iki onlayn mənbə ilə yerli bucaq yoxlanır; telefonun fiziki yönü yoxlanmır.','İki mənbəni yoxla','Hələ yoxlanmayıb.','Sensoru və gəminin yerini təsdiqləmir.','Koordinat daxil et.','Məkan köhnə ola bilər.','HTTPS yoxlanır...','Yerli hesab','AlAdhan','MyQuran','Fərq','İki mənbə uyğun gəlir.','Mənbələr fərqlidir! Məkanı yoxla.','Yalnız bir mənbə cavab verdi.','Cavab yoxdur; oflayn hesab qalır.','İnternet telefonun fiziki istiqamətini yoxlamır.','Sonra yoxla','Koordinat dəyişib.'],
+ ur:['🌐 انٹرنیٹ سے قبلہ جانچیں','صرف بٹن دبانے پر دو ذرائع سے مقامی حساب ملایا جائے گا، فون کا رخ نہیں۔','دو ذرائع چیک کریں','ابھی جانچ نہیں ہوئی۔','سینسر یا جہاز کے مقام کی تصدیق نہیں۔','پہلے نقاط دیں۔','محفوظ مقام پرانا ہو سکتا ہے۔','HTTPS جانچ ہو رہی ہے...','مقامی حساب','AlAdhan','MyQuran','فرق','دونوں ذرائع مطابقت رکھتے ہیں۔','نتائج مختلف ہیں! مقام جانچیں۔','صرف ایک جواب ملا۔','جواب نہیں ملا؛ آف لائن حساب موجود۔','انٹرنیٹ فون کا رخ نہیں جانچ سکتا۔','بعد میں دیکھیں','نقاط بدل گئے۔']
+};
+function onlineWords(){return ONLINE_QIBLA_UI[window.NamazI18n?.getLanguage?.()||'tr']||ONLINE_QIBLA_UI.en;}
+function onlinePrivacyText(){
+ const lang=window.NamazI18n?.getLanguage?.()||'tr';
+ const translation={
+  tr:'Bu işlemde enlem ve boylamın AlAdhan ve MyQuran servislerine gönderilir.',
+  en:'This sends your latitude and longitude to AlAdhan and MyQuran.',
+  ms:'Latitud dan longitud anda dihantar kepada AlAdhan dan MyQuran.',
+  id:'Lintang dan bujur Anda dikirim ke AlAdhan dan MyQuran.',
+  ar:'سيُرسل خط العرض والطول إلى خدمتي AlAdhan وMyQuran.',
+  ru:'Широта и долгота будут отправлены в AlAdhan и MyQuran.',
+  fr:'Votre latitude et longitude sont envoyées à AlAdhan et MyQuran.',
+  de:'Breiten- und Längengrad werden an AlAdhan und MyQuran gesendet.',
+  es:'Se enviarán tu latitud y longitud a AlAdhan y MyQuran.',
+  pt:'A latitude e longitude serão enviadas a AlAdhan e MyQuran.',
+  az:'En və uzunluq koordinatların AlAdhan və MyQuran xidmətlərinə göndərilir.',
+  ur:'آپ کے عرض و طول بلد AlAdhan اور MyQuran کو بھیجے جائیں گے۔'
+ };
+ return translation[lang]||translation.en;
 }
-
-function nativeHeading(degrees){if(Number.isFinite(degrees)){state.heading=wrap(degrees,360);if(!validLocation())$('compass-status').textContent=tr('qiblaWaiting');updateNeedle();}}
+const qiblaOnlineState={waiting:false,checked:null,initialTime:0};
+function qiblaOnlineCoordinatesMatch(q){
+ return !!(q&&validLocation()&&Math.abs(q.lat-state.lat)<.00001&&
+   Math.abs(q.lon-state.lon)<.00001);
+}
+function renderQiblaOnline(){
+ const w=onlineWords(),stat=$('qibla-online-status'),button=$('qibla-online-button'),result=$('qibla-online-results');
+ $('qibla-online-title').textContent=w[0];
+ $('qibla-online-intro').textContent=w[1]+' '+onlinePrivacyText();
+ $('qibla-online-caution').textContent=w[4];button.textContent=w[2];button.disabled=qiblaOnlineState.waiting;
+ result.replaceChildren();
+ if(!validLocation()){stat.textContent=w[5];button.disabled=true;return;}
+ if(locationIsStale()){stat.textContent=w[6];button.disabled=true;return;}
+ if(qiblaOnlineState.waiting){stat.textContent=w[7];return;}
+ const q=qiblaOnlineState.checked;
+ if(!q){stat.textContent=w[3];return;}
+ if(!qiblaOnlineCoordinatesMatch(q)){stat.textContent=w[18];return;}
+ const local=qibla(state.lat,state.lon),a=q.a,b=q.b,
+   gap=a!==null&&b!==null?Math.abs(wrap(a-b+180,360)-180):null,
+   aDiff=a!==null?Math.abs(wrap(a-local+180,360)-180):null,
+   bDiff=b!==null?Math.abs(wrap(b-local+180,360)-180):null,
+   consensus=gap!==null&&gap<=1&&aDiff<=1.5&&bDiff<=1.5;
+ const pairs=[[w[8],local],[w[9],a],[w[10],b],[w[11],gap]];
+ for(const [name,value] of pairs){
+   const line=document.createElement('div');line.className='qibla-online-row';
+   const l=document.createElement('span');l.textContent=name;
+   const n=document.createElement('strong');n.textContent=value===null?'—':value.toFixed(2)+'°';
+   line.append(l,n);result.appendChild(line);
+ }
+ stat.textContent=consensus?w[12]:
+   gap!==null?w[13]:a!==null||b!==null?w[14]:w[15];
+ stat.classList.toggle('verified',consensus);stat.classList.toggle('warning',!consensus);
+}
+function requestOnlineQibla(){
+ if(qiblaOnlineState.waiting)return;
+ if(!validLocation()||locationIsStale()){renderQiblaOnline();return;}
+ if(!window.GemiNative?.verifyQiblaOnline){
+   $('qibla-online-status').textContent='Android uygulamasında kullanılabilir. İnternet tarayıcısında ayrı istek yapılmaz.';
+   return;
+ }
+ qiblaOnlineState.waiting=true;qiblaOnlineState.checked=null;
+ qiblaOnlineState.initialTime=Date.now();
+ const lat=state.lat,lon=state.lon;
+ renderQiblaOnline();
+ window.GemiNative.verifyQiblaOnline(lat,lon);
+}
+function maybeAutoVerifyQibla(){
+ const auto=window.NamazAutoQibla;
+ // No sharing on first install, no sharing without a live accurate GPS fix.
+ // These HTTPS calls run while app is visible, not as an OS background task.
+ if(!auto?.permitted?.()||document.hidden||!window.GemiNative?.verifyQiblaOnline||
+    !locationFresh()||state.manual||!Number.isFinite(state.accuracy)||
+    state.accuracy<=0||state.accuracy>2500||qiblaOnlineState.waiting)return false;
+ const geometry=auto.audit(state.lat,state.lon,qibla(state.lat,state.lon));
+ if(!geometry.passed||!auto.due(state.lat,state.lon))return false;
+ // Save the attempt BEFORE the requests to prevent repeated app-start requests
+ // when the ship has limited mobile data or an endpoint times out.
+ auto.markAttempt(state.lat,state.lon);
+ requestOnlineQibla();
+ return true;
+}
+function nativeQiblaOnlineResult(complete,a,b,message,latitude,longitude){
+ qiblaOnlineState.waiting=false;
+ const normalized=x=>Number.isFinite(x)&&x>=0&&x<360?x:null;
+ qiblaOnlineState.checked={a:normalized(a),b:normalized(b),message:String(message||''),
+  lat:latitude,lon:longitude,time:Date.now(),complete:complete===true};
+ renderQiblaOnline();
+ updateNeedle(); // online disagreement changes the arrow's confidence, not its bearing
+}
+// Sources: official AlAdhan Qibla API, and MyQuran Qibla v3.
+// Independent calculations check geodesic bearing only, NOT device heading.
+const COMPASS_QUALITY={
+ tr:{waiting:'Pusula sensörü bekleniyor · oku güvenilir değil',calibrate:'Sensör doğruluğu düşük. Telefonu 8 çizerek kalibre et.',reliable:'Sensör doğruluğu',approx:'Yaklaşık sensör yönü · cihazlar arasında farklılık olabilir',fused:'Google yön sensörü',fallback:'Android pusula sensörü',button:'Kalibrasyon rehberi',guide:'Telefonları aynı doğrultuda ve yataya yakın tut. Mıknatıslı kılıfı çıkar; metal, hoparlör ve araçlardan uzaklaş. Telefonu havada yavaşça 8 çizerek birkaç kez hareket ettir. İki telefonda da “Telefon yönü” değerlerini karşılaştır.',notReady:'Doğru yön bulunana kadar ok gizlenir.'},
+ en:{waiting:'Waiting for a reliable heading · arrow hidden',calibrate:'Low sensor confidence. Calibrate by moving the phone in a figure eight.',reliable:'Sensor accuracy',approx:'Approximate sensor reading · devices may disagree',fused:'Google orientation sensor',fallback:'Android rotation sensor',button:'Calibration guide',guide:'Hold both phones flat with their top edges parallel. Remove magnetic cases and move away from steel, speakers and vehicles. Move each phone slowly in a figure eight, then compare their Phone heading values.',notReady:'The arrow stays hidden until heading data is reliable.'},
+ ms:{waiting:'Menunggu arah yang boleh dipercayai',calibrate:'Ketepatan rendah. Gerakkan telefon membentuk angka 8.',reliable:'Ketepatan sensor',approx:'Arah anggaran · telefon mungkin berbeza',fused:'Sensor arah Google',fallback:'Sensor Android',button:'Panduan penentukuran',guide:'Pegang kedua-dua telefon rata dan selari. Jauhi logam, magnet dan pembesar suara. Gerakkan telefon perlahan membentuk angka 8, kemudian bandingkan arah telefon.',notReady:'Anak panah disembunyikan sehingga tepat.'},
+ id:{waiting:'Menunggu arah yang tepercaya',calibrate:'Akurasi rendah. Gerakkan ponsel membentuk angka 8.',reliable:'Akurasi sensor',approx:'Perkiraan arah · ponsel mungkin berbeda',fused:'Sensor arah Google',fallback:'Sensor Android',button:'Panduan kalibrasi',guide:'Pegang kedua ponsel rata dan sejajar. Jauhkan dari logam dan magnet. Gerakkan perlahan membentuk angka 8 lalu bandingkan arah ponsel.',notReady:'Panah disembunyikan hingga data andal.'},
+ ar:{waiting:'في انتظار اتجاه موثوق',calibrate:'دقة الحساس منخفضة. حرّك الهاتف على شكل الرقم 8.',reliable:'دقة المستشعر',approx:'قراءة تقريبية وقد تختلف الأجهزة',fused:'مستشعر اتجاه Google',fallback:'مستشعر Android',button:'دليل المعايرة',guide:'ضع الهاتفين بشكل متوازٍ وبعيداً عن المعادن والمغناطيس. حرّك الهاتف بهدوء على شكل الرقم 8 ثم قارن اتجاه الهاتف.',notReady:'يُخفى السهم حتى تصبح القراءة موثوقة.'},
+ ru:{waiting:'Ожидание достоверного направления',calibrate:'Низкая точность. Сделайте телефоном движение «восьмёркой».',reliable:'Точность датчика',approx:'Приблизительный курс',fused:'Датчик Google',fallback:'Датчик Android',button:'Калибровка',guide:'Держите телефоны параллельно, вдали от металла и магнитов. Медленно двигайте телефоном по восьмёрке и сравните курс.',notReady:'Стрелка скрыта до точных показаний.'},
+ fr:{waiting:'En attente d’une orientation fiable',calibrate:'Précision faible. Déplacez le téléphone en huit.',reliable:'Précision du capteur',approx:'Orientation approximative',fused:'Capteur Google',fallback:'Capteur Android',button:'Guide de calibrage',guide:'Placez les téléphones parallèles, loin du métal et des aimants. Bougez-les lentement en huit et comparez les caps.',notReady:'La flèche reste cachée sans cap fiable.'},
+ de:{waiting:'Warte auf zuverlässige Ausrichtung',calibrate:'Geringe Genauigkeit. Telefon in einer Acht bewegen.',reliable:'Sensorgenauigkeit',approx:'Nur ungefähre Ausrichtung',fused:'Google-Richtungssensor',fallback:'Android-Sensor',button:'Kalibrieranleitung',guide:'Telefone parallel halten, Abstand zu Metall und Magneten. Langsam eine Acht bewegen und die Richtungen vergleichen.',notReady:'Pfeil erst bei verlässlicher Messung.'},
+ es:{waiting:'Esperando orientación fiable',calibrate:'Baja precisión. Mueve el móvil en forma de ocho.',reliable:'Precisión del sensor',approx:'Orientación aproximada',fused:'Sensor de Google',fallback:'Sensor de Android',button:'Guía de calibración',guide:'Mantén ambos móviles paralelos, lejos de imanes y metal. Muévelos formando un ocho y compara los rumbos.',notReady:'La flecha se oculta si la lectura no es fiable.'},
+ pt:{waiting:'A aguardar direção fiável',calibrate:'Pouca precisão. Move o telemóvel em forma de oito.',reliable:'Precisão do sensor',approx:'Rumo aproximado',fused:'Sensor Google',fallback:'Sensor Android',button:'Guia de calibração',guide:'Mantém os telefones paralelos e longe de metal e ímanes. Move-os num oito e compara a direção.',notReady:'A seta fica oculta até haver direção fiável.'},
+ az:{waiting:'Etibarlı istiqamət gözlənilir',calibrate:'Dəqiqlik aşağıdır. Telefonla havada 8 rəqəmi çək.',reliable:'Sensor dəqiqliyi',approx:'Təxmini sensor istiqaməti',fused:'Google istiqamət sensoru',fallback:'Android sensoru',button:'Kalibrləmə bələdçisi',guide:'Telefonları paralel tut, metaldan və maqnitdən uzaqlaş. Telefonla 8 rəqəmi çək və istiqamətləri müqayisə et.',notReady:'Etibarlı oxunuşa qədər ox gizlənir.'},
+ ur:{waiting:'قابل اعتماد سمت کا انتظار ہے',calibrate:'سینسر کی درستگی کم ہے۔ فون کو آٹھ کی شکل میں گھمائیں۔',reliable:'سینسر کی درستگی',approx:'تقریبی سمت',fused:'گوگل سمت سینسر',fallback:'اینڈرائیڈ سینسر',button:'کیلیبریشن رہنمائی',guide:'دونوں فون برابر رخ میں رکھیں، دھات اور مقناطیس سے دور رہیں۔ فون کو آٹھ کی شکل میں ہلائیں اور سمت کا موازنہ کریں۔',notReady:'درست سمت تک تیر چھپا رہے گا۔'}
+};
+function compassQualityText(){
+ return COMPASS_QUALITY[window.NamazI18n?.getLanguage?.()||'tr']||COMPASS_QUALITY.en;
+}
+const COMPASS_TEXT={
+ tr:['KIBLE • CANLI YÖN','Telefon yönü','Kâbe farkı'],
+ en:['QIBLA • LIVE BEARING','Phone heading','Kaaba difference'],
+ ms:['KIBLAT • ARAH SEMASA','Arah telefon','Beza kiblat'],
+ id:['KIBLAT • ARAH AKTUAL','Arah ponsel','Selisih kiblat'],
+ ar:['القبلة • الاتجاه المباشر','اتجاه الهاتف','فرق اتجاه الكعبة'],
+ ru:['КИБЛА • НАПРАВЛЕНИЕ','Курс телефона','Отклонение от Каабы'],
+ fr:['QIBLA • CAP EN DIRECT','Cap du téléphone','Écart vers la Kaaba'],
+ de:['QIBLA • LIVE-RICHTUNG','Handy-Ausrichtung','Abweichung zur Kaaba'],
+ es:['QIBLA • DIRECCIÓN EN VIVO','Rumbo del móvil','Diferencia hacia la Kaaba'],
+ pt:['QIBLA • DIREÇÃO EM TEMPO REAL','Rumo do telefone','Diferença para a Caaba'],
+ az:['QİBLƏ • CANLI İSTİQAMƏT','Telefon istiqaməti','Kəbə fərqi'],
+ ur:['قبلہ • براہ راست سمت','فون کی سمت','کعبہ کی سمت کا فرق']
+};
+function updateCompassLanguage(){
+ const locale=window.NamazI18n?.getLanguage?.()||'tr',words=COMPASS_TEXT[locale]||COMPASS_TEXT.en;
+ const ids=['pro-compass-label','pro-compass-heading-label','pro-compass-difference-label'];
+ ids.forEach((id,i)=>{const element=$(id);if(element)element.textContent=words[i];});
+}
+const SUN_SHADOW_TEXT={
+ tr:['☀ Sensörsüz kıble — Gölge yöntemi','Dikey bir nesnenin gölgesinin UZANDIĞI yöne telefonun ÜST KENARINI doğrult. Telefonu yatay tut ve hizalama düğmesine bas.','Gölgeye hizaladım','Sensörlü pusulaya dön','Güneşe doğrudan bakma. Ok yalnız hizalama anında geçerlidir: telefonu çevirirsen yeniden hizala. Gece/gölge yokken kullanma.','Güneş gölgesi görünürken kullanılabilir. Gölge doğrultusu','Sensörsüz gölge hizası etkin • telefonu sabit tut, gerekirse yeniden hizala.','Güneş çok alçakta, çok yüksekte veya ufkun altında: güvenilir gölge yönü yok. Kuzeye göre kıble açısını oku ya da daha uygun vakitte dene.','Konumun eski olabilir. Gemi hareket ettiyse konumu güncelle ya da mevcut koordinatı elle doğrula.','Önce güncel konum veya elle doğrulanmış koordinat gir.','Gölgeye hizalı, yaklaşık','Manyetik sensör kullanılmıyor','Hizalama 2 dakika sonra geçersiz olur.','Telefonun üst kenarı gölge yönüne bakmalı.','Gölge','Kıble farkı'],
+ en:['☀ Compass-free Qibla — Shadow method','Lay the phone flat. Point its TOP EDGE along the direction a vertical object’s SHADOW extends, then press the align button.','Aligned to shadow','Return to sensor compass','Never stare at the Sun. This arrow is valid only at the moment of alignment. Re-align after turning the phone. Not usable without a clear shadow.','Usable when a clear shadow exists. Shadow bearing','Shadow alignment active • keep the phone still and re-align if moved.','Sun too low, too high or below horizon: shadow alignment is not reliable now.','The saved location is old. Update it if your ship moved.','Enter an updated location or manually confirm your saved coordinates first.','Shadow aligned, approximate','Magnetic sensor not used','Alignment expires in 2 minutes.','Point the TOP EDGE toward the shadow’s extension.','Shadow','Qibla offset'],
+ ms:['☀ Kiblat tanpa kompas — Bayang-bayang','Letak telefon rata dan arahkan bahagian ATAS ke arah bayang objek tegak memanjang. Tekan selaraskan.','Selaras bayang','Kembali ke sensor','Jangan pandang Matahari. Selaraskan semula jika telefon diputar; perlu bayang yang jelas.','Arah bayang','Selarasan bayang aktif; jangan putar telefon.','Bayang tidak cukup jelas pada waktu ini.','Lokasi lama; kemas kini jika kapal bergerak.','Masukkan lokasi semasa dahulu.','Selaras bayang','Tanpa sensor magnetik','Luput dalam 2 minit.','Arahkan atas telefon ke bayang.','Bayang','Beza kiblat'],
+ id:['☀ Kiblat tanpa kompas — Bayangan','Letakkan ponsel mendatar dan arahkan sisi ATAS ke arah bayangan benda tegak, lalu tekan selaraskan.','Selaraskan bayangan','Kembali ke sensor','Jangan melihat Matahari. Ulangi setelah ponsel diputar.','Arah bayangan','Selaras dengan bayangan.','Bayangan tidak cukup jelas saat ini.','Lokasi tersimpan sudah lama.','Masukkan lokasi terbaru dulu.','Selaras bayangan','Tanpa sensor magnetik','Berlaku 2 menit.','Arahkan atas ponsel ke bayangan.','Bayangan','Selisih kiblat'],
+ ar:['☀ القبلة دون بوصلة — طريقة الظل','ضع الهاتف أفقياً ووجّه حافته العلوية نحو امتداد ظل جسم عمودي ثم اضغط المحاذاة.','حاذيتُ الظل','العودة إلى المستشعر','لا تنظر إلى الشمس مباشرة. أعد المحاذاة إذا أدرت الهاتف.','اتجاه الظل','تمت المحاذاة؛ ثبّت الهاتف.','الظل غير مناسب حالياً.','الموقع المحفوظ قديم؛ حدّثه.','أدخل موقعاً حديثاً أولاً.','محاذاة الظل','دون مستشعر مغناطيسي','تنتهي خلال دقيقتين.','وجّه الحافة العلوية نحو امتداد الظل.','الظل','فرق القبلة'],
+ ru:['☀ Кибла без компаса — По тени','Положите телефон горизонтально и направьте ВЕРХНИЙ КРАЙ вдоль тени вертикального предмета. Нажмите кнопку.','Совместил с тенью','Вернуться к датчику','Не смотрите прямо на Солнце. После поворота телефона повторите.','Азимут тени','Совмещение активно; держите неподвижно.','Сейчас нет надёжной тени.','Сохранённое местоположение устарело.','Сначала обновите координаты.','По тени','Без магнитного датчика','Действует 2 минуты.','Верхний край по тени.','Тень','Смещение киблы'],
+ fr:['☀ Qibla sans boussole — Ombre','Posez le téléphone à plat et pointez son BORD SUPÉRIEUR dans le sens de l’ombre d’un objet vertical.','Aligné sur l’ombre','Revenir au capteur','Ne regardez pas le Soleil. Réalignez après rotation du téléphone.','Azimut de l’ombre','Alignement actif; gardez immobile.','Ombre insuffisante actuellement.','Position enregistrée ancienne.','Actualisez la position.','Aligné à l’ombre','Sans capteur magnétique','Valide 2 minutes.','Haut du téléphone vers l’ombre.','Ombre','Écart qibla'],
+ de:['☀ Qibla ohne Kompass — Schatten','Telefon flach halten; OBERKANTE in die Richtung des Schattens eines senkrechten Gegenstands richten.','Am Schatten ausgerichtet','Zurück zum Sensor','Nicht direkt in die Sonne sehen. Nach Drehen neu ausrichten.','Schattenrichtung','Ausrichtung aktiv; Gerät still halten.','Kein verlässlicher Schatten vorhanden.','Standortdaten sind alt.','Standort zuerst aktualisieren.','Schattenausrichtung','Ohne Magnetsensor','2 Minuten gültig.','Oberkante zum Schatten.','Schatten','Qibla-Winkel'],
+ es:['☀ Qibla sin brújula — Sombra','Coloca el teléfono horizontal y apunta su BORDE SUPERIOR en la dirección que se extiende la sombra de un objeto vertical.','Alineado con sombra','Volver al sensor','No mires directamente al Sol. Repite si giras el teléfono.','Dirección de sombra','Alineación activa; no muevas el teléfono.','No hay sombra fiable ahora.','La ubicación guardada es antigua.','Actualiza la ubicación primero.','Alineado por sombra','Sin sensor magnético','Caduca en 2 minutos.','Borde superior hacia la sombra.','Sombra','Ángulo qibla'],
+ pt:['☀ Qibla sem bússola — Sombra','Mantém o telemóvel plano e aponta a PARTE SUPERIOR na direção da sombra de um objeto vertical.','Alinhado com sombra','Voltar ao sensor','Não olhes diretamente para o Sol. Repete se rodares o telefone.','Direção da sombra','Alinhamento ativo; mantém imóvel.','Sem sombra fiável neste momento.','Localização guardada é antiga.','Atualiza a localização primeiro.','Alinhado pela sombra','Sem sensor magnético','Válido 2 minutos.','Topo do telefone para a sombra.','Sombra','Ângulo qibla'],
+ az:['☀ Kompasssız qiblə — Kölgə','Telefonu düz tut və ÜST KƏNARINI şaquli cismin kölgəsinin uzandığı istiqamətə yönəlt.','Kölgəyə hizaladım','Sensora qayıt','Günəşə birbaşa baxma. Telefonu döndərsən yenidən hizala.','Kölgə istiqaməti','Kölgə hizası aktivdir.','Hazırda etibarlı kölgə yoxdur.','Saxlanan məkan köhnədir.','Əvvəlcə məkanı yenilə.','Kölgəyə hizalı','Maqnit sensoru yoxdur','2 dəqiqə etibarlıdır.','Üst kənar kölgə istiqamətində.','Kölgə','Qiblə fərqi'],
+ ur:['☀ بغیر کمپاس قبلہ — سایہ','فون کو ہموار رکھیں اور اس کا اوپری کنارہ عمودی چیز کے سائے کی سمت کریں۔','سائے سے ملایا','سینسر پر واپس','سورج کو براہ راست نہ دیکھیں۔ فون گھمانے کے بعد دوبارہ ملائیں۔','سائے کی سمت','سایہ ملایا گیا، فون ساکن رکھیں۔','اب قابل اعتماد سایہ نہیں۔','محفوظ مقام پرانا ہے۔','پہلے مقام تازہ کریں۔','سائے کے مطابق','بغیر مقناطیسی سینسر','2 منٹ تک۔','اوپری کنارہ سائے کی جانب۔','سایہ','قبلہ فرق']
+};
+function sunWords(){return SUN_SHADOW_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||SUN_SHADOW_TEXT.en;}
+const MANUAL_REFERENCE_TEXT={
+ tr:['◎ Diğer sensörsüz kıble yöntemleri','Referansın doğru olması şarttır. Telefonun ÜST KENARINI fiziksel referans yönüne doğrult ve hizala. Telefonu döndürürsen işlemi yeniden yap.','1. Gerçek kuzey yöntemi','Harita/işaret ile doğruladığın GERÇEK KUZEY yönüne telefonun ÜST KENARINI doğrult. Manyetik kuzey veya GPS gidiş yönü değildir.','Gerçek kuzeye hizaladım','2. Doğrulanmış gerçek yön açısı','Güvenilir harici TRUE HEADING değerini yaz. Gemi COG (gidiş yönü) baş yönü değildir! Telefonun üst kenarını yazılan gerçek yöne hizala.','Gerçek yön (0–359,9°)','Bu doğrultuya hizaladım','3. Koordinatı bilinen görünür işaret','Gördüğün iskele/kule/yapının gerçek koordinatlarını yaz. Üst kenarı o yapıya doğrult. Uzak/yanlış tanımlanan yapı kullanılmamalıdır.','İşaretin enlemi','İşaretin boylamı','Gördüğüm işarete hizaladım','Elle hizalamayı bitir','Güncel/doğrulanmış koordinat gerekli. Gemi hareket ettiyse konumu yenile.','Geçersiz yön açısı. 0–359,9° arasında GERÇEK yön yaz.','Koordinat geçersiz veya hedef çok yakın. Yapıyı gerçekten tanımladığından emin ol.','Doğrultu hizalandı • telefonu hareket ettirme. En fazla 2 dakika geçerli.','Elle doğrulanan yön • manyetik sensör kullanılmıyor.','Referans','Kıble farkı','Harici yönün doğruluğu bu uygulama tarafından teyit edilemez. Yanlış hizalama yanlış kıble verir.','Geminin COG/gidiş yönünü baş yönü diye kullanma.','Önce referans yönüne telefonun ÜST KENARINI hizaladığını onayla.','Hizalamak için referans doğrultusunu fiziksel olarak gösterdiğini onaylıyorum.','Hizalama süresi doldu. Yeniden hizala.'],
+ en:['◎ Other compass-free Qibla methods','Use only a VERIFIED external direction. Point the TOP EDGE of your phone toward the actual reference and align again if moved.','1. True north reference','Align the TOP EDGE with verified TRUE NORTH, not magnetic north or GPS course.','Aligned to true north','2. Verified true heading','Enter a trusted external TRUE HEADING. A vessel’s COG is not its heading. Align the phone’s top edge to that direction.','True bearing (0–359.9°)','Aligned to this heading','3. Visible landmark with known coordinates','Enter coordinates of a correctly identified visible tower, pier or landmark; point the TOP EDGE at the actual landmark.','Landmark latitude','Landmark longitude','Aligned to visible landmark','Finish manual alignment','Update your position; the last coordinates may be stale.','Enter a true heading between 0 and 359.9°.','Invalid landmark coordinates or target too close.','Aligned • keep the phone still. Valid for up to two minutes.','External reference • no magnetic sensor used.','Reference','Qibla offset','The app cannot verify an external reference. Incorrect alignment yields incorrect Qibla.','Never substitute vessel COG for heading.','Confirm that your phone TOP EDGE points toward the chosen reference.','I confirm that my phone points along this verified reference.','Alignment expired; align again.']
+};
+function manualWords(){return MANUAL_REFERENCE_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||MANUAL_REFERENCE_TEXT.en;}
+const manualReference={at:0,relative:null,heading:null,method:'',lat:null,lon:null};
+function manualReferenceActive(){
+ return !!(manualReference.at>0&&Date.now()-manualReference.at<120000&&
+    validLocation()&&Math.abs(state.lat-manualReference.lat)<0.001&&Math.abs(state.lon-manualReference.lon)<0.001);
+}
+function clearManualReference(){
+ manualReference.at=0;manualReference.relative=null;manualReference.heading=null;manualReference.method='';
+ updateNeedle();renderManualReference();
+}
+function manualConfirm(){
+ return $('manual-reference-confirm')?.checked===true;
+}
+function alignManualReference(method){
+ const t=manualWords(),msg=$('manual-reference-message');
+ if(!validLocation()||locationIsStale()){msg.textContent=t[15];return false;}
+ if(!manualConfirm()){msg.textContent=t[24];return false;}
+ let trueBearing=null,description=method;
+ if(method==='north')trueBearing=0;
+ if(method==='heading'){
+   trueBearing=window.NamazManualQibla.normalizeTrueBearing($('manual-heading-input').value.trim().replace(',','.'));
+   if(trueBearing===null){msg.textContent=t[16];return false;}
+ }
+ if(method==='landmark'){
+   const la=Number($('manual-landmark-lat').value.trim().replace(',','.')),
+         lo=Number($('manual-landmark-lon').value.trim().replace(',','.'));
+   const target=window.NamazManualQibla.landmark(state.lat,state.lon,la,lo);
+   if(!target){msg.textContent=t[17];return false;}
+   trueBearing=target.heading;description='landmark';
+ }
+ const angle=window.NamazManualQibla.referenceAngle(qibla(state.lat,state.lon),trueBearing);
+ if(angle===null){msg.textContent=t[16];return false;}
+ shadowAlignment.at=0;
+ manualReference.at=Date.now();manualReference.relative=angle;
+ manualReference.heading=trueBearing;manualReference.method=description;
+ manualReference.lat=state.lat;manualReference.lon=state.lon;
+ msg.textContent=t[18];renderManualReference();renderSunShadow();updateNeedle();return true;
+}
+function renderManualReference(){
+ const t=manualWords();
+ const ids=['manual-reference-title','manual-reference-intro','manual-north-title','manual-north-help',
+   'manual-north-align','manual-heading-title','manual-heading-help','manual-heading-label','manual-heading-align',
+   'manual-landmark-title','manual-landmark-help','manual-landmark-lat-label','manual-landmark-lon-label',
+   'manual-landmark-align','manual-reference-reset','manual-reference-confirm-label'];
+ const lookup=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,25];
+ ids.forEach((id,i)=>{const e=$(id);if(e)e.textContent=t[lookup[i]];});
+ $('manual-reference-reset').disabled=!manualReferenceActive();
+}
+const shadowAlignment={at:0,relative:null,shadowAz:null,lat:null,lon:null};
+function clearShadowAlignment(){shadowAlignment.at=0;shadowAlignment.relative=null;updateNeedle();}
+function shadowActive(){
+ return shadowAlignment.at>0&&Date.now()-shadowAlignment.at<120000&&
+   validLocation()&&Math.abs(shadowAlignment.lat-state.lat)<0.001&&
+   Math.abs(shadowAlignment.lon-state.lon)<0.001;
+}
+function sunPositionNow(){
+ return validLocation()&&window.NamazSunQibla?
+  window.NamazSunQibla.alignment(new Date(),state.lat,state.lon,qibla(state.lat,state.lon)):null;
+}
+function renderSunShadow(){
+ const t=sunWords(),s=$('sun-shadow-status'),a=$('sun-shadow-align'),b=$('sun-shadow-reset');
+ $('sun-shadow-title').textContent=t[0];
+ $('sun-shadow-instructions').textContent=t[1];
+ $('sun-shadow-caution').textContent=t[4];
+ a.textContent=t[2];b.textContent=t[3];
+ const pos=sunPositionNow();
+ const eligible=!!(pos&&pos.usable&&!locationIsStale());
+ a.disabled=!eligible;
+ if(shadowActive()){
+   s.textContent=t[6]+' '+t[12];
+ }else if(!pos){s.textContent=t[9];}
+ else if(locationIsStale()){s.textContent=t[8];}
+ else if(!pos.usable){s.textContent=t[7];}
+ else{s.textContent=t[5]+': '+pos.shadowAzimuth.toFixed(1)+'°';}
+ b.disabled=!shadowActive();
+}
+function alignToShadow(){
+ const position=sunPositionNow();
+ if(!position||!position.usable||locationIsStale()){
+   renderSunShadow();return false;
+ }
+ manualReference.at=0;
+ shadowAlignment.at=Date.now();
+ shadowAlignment.lat=state.lat;shadowAlignment.lon=state.lon;
+ shadowAlignment.relative=position.relative;shadowAlignment.shadowAz=position.shadowAzimuth;
+ renderSunShadow();updateNeedle();return true;
+}
+const COMPASS_FALLBACK_TEXT={
+ tr:['Yaklaşık sensör yönü • kesin kıble olarak kullanma. Metal/mıknatıstan uzaklaş, kalibrasyonu tekrarla.',
+     'İki yön sensörü uyuşmuyor! Oku kıble için kullanma. Sensör raporunu kontrol et.',
+     'Kuzeye göre SABİT kıble açısı • telefonun baktığı yön bilinmiyor. Telefonu bu okla hizalama.'],
+ en:['Approximate sensor heading. Do not rely on this for Qibla. Move away from magnets and calibrate.',
+     'Two direction sensors disagree. Do not use this arrow for Qibla.',
+     'Fixed Qibla bearing relative to NORTH. Phone orientation unknown; do not align using this arrow.'],
+ ms:['Arah sensor anggaran. Jangan guna sebagai kiblat tepat; kalibrasi jauh dari logam.',
+     'Dua sensor tidak sepadan. Jangan guna anak panah untuk kiblat.',
+     'Sudut kiblat tetap dari UTARA. Arah telefon tidak diketahui.'],
+ id:['Arah sensor perkiraan. Jangan gunakan sebagai kiblat pasti; kalibrasi ulang.',
+     'Dua sensor berbeda. Jangan gunakan panah ini untuk kiblat.',
+     'Sudut kiblat tetap dari UTARA. Arah ponsel belum diketahui.'],
+ ar:['اتجاه تقريبي من الحساس؛ لا تستخدمه لتحديد القبلة دون تحقق.',
+     'حساسا الاتجاه مختلفان. لا تعتمد على السهم لتحديد القبلة.',
+     'زاوية القبلة بالنسبة إلى الشمال فقط؛ اتجاه الهاتف غير معروف.'],
+ ru:['Приблизительный курс датчика. Не используйте как точную киблу; откалибруйте.',
+     'Датчики направления расходятся. Не полагайтесь на стрелку.',
+     'Фиксированный азимут киблы от СЕВЕРА. Направление телефона неизвестно.'],
+ fr:['Direction approximative du capteur. Ne pas suivre comme qibla précise; recalibrez.',
+     'Les capteurs divergent. Ne vous fiez pas à la flèche.',
+     'Azimut fixe de qibla par rapport au NORD. Orientation du téléphone inconnue.'],
+ de:['Ungefähre Sensorrichtung. Nicht als genaue Qibla nutzen; neu kalibrieren.',
+     'Richtungssensoren widersprechen sich. Pfeil nicht für Qibla nutzen.',
+     'Fester Qibla-Winkel relativ zu NORD. Ausrichtung des Handys unbekannt.'],
+ es:['Orientación aproximada. No la uses como qibla exacta; calibra el sensor.',
+     'Los sensores no coinciden. No sigas la flecha para la qibla.',
+     'Rumbo fijo de qibla desde el NORTE. Orientación del móvil desconocida.'],
+ pt:['Rumo aproximado. Não o uses como qibla certa; calibra o sensor.',
+     'Os sensores discordam. Não uses a seta como qibla.',
+     'Rumo fixo da qibla desde NORTE. Orientação do telefone desconhecida.'],
+ az:['Təxmini sensor istiqaməti. Qiblə üçün dəqiq sayma; yenidən kalibr et.',
+     'İstiqamət sensorları fərqlidir. Bu oxla qibləyə yönəlmə.',
+     'ŞİMALA görə sabit qiblə bucağı; telefonun istiqaməti bilinmir.'],
+ ur:['سینسر کی تقریبی سمت؛ اسے قطعی قبلہ نہ سمجھیں۔ دوبارہ درست کریں۔',
+     'دونوں سینسر مختلف ہیں۔ تیر کو قبلہ کے لیے استعمال نہ کریں۔',
+     'شمال سے قبلہ کا مقررہ زاویہ؛ فون کا رخ نامعلوم ہے۔']
+};
+function compassFallbackWords(){return COMPASS_FALLBACK_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||COMPASS_FALLBACK_TEXT.en;}
+function updateNeedle(){
+ updateCompassLanguage();
+ const q=compassQualityText();
+ const c=$('compass-calibrate'),guide=$('compass-calibration-guide'),quality=$('compass-quality');
+ if(c)c.textContent=q.button;
+ if(guide)guide.textContent=q.guide;
+ const hasLocation=validLocation();
+ const h=state.heading;
+ const fresh=state.headingUpdatedAt>0&&Date.now()-state.headingUpdatedAt<7500;
+ const mismatch=compassHeadingDisagreement();
+ const geometry=hasLocation&&window.NamazAutoQibla?
+   window.NamazAutoQibla.audit(state.lat,state.lon,qibla(state.lat,state.lon)):null;
+ const geometryConflict=!!(geometry&&geometry.available&&!geometry.passed);
+ const online=qiblaOnlineState.checked;
+ const onlineComplete=online&&qiblaOnlineCoordinatesMatch(online)&&online.a!==null&&online.b!==null;
+ const onlineGap=onlineComplete?Math.abs(wrap(online.a-online.b+180,360)-180):null;
+ const onlineMismatch=!!(onlineComplete&&(onlineGap>1.0||
+   Math.abs(wrap(online.a-qibla(state.lat,state.lon)+180,360)-180)>1.5||
+   Math.abs(wrap(online.b-qibla(state.lat,state.lon)+180,360)-180)>1.5));
+ const autoConflict=geometryConflict||onlineMismatch;
+ const trusted=hasLocation&&fresh&&state.headingTrusted&&Number.isFinite(h)&&!mismatch&&!autoConflict;
+ const byShadow=shadowActive();
+ const byManual=manualReferenceActive()&&!byShadow;
+ const approximate=hasLocation&&fresh&&Number.isFinite(h)&&!trusted&&!byShadow&&!byManual;
+ // Never erase the premium compass on a valid position. The north-reference
+ // arrow is STATIC and explicitly labelled, NOT a live phone orientation.
+ const northReference=hasLocation&&!fresh&&!byShadow&&!byManual;
+ const needle=$('needle');
+ if(needle){
+   needle.classList.toggle('compass-unreliable',!hasLocation);
+   needle.classList.toggle('compass-approximate',approximate);
+   needle.classList.toggle('compass-conflict',approximate&&(mismatch||autoConflict));
+   needle.classList.toggle('compass-north-reference',northReference);
+ }
+ if(!hasLocation){
+   $('compass-status').textContent=tr('qiblaWaiting');
+   $('bearing-note').textContent=tr('qiblaWaiting');
+   if(quality)quality.textContent=q.waiting;
+   return;
+ }
+ const bearing=qibla(state.lat,state.lon);
+ if(byShadow&&needle)needle.style.transform='rotate('+shadowAlignment.relative+'deg)';
+ else if(byManual&&needle)needle.style.transform='rotate('+manualReference.relative+'deg)';
+ else if(needle){
+   const relative=fresh&&Number.isFinite(h)?wrap(bearing-h,360):bearing;
+   needle.style.transform='rotate('+relative+'deg)';
+ }
+ $('bearing-note').textContent=tr('qiblaNorth');
+ const displayHeading=$('pro-compass-heading'),difference=$('pro-compass-difference');
+ if(byManual){
+   const mw=manualWords();
+   $('pro-compass-heading-label').textContent=mw[20];
+   $('pro-compass-difference-label').textContent=mw[21];
+   if(displayHeading)displayHeading.textContent=manualReference.heading.toFixed(1)+'°';
+   if(difference)difference.textContent=((manualReference.relative+180)%360-180).toFixed(1)+'°';
+   $('compass-status').textContent=mw[18];
+   if(quality)quality.textContent=mw[19]+' '+mw[22];
+   return;
+ }
+ if(byShadow){
+   const sw=sunWords();
+   $('pro-compass-heading-label').textContent=sw[14];
+   $('pro-compass-difference-label').textContent=sw[15];
+   if(displayHeading)displayHeading.textContent=shadowAlignment.shadowAz.toFixed(1)+'°';
+   if(difference)difference.textContent=((shadowAlignment.relative+180)%360-180).toFixed(1)+'°';
+   $('compass-status').textContent=sw[10];
+   if(quality)quality.textContent=sw[11]+' · '+sw[13]+' '+sw[12];
+   return;
+ }
+ if(displayHeading)displayHeading.textContent=fresh&&Number.isFinite(h)?Math.round(h)+'°':'—';
+ if(difference)difference.textContent=fresh&&Number.isFinite(h)?
+   (trusted?'':'≈')+Math.round(Math.abs(wrap(bearing-h+180,360)-180))+'°':'—';
+ if(!fresh||!Number.isFinite(h)){
+   $('compass-status').textContent=q.waiting;
+   if(quality)quality.textContent=compassFallbackWords()[2];
+   return;
+ }
+ const source=state.headingSource==='fused'?q.fused:q.fallback;
+ if(!trusted){
+   $('compass-status').textContent=(mismatch||autoConflict)?diagText().warning:q.calibrate;
+   if(quality)quality.textContent=source+' · '+
+     ((mismatch||autoConflict)?compassFallbackWords()[1]:compassFallbackWords()[0]);
+   return;
+ }
+ const diff=Math.abs(wrap(bearing-h+180,360)-180);
+ $('compass-status').textContent=tr('compassDirection',{n:Math.round(h)})+' · '+(diff<8?tr('compassAligned'):tr('compassTurn'));
+ if(quality){
+   quality.textContent=source+' · '+(state.headingSource==='fused'?q.reliable+' ±'+Math.round(state.headingError)+'°':q.approx);
+ }
+}
+const COMPASS_DIAGNOSTICS_TEXT={
+ tr:{title:'İki telefonu karşılaştır',copy:'Tanı raporunu kopyala',copied:'Rapor panoya kopyalandı.',failed:'Kopyalama engellendi; ekran görüntüsü al.',waiting:'İki sensörden ölçüm bekleniyor',target:'Kıble açısı',fused:'Google yönü',android:'Android yönü',gap:'Sensörler arası fark',accuracy:'Tahmini hata',rotation:'Ekran dönüşü',pitch:'Eğim',roll:'Yana yatma',declination:'Manyetik sapma',active:'Etkin ok kaynağı',status:'Ok durumu',visible:'Gösteriliyor',hidden:'Gizli (güvensiz ölçüm)',warning:'İki yöntem uyuşmuyor. Metal/mıknatıstan uzaklaş; kalibrasyonu tekrarla.',stale:'Henüz ölçülmedi'},
+ en:{title:'Compare two phones',copy:'Copy diagnostic report',copied:'Report copied.',failed:'Copy unavailable; capture a screenshot.',waiting:'Waiting for measurements',target:'Qibla bearing',fused:'Google heading',android:'Android heading',gap:'Sensor disagreement',accuracy:'Estimated error',rotation:'Screen rotation',pitch:'Pitch',roll:'Roll',declination:'Magnetic declination',active:'Active source',status:'Arrow status',visible:'Visible',hidden:'Hidden (unreliable)',warning:'Sensors disagree. Move away from metal and magnets and calibrate.',stale:'Not measured'}
+};
+function diagText(){return COMPASS_DIAGNOSTICS_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||COMPASS_DIAGNOSTICS_TEXT.en;}
+const compassDebug={fused:null,android:null};
+function compassHeadingDisagreement(){
+ const f=compassDebug.fused,a=compassDebug.android,now=Date.now();
+ return !!(f&&a&&now-f.time<9000&&now-a.time<9000&&
+     f.accuracy<=25&&a.accuracy<=25&&
+     Math.abs(wrap(f.heading-a.heading+180,360)-180)>30);
+}
+function diagnosticValue(v,unit='°'){
+ return Number.isFinite(v)?Number(v).toFixed(1)+unit:'—';
+}
+function renderCompassDiagnostics(){
+ const panel=$('compass-diagnostics-data');
+ // Sensor comparisons still run on every update, but never repaint the
+ // retired diagnostic panel while it is embedded and invisible.
+ if(!panel||$('nz-compass-tools')?.hidden)return;
+ const q=diagText(),title=$('compass-diagnostics-title'),copy=$('compass-diagnostics-copy');
+ if(title)title.textContent=q.title;
+ if(copy)copy.textContent=q.copy;
+ const recent=key=>{
+   const x=compassDebug[key];
+   return x&&Date.now()-x.time<9000?x:null;
+ };
+ const fused=recent('fused'),android=recent('android');
+ const target=validLocation()?qibla(state.lat,state.lon):null;
+ const disagreement=fused&&android?
+     Math.abs(wrap(fused.heading-android.heading+180,360)-180):null;
+ const rows=[
+   ['App','Namaz Zamanı v0.25'],
+   [q.target,diagnosticValue(target)],
+   [q.fused,diagnosticValue(fused?.heading)],
+   [q.android,diagnosticValue(android?.heading)],
+   [q.gap,diagnosticValue(disagreement)],
+   [q.accuracy,diagnosticValue(fused?.accuracy)],
+   [q.rotation,android?String(android.rotation*90)+'°':'—'],
+   [q.pitch,diagnosticValue(android?.pitch)],
+   [q.roll,diagnosticValue(android?.roll)],
+   [q.declination,diagnosticValue(android?.declination)],
+   [q.active,state.headingSource||q.stale],
+   [q.status,
+    $('needle')?.classList.contains('compass-conflict')?'Çelişki (güvenilmez)':
+    $('needle')?.classList.contains('compass-approximate')?'Yaklaşık (güvenilmez)':
+    $('needle')?.classList.contains('compass-north-reference')?'Kuzey referansı (sabit)':
+    !$('needle')?.classList.contains('compass-unreliable')?q.visible:q.hidden]
+ ];
+ panel.replaceChildren();
+ for(const [key,value] of rows){
+   const line=document.createElement('div');line.className='compass-debug-row';
+   const left=document.createElement('span');left.textContent=key;
+   const right=document.createElement('strong');right.textContent=value;
+   line.append(left,right);panel.appendChild(line);
+ }
+ if(disagreement!==null&&disagreement>30&&fused.accuracy<=25&&android.accuracy<=25){
+   const warn=document.createElement('p');warn.className='compass-debug-warning';warn.textContent=q.warning;
+   panel.appendChild(warn);
+ }
+}
+function nativeCompassDiagnostic(heading,accuracy,source,pitch,roll,declination,rotation){
+ if(!Number.isFinite(heading)||!['fused','android'].includes(source))return;
+ compassDebug[source]={heading:wrap(heading,360),accuracy:Number(accuracy),
+    pitch:Number.isFinite(pitch)?pitch:null,roll:Number.isFinite(roll)?roll:null,
+    declination:Number.isFinite(declination)?declination:null,
+    rotation:Number.isFinite(rotation)?rotation:0,time:Date.now()};
+ renderCompassDiagnostics();
+ updateNeedle();
+}
+function copyCompassDiagnostics(){
+ const q=diagText(),el=$('compass-diagnostics-data'),status=$('compass-diagnostics-copy-status');
+ const content=[...el.querySelectorAll('.compass-debug-row')].map(row=>
+    [...row.children].map(node=>node.textContent).join(': ')).join('\n');
+ if(window.GemiNative?.copyCompassReport){
+   window.GemiNative.copyCompassReport(content);if(status)status.textContent=q.copied;return;
+ }
+ const input=document.createElement('textarea');input.value=content;
+ document.body.appendChild(input);input.select();
+ const done=document.execCommand('copy');input.remove();
+ if(status)status.textContent=done?q.copied:q.failed;
+}
+function nativeHeadingData(degrees,error,source,trusted){
+ if(!Number.isFinite(degrees))return;
+ state.heading=wrap(degrees,360);
+ state.headingError=Number.isFinite(error)?Math.min(180,Math.max(0,error)):180;
+ state.headingSource=source==='fused'?'fused':'android';
+ state.headingTrusted=trusted===true&&state.headingError<=25;
+ state.headingUpdatedAt=Date.now();
+ updateNeedle();
+}
+// Legacy browser/device-orientation path. Android native sends nativeHeadingData
+// with its measured uncertainty, never this unqualified method.
+function nativeHeading(degrees){
+ if(Number.isFinite(degrees)){
+   state.heading=wrap(degrees,360);
+   state.headingError=0;
+   state.headingSource='web';
+   state.headingTrusted=true;
+   state.headingUpdatedAt=Date.now();
+   updateNeedle();
+ }
+}
 function nativeLocation(lat,lon,accuracy,cached,timestamp,provider){if(state.manual)return;state.gpsMessage='';setLocation(lat,lon,accuracy,cached?'previous':'native',timestamp||Date.now(),!cached,provider||'gps');}
 function nativeError(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
 function nativeSearching(message){if(state.manual)return;state.gpsMessage=String(message);updateLocationPanel();}
-window.nativeHeading=nativeHeading;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;
+window.nativeHeading=nativeHeading;window.nativeHeadingData=nativeHeadingData;window.nativeCompassDiagnostic=nativeCompassDiagnostic;window.nativeQiblaOnlineResult=nativeQiblaOnlineResult;window.nativeLocation=nativeLocation;window.nativeError=nativeError;window.nativeSearching=nativeSearching;
 function onPosition(pos){if(state.manual)return;setLocation(pos.coords.latitude,pos.coords.longitude,pos.coords.accuracy,'gps',pos.timestamp||Date.now(),true);}
 function onGpsError(error){state.gpsMessage='@noFix';updateLocationPanel();}
-function startGPS(){
+function startGPS(mode='satellite'){
+  // Never erase the previously saved coordinate/time display on refresh.
   state.manual=false;
-  if(state.source==='manual'){
-    state.lat=null;state.lon=null;state.stamp=0;state.source='';state.live=false;
-    state.times=null;state.tomorrow=null;state.calcKey='';clearSchedule();
-  }
   state.gpsMessage='@googleSearching';updateLocationPanel();
-  if(window.GemiNative){window.GemiNative.requestLocation();return;}
+  if(window.GemiNative){
+    if(mode==='network')window.GemiNative.requestLocation();
+    else if(window.GemiNative.requestSatelliteLocation)window.GemiNative.requestSatelliteLocation();
+    else window.GemiNative.requestLocation();
+    return;
+  }
   if(!navigator.geolocation){state.gpsMessage='@browserGPS';updateLocationPanel();return;}
   if(!window.isSecureContext){state.gpsMessage='@browserSecure';updateLocationPanel();}
   if(state.watchId!==null)navigator.geolocation.clearWatch(state.watchId);
   state.watchId=navigator.geolocation.watchPosition(onPosition,onGpsError,{enableHighAccuracy:true,maximumAge:30000,timeout:25000});
 }
 function onOrientation(e){
-  if(state.heading!==null&&window.GemiNative)return;
+  // Android must use nativeHeadingData; browser events have no reliability estimate.
+  if(window.GemiNative)return;
   let heading=null;
   if(typeof e.webkitCompassHeading==='number'&&Number.isFinite(e.webkitCompassHeading))heading=e.webkitCompassHeading;
   else if(e.absolute&&Number.isFinite(e.alpha)){
@@ -332,8 +1080,33 @@ function startCompass(){
   window.addEventListener('deviceorientation',onOrientation,true);
   if(typeof DeviceOrientationEvent.requestPermission==='function')$('compass-permission').style.display='inline-block';
 }
-function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();updateNeedle();}
-window.NamazApp={refreshLocale:function(){updateLocationPanel();updateTimeStatus(new Date());updateNeedle();}};
+function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();updateNeedle();renderSunShadow();renderManualReference();renderQiblaOnline();}
+window.NamazApp={
+ activeDayKey:function(){return localDateKey(displayDateParts(new Date()));},
+ runAutoQiblaCheck:maybeAutoVerifyQibla,
+ locationHubStatus:function(){
+   return {
+     available:validLocation(),stale:locationIsStale(),
+     manual:state.source==='manual',source:state.source,
+     fresh:locationFresh(),accuracy:state.accuracy
+   };
+ },
+ prepareLocationSearch:function(){
+  // Allow real GPS to replace an earlier manually entered fallback coordinate.
+  state.manual=false;
+  state.gpsMessage='@googleSearching';
+  updateLocationPanel();
+ },
+ prayerMarkGate:function(id,stamp=Date.now()){
+  const day=localDateKey(displayDateParts(new Date(stamp)));
+  if(!PRAYERS.some(([prayer])=>prayer===id))return {allowed:false,reason:'unknown'};
+  if(!validLocation(stamp)||!state.times||!state.calcKey.startsWith(day+'|'))return {allowed:false,reason:'unknown'};
+  const when=state.times[id];
+  if(!Number.isFinite(when))return {allowed:false,reason:'unknown'};
+  return {allowed:when<=stamp,reason:when<=stamp?'ready':'future',at:when};
+ },
+ refreshLocale:function(){updateLocationPanel();updateTimeStatus(new Date());updateNeedle();renderSunShadow();renderManualReference();renderQiblaOnline();window.NamazLocationHub?.refresh?.();}
+};
 function init(){
   if(window.NamazI18n)window.NamazI18n.init();
   const cached=saved('location',null);
@@ -347,9 +1120,41 @@ function init(){
   $('timezone-mode').value=state.tzMode;
   $('method').value=state.method;$('asr-method').value=String(state.asr);
   $('schedule').innerHTML=TIMES.map(([id,label])=>`<div class="time-tile"><div class="time-label">${window.NamazI18n?window.NamazI18n.prayer(id):label}</div><div class="time-num">--:--</div></div>`).join('');
-  if(cached&&Number.isFinite(cached.lat)&&Number.isFinite(cached.lon))setLocation(cached.lat,cached.lon,cached.accuracy,'previous',cached.stamp,false,cached.provider||'');
-  $('gps-button').addEventListener('click',startGPS);
-  $('reset-button').addEventListener('click',startGPS);
+  const hasCached=!!(cached&&Number.isFinite(cached.lat)&&Number.isFinite(cached.lon)
+    &&Math.abs(cached.lat)<=90&&Math.abs(cached.lon)<=180);
+  if(hasCached){
+    const manualSaved=cached.source==='manual';
+    state.manual=manualSaved;
+    setLocation(cached.lat,cached.lon,cached.accuracy,
+      manualSaved?'manual':'previous',cached.stamp,false,cached.provider||'');
+  }
+  const jumpToManual=()=>{
+    const details=$('manual-location-details');
+    if(details){details.open=true;details.scrollIntoView({behavior:'smooth',block:'center'});}
+    $('latitude').focus();
+  };
+  $('location-manual-shortcut').addEventListener('click',jumpToManual);
+  $('location-precise-button').addEventListener('click',()=>{
+    if(window.GemiNative?.requestPreciseLocation)window.GemiNative.requestPreciseLocation();
+    else jumpToManual();
+  });
+  $('location-app-settings-button').addEventListener('click',()=>{
+    if(window.GemiNative?.openAppLocationPermissionSettings)
+      window.GemiNative.openAppLocationPermissionSettings();
+    else alert(rescueWords()[1]);
+  });
+  const lastKnown=$('location-last-known');
+  if(cached&&Number.isFinite(cached.lat)&&Number.isFinite(cached.lon)&&Math.abs(cached.lat)<=90&&Math.abs(cached.lon)<=180){
+    lastKnown.hidden=false;
+    lastKnown.addEventListener('click',()=>{
+      if(!window.confirm(rescueWords()[6]))return;
+      state.manual=true;
+      $('latitude').value=String(cached.lat);$('longitude').value=String(cached.lon);
+      setLocation(cached.lat,cached.lon,null,'manual',Date.now(),true);
+    });
+  }
+  $('gps-button').addEventListener('click',()=>startGPS('satellite'));
+  $('location-network-button').addEventListener('click',()=>startGPS('network'));
   $('location-settings-button').addEventListener('click',()=>{
     if(window.GemiNative&&typeof window.GemiNative.openLocationSettings==='function')window.GemiNative.openLocationSettings();
     else alert(tr('permission'));
@@ -367,12 +1172,48 @@ function init(){
   $('asr-method').addEventListener('change',e=>{state.asr=Number(e.target.value);store('asr',state.asr);state.calcKey='';renderAll();});
   $('timezone-mode').addEventListener('change',e=>{state.tzMode=e.target.value;store('tzMode',state.tzMode);state.calcKey='';renderAll();});
   $('utc-offset').addEventListener('change',e=>{state.utcOffset=Number(e.target.value);store('utcOffset',state.utcOffset);state.calcKey='';renderAll();});
+  $('qibla-online-button').addEventListener('click',requestOnlineQibla);
+  $('manual-north-align').addEventListener('click',()=>alignManualReference('north'));
+  $('manual-heading-align').addEventListener('click',()=>alignManualReference('heading'));
+  $('manual-landmark-align').addEventListener('click',()=>alignManualReference('landmark'));
+  $('manual-reference-reset').addEventListener('click',clearManualReference);
+  $('sun-shadow-align').addEventListener('click',alignToShadow);
+  $('sun-shadow-reset').addEventListener('click',()=>{
+    clearShadowAlignment();renderSunShadow();
+  });
+  $('compass-diagnostics-copy').addEventListener('click',copyCompassDiagnostics);
+  $('compass-calibrate').addEventListener('click',()=>{
+    const panel=$('compass-calibration-guide');
+    if(panel)panel.hidden=!panel.hidden;
+  });
   $('compass-permission').addEventListener('click',async()=>{
     try{const result=await DeviceOrientationEvent.requestPermission(true);$('compass-status').textContent=result==='granted'?tr('compassAligned'):tr('denied');if(result==='granted')$('compass-permission').style.display='none';}
     catch(e){$('compass-status').textContent=tr('denied');}
   });
-  startCompass();startGPS();renderClock();setInterval(renderClock,1000);
+  startCompass();
+  // Same high-accuracy Google + GPS + network acquisition as map navigation.
+  // Runs automatically on launch if the user has no fresh GPS location.
+  // A user-fixed manual coordinate is never overridden without consent.
+  // Restore permission; optional online check never runs without a fresh
+  // accepted GPS fix and affirmative consent.
+  window.NamazAutoQibla?.render?.();
+  if(state.source!=='manual'&&(!hasCached||locationIsStale())){
+    state.gpsMessage='@googleSearching';updateLocationPanel();
+    if(window.GemiNative?.requestAutoLocation){
+      window.GemiNative.requestAutoLocation();
+    }else if(!window.GemiNative){
+      startGPS('network');
+    }
+  }
+  renderClock();setInterval(renderClock,1000);
+  // Always refresh confidence/alignment expiry, including devices with no sensor.\n  setInterval(()=>{updateNeedle();renderCompassDiagnostics();},2000);
+  renderSunShadow();renderManualReference();renderQiblaOnline();
+  setInterval(()=>{updateNeedle();maybeAutoVerifyQibla();},30000);
   setInterval(updateLocationPanel,30000);
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden){renderAll();renderCompassDiagnostics();window.NamazPrayerTracker?.render?.();maybeAutoVerifyQibla();}
+  });
+  window.addEventListener('pageshow',()=>{renderAll();maybeAutoVerifyQibla();});
 }
 init();
 </script>

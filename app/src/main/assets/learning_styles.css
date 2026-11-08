@@ -1,0 +1,419 @@
+/* Offline v0.9 prayer tracking and Qur'an learning modules — isolated styles */
+#nz-prayer-tracker,#nz-dua-learning,#nz-surah-learning,#nz-esma-learning{margin-top:16px}
+#nz-prayer-tracker .loc-sub,#nz-dua-learning .loc-sub,#nz-surah-learning .loc-sub,#nz-esma-learning .loc-sub{font-size:12px;line-height:1.55;margin:9px 0}
+.nz-learn-row{display:flex;align-items:center;gap:9px;justify-content:space-between;margin:13px 0}
+.nz-learn-row>select,.nz-learn-row>input{min-width:0;flex:1}
+.nz-progress{color:var(--mint);font-variant-numeric:tabular-nums;background:#133f43;padding:9px;border-radius:10px;font-size:13px;white-space:nowrap}
+.nz-arabic{font-family:'Noto Naskh Arabic','Amiri','Traditional Arabic',serif;font-size:clamp(23px,6.7vw,31px);line-height:2.05;text-align:right;color:#f9dfa0;direction:rtl;font-weight:500}
+.nz-basmala{text-align:center;font-size:25px;line-height:2;margin:10px 0}
+.nz-dua-arabic{margin:14px 0 7px;line-height:2.2}
+.nz-verse-list{display:grid;gap:8px;margin:12px 0}
+.nz-verse{background:#061b2a99;border:1px solid #355363;border-radius:14px;padding:8px 12px 10px;position:relative}
+.nz-verse-num{display:inline-flex;border:1px solid #486a65;color:var(--mint);font-size:11px;border-radius:20px;padding:2px 7px;margin:2px 0 0}
+.nz-verse .nz-arabic{margin-top:-8px}
+.nz-phonetic{color:#b8e1da;font-size:13px;line-height:1.75;letter-spacing:.1px}
+.nz-mini-label{font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:1.25px;font-weight:800;margin-top:16px}
+.nz-meaning{font-size:14px;line-height:1.7;color:#eff6f3;margin:5px 0 14px}
+.nz-learn-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+.nz-learn-controls button{padding:9px 12px}
+.nz-check-label{display:flex;align-items:center;gap:7px;font-size:13px;color:#cfe5df}
+.nz-check-label input{width:auto;accent-color:var(--mint)}
+.nz-repeat-label{display:flex;align-items:center;gap:7px;font-size:12px;color:#cfe5df}
+.nz-repeat-label select{width:80px;min-width:0;padding:8px}
+.nz-done{background:#144f42;border-color:#63c8a7;color:#dcffef}
+.nz-source-link{display:inline-block;color:#e7c988;text-decoration:underline;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.nz-source{margin-top:10px}
+.nz-esma-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}
+.nz-esma-item{padding:11px;border:1px solid #355363;border-radius:15px;background:#0b2534}
+.nz-esma-label{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.nz-esma-label strong{font-size:14px;color:#f5eccb}
+.nz-index{font-size:11px;color:var(--mint)}
+.nz-esma-ar{font-size:23px;line-height:1.3;display:block;width:100%;text-align:right;font-family:'Noto Naskh Arabic','Amiri',serif;color:#f4d48c}
+.nz-esma-meaning{font-size:12px;color:#c1d6d9;min-height:34px;line-height:1.4}
+.nz-esma-item button{font-size:11px;padding:7px 9px;width:100%}
+#nz-esma-more{display:block;margin:12px auto}
+#nz-esma-more[hidden]{display:none}
+.nz-tracker-navigation{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0}
+.nz-tracker-navigation button{font-size:18px;padding:5px 13px}
+.nz-tracker-navigation button:disabled{opacity:.35}
+.nz-day-name{font-size:14px;text-align:center}
+.nz-tracker-progress{display:flex;align-items:center;gap:12px;color:var(--gold);font-size:12px;font-weight:700}
+.nz-progress-rail{background:#0b1c2a;border-radius:99px;height:8px;flex:1;overflow:hidden;border:1px solid #355363}
+.nz-progress-fill{background:linear-gradient(90deg,#52ad9d,#f4d48c);height:100%;border-radius:99px}
+.nz-track-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.nz-track-row{background:#0b2333;border:1px solid #365165;border-radius:12px;padding:11px;display:flex;align-items:center;gap:9px;font-size:13px;cursor:pointer}
+.nz-track-row input{width:auto;accent-color:var(--mint);flex:none}
+.nz-check-mark{margin-left:auto;color:var(--mint);font-weight:800}
+.nz-selected-prayer{box-shadow:0 0 0 2px var(--gold)}
+#nz-developer-note{font-size:11px;line-height:1.6;color:var(--muted);text-align:center;margin:20px 8px 8px;padding:12px;border-top:1px solid #355363}
+@media(max-width:380px){.nz-esma-grid{grid-template-columns:1fr}.nz-track-grid{grid-template-columns:1fr}.nz-learn-controls button{padding:8px}}
+
+
+/* v0.11: integrated compact daily prayer completion */
+#nz-prayer-tracker.nz-prayer-inline{margin:0}
+.nz-prayer-today-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 10px;font-size:12px;color:#b4dcd7}
+.nz-prayer-today-head strong{color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13px}
+.time-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:108px;gap:3px}
+.time-tile .time-num{margin-bottom:3px}
+.nz-tile-completion{display:flex;align-items:center;justify-content:center;gap:6px;padding:5px 7px;border-radius:9px;color:#accdd0;font-size:11px;line-height:1.2;border:1px solid #355b61;cursor:pointer;max-width:100%;background:#112b35}
+.nz-tile-completion.done{color:#e4fff2;border-color:#68d5a3;background:#165040}
+.nz-tile-completion input{margin:0;width:15px;height:15px;flex:none;accent-color:#7ce6b5}
+.nz-tile-completion input:focus-visible{outline:2px solid #f4d48c;outline-offset:2px}
+
+/* v0.11: gold/teal premium compass, precise needle remains sensor-driven */
+.compass-card.compass-luxe{background:radial-gradient(ellipse at 12% 0%,#26647966,transparent 60%),linear-gradient(140deg,#102e40,#071c2b);border:1px solid #7d7354;box-shadow:0 20px 40px #0005,inset 0 1px 0 #f3d58a24;padding:21px 16px}
+.premium-dial{isolation:isolate;max-width:240px;margin:auto;border:5px solid #98764c;box-shadow:0 0 0 2px #ead28b82,0 0 0 7px #071c28,0 0 0 8px #6aa7a33b,0 15px 35px #0008,inset 0 0 20px #0008;background:radial-gradient(circle at 45% 35%,#153d50,#0a2433 62%,#051422 100%);overflow:visible}
+.premium-dial:before{content:"";position:absolute;inset:5px;border-radius:50%;border:1px solid #bfa26988;background:repeating-conic-gradient(from 0deg,#e9d39bba 0deg 1deg,transparent 1deg 30deg);-webkit-mask:radial-gradient(circle,transparent 0 83%,#000 85% 87%,transparent 88%);mask:radial-gradient(circle,transparent 0 83%,#000 85% 87%,transparent 88%);pointer-events:none}
+.premium-dial:after{content:"";position:absolute;top:50%;left:50%;width:5px;height:5px;transform:translate(-50%,-50%);border:1px solid #fff5ce;background:#f9e3a1;border-radius:50%;box-shadow:0 0 12px #f0cd7f;z-index:4}
+.compass-halo{position:absolute;inset:16%;border:1px solid #a2d0c845;border-radius:50%;box-shadow:inset 0 0 40px #79d9bb11,0 0 20px #2bb4a015}
+.compass-face{position:absolute;inset:26%;border:1px dashed #bd9f6350;border-radius:50%}
+.premium-dial .tick{font-weight:900;font-size:13px;text-shadow:0 1px 8px #000;z-index:3}
+.premium-dial .tick.n{color:#ffe49e;top:12px;left:50%;transform:translateX(-50%)}
+.premium-dial .tick.s{color:#a5e4df;bottom:11px;left:50%;transform:translateX(-50%)}
+.premium-dial .tick.e{right:11px;top:50%;transform:translateY(-50%)}
+.premium-dial .tick.w{left:11px;top:50%;transform:translateY(-50%)}
+.compass-point{position:absolute;font-size:15px;color:#8fc2b0;opacity:.8}
+.compass-point.ne{top:21%;right:20%}.compass-point.nw{top:21%;left:20%}
+.compass-point.se{bottom:21%;right:20%}.compass-point.sw{bottom:21%;left:20%}
+.premium-dial .needle-wrap{inset:15%;transition:transform .23s ease-out;filter:drop-shadow(0 3px 4px #000)}
+.premium-needle{width:100%;height:100%;overflow:visible}
+.compass-readout .qval{font-size:clamp(39px,8vw,54px);background:linear-gradient(145deg,#fff4d0,#c5964c);background-clip:text;-webkit-background-clip:text;color:transparent;text-shadow:0 6px 24px #e9bb5b33}
+.compass-readout .compass-status{margin-top:12px;padding:8px 10px;border:1px solid #315d62;border-radius:10px;background:#082838b0}
+.nz-esma-today{max-width:520px;margin:12px auto}
+.nz-esma-today .nz-esma-ar{font-size:32px;text-align:center;padding:9px}
+.nz-esma-today .nz-esma-label{justify-content:center}
+.nz-esma-today .nz-esma-meaning{text-align:center;min-height:0}
+@media(max-width:410px){.premium-dial{max-width:182px}.compass-card.compass-luxe{padding:16px 10px}.nz-prayer-today-head{font-size:11px}.time-tile{min-height:100px}.nz-tile-completion{padding:4px 5px}}
+
+/* v0.13 — prayer gate and monthly journal */
+.nz-tile-completion.locked{background:#0b1c29;border:1px dashed #49616b;color:#93a7b0;cursor:not-allowed;opacity:.75}
+.nz-tile-completion.locked input{cursor:not-allowed;accent-color:#718693}
+.nz-tile-completion:not(.locked){transition:background .18s ease,border-color .18s ease}
+.nz-calendar-panel{margin-top:13px;padding:17px;border-color:#516c73;background:linear-gradient(145deg,#102c3c,#0a1f2f)}
+.nz-cal-title{font-size:15px;color:#f0d698;font-weight:800;letter-spacing:.3px;margin:0 0 12px}
+.nz-cal-navigation{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:15px}
+.nz-cal-navigation button{font-size:21px;line-height:1;padding:5px 12px;border-color:#6d745f;border-radius:11px;background:#133843}
+.nz-cal-navigation button:disabled{opacity:.25}
+.nz-cal-month-title{font-size:17px;color:#f3e0b4;font-weight:750;text-align:center;text-transform:capitalize}
+.nz-cal-weekdays,.nz-cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.nz-cal-weekdays{margin-bottom:5px}
+.nz-cal-weekdays span{text-align:center;font-size:10px;color:#a6bdc2;font-weight:700;padding:3px 0}
+.nz-cal-empty{min-height:57px}
+.nz-cal-day{width:100%;min-width:0;min-height:62px;padding:5px 2px 4px;border:1px solid #385768;border-radius:12px;background:#0c2737;color:#d5e3e7;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-shadow:inset 0 1px 0 #ffffff0b}
+.nz-cal-day-number{font-size:16px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+.nz-cal-day-dots{display:flex;align-items:center;justify-content:center;gap:2px}
+.nz-cal-day-dots i{display:block;width:4px;height:4px;border-radius:50%;background:#415c67}
+.nz-cal-day-dots i.filled{background:#75d4b2;box-shadow:0 0 4px #75d4b244}
+.nz-cal-day-count{font-size:9px;line-height:1.2;opacity:.8}
+.nz-cal-day.is-today{border-color:#bf995c;box-shadow:inset 0 1px 0 #e5bb6255,0 0 0 1px #bca36a55}
+.nz-cal-day.is-selected{border-color:#f6dca0;background:#214a4c;box-shadow:0 0 0 1px #f4d48c88,0 0 18px #e6ca8d1e}
+.nz-cal-day.is-complete{background:linear-gradient(145deg,#1b5548,#114037)}
+.nz-cal-day.is-future{opacity:.38;cursor:not-allowed}
+.nz-cal-day:disabled{color:#93a7b0}
+.nz-cal-detail{border-top:1px solid #395361;margin-top:15px;padding-top:13px}
+.nz-cal-detail-heading{font-weight:800;color:#efd194;font-size:14px;margin-bottom:11px}
+.nz-cal-detail-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.nz-cal-detail-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-width:0;text-align:center;border-radius:11px;border:1px solid #365d62;background:#103541;padding:10px 4px;color:#d9f4ee;cursor:pointer;font-size:11px}
+.nz-cal-detail-item input{width:18px;height:18px;accent-color:#84dcc0;margin:0;flex:none}
+.nz-cal-detail-item.locked{opacity:.44;border-style:dashed;cursor:not-allowed;background:#0b2330}
+.nz-cal-detail .loc-sub{font-size:11px;color:#aabfc5;margin:11px 0 0}
+.nz-calendar-panel :focus-visible{outline:2px solid #f6dea5;outline-offset:2px}
+@media(max-width:420px){
+ .nz-calendar-panel{padding:14px 10px}
+ .nz-cal-weekdays,.nz-cal-grid{gap:4px}
+ .nz-cal-day{min-height:57px;padding:5px 1px 4px;border-radius:10px}
+ .nz-cal-day-number{font-size:14px}
+ .nz-cal-detail-grid{gap:5px}
+ .nz-cal-detail-item{font-size:10px;padding:8px 2px;gap:6px}
+}
+@media(max-width:350px){.nz-cal-day-dots i{width:3px;height:3px}.nz-cal-weekdays,.nz-cal-grid{gap:3px}.nz-cal-detail-item{font-size:9px}}
+
+/* v0.13 Pro Plus compass — engraved gold ring, sapphire night face, Kaaba medallion */
+.compass-card.compass-proplus{margin-top:18px;display:grid;grid-template-columns:minmax(143px,44%) 1fr;align-items:center;gap:18px;min-height:249px;padding:23px 18px;border-radius:27px;border:1px solid #b18e5299;background:radial-gradient(circle at 16% -12%,#3a8e8c55,transparent 58%),radial-gradient(circle at 95% 100%,#a2773a20,transparent 62%),linear-gradient(130deg,#0d2c3a,#061722 65%,#0b2231);box-shadow:inset 0 1px 0 #fff0b744,0 15px 42px #0006;position:relative;overflow:hidden}
+.compass-card.compass-proplus:before{content:"";position:absolute;inset:5px;border:1px solid #eac68712;border-radius:23px;pointer-events:none}
+.pro-compass-shell{display:flex;align-items:center;flex-direction:column;gap:15px;min-width:0}
+.premium-dial.pro-dial{max-width:255px;width:100%;margin:0;aspect-ratio:1;border:4px solid #cba864;box-shadow:0 0 0 2px #fff2bf66,0 0 0 7px #0e2734,0 0 0 8px #759a8a70,0 18px 32px #0008,inset 0 0 36px #0009;background:radial-gradient(circle at 42% 34%,#205365 0%,#123746 27%,#071a2a 65%,#061521 100%);overflow:hidden;isolation:isolate;position:relative}
+.premium-dial.pro-dial:before{content:none}
+.premium-dial.pro-dial:after{display:none}
+.pro-dial-metal{position:absolute;inset:3px;border-radius:50%;border:1px solid #e6cd895d;background:repeating-conic-gradient(from 0deg,#f3d79b88 0deg .9deg,transparent 1.1deg 10deg);-webkit-mask:radial-gradient(circle,transparent 0 78%,#000 79% 82%,transparent 83%);mask:radial-gradient(circle,transparent 0 78%,#000 79% 82%,transparent 83%);pointer-events:none}
+.pro-dial-degree-ring{position:absolute;inset:14%;border-radius:50%;border:1px solid #85a7a64c;background:radial-gradient(circle,#16394805 0 37%,transparent 37%),repeating-conic-gradient(from -15deg,#c8a76b35 0 .65deg,transparent .75deg 30deg);-webkit-mask:radial-gradient(circle,transparent 0 80%,#000 82% 85%,transparent 88%);mask:radial-gradient(circle,transparent 0 80%,#000 82% 85%,transparent 88%)}
+.pro-dial .compass-halo{inset:22%;border:1px solid #bcb48b40;box-shadow:0 0 0 13px #77bfa609,inset 0 0 32px #0003}
+.pro-dial .compass-face{inset:34%;border:1px solid #b5a27c29}
+.premium-dial.pro-dial .tick{z-index:4;font-size:14px;font-weight:900;letter-spacing:.5px;text-shadow:0 1px 10px #000;color:#dbd2bc}
+.premium-dial.pro-dial .tick.n{top:10px;color:#fbe6ab}
+.premium-dial.pro-dial .tick.s{bottom:8px;color:#98dad7}
+.premium-dial.pro-dial .tick.e{right:12px}
+.premium-dial.pro-dial .tick.w{left:12px}
+.pro-diagonal{position:absolute;color:#f3d08c9c;font-size:13px;line-height:1;z-index:3}
+.pro-diagonal.ne{right:19%;top:19%}.pro-diagonal.nw{left:19%;top:19%}
+.pro-diagonal.se{right:19%;bottom:19%}.pro-diagonal.sw{left:19%;bottom:19%}
+.premium-dial.pro-dial .needle-wrap{inset:16%;transition:transform .34s cubic-bezier(.22,.7,.27,1);filter:drop-shadow(0 4px 7px #0009);z-index:5}
+.pro-compass-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:33px;height:33px;border-radius:50%;background:#061825;border:2px solid #e5c17c;box-shadow:0 0 0 3px #051723,0 0 14px #f4d48c55;display:grid;place-items:center;z-index:7}
+.pro-compass-center svg{width:25px;height:25px}
+.pro-compass-caption{letter-spacing:3px;font-size:10px;color:#d5bd8d;font-weight:800;text-align:center}
+.pro-compass-caption span{color:#74c5bd;letter-spacing:0}
+.pro-compass-readout{min-width:0}
+.pro-accuracy-tag{display:inline-flex;align-items:center;gap:7px;font-size:9px;font-weight:800;color:#9dd1c8;border:1px solid #40676c;border-radius:99px;padding:7px 9px;margin-bottom:13px;letter-spacing:1.05px}
+.pro-status-dot{display:block;width:6px;height:6px;border-radius:50%;background:#6ed4af;box-shadow:0 0 9px #74f3c1a1}
+.compass-card.compass-proplus .qval{font-size:clamp(37px,8vw,60px);font-weight:850;letter-spacing:-2px;margin:8px 0 6px;background:linear-gradient(160deg,#fff2cc 0%,#edc575 42%,#9f753b 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 6px 17px #a27b4b31;font-variant-numeric:tabular-nums}
+.pro-compass-data{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+.pro-compass-data>div{min-width:0;flex:1;border-radius:11px;border:1px solid #34596b;background:#092333b8;padding:8px 6px;display:flex;flex-direction:column;gap:5px}
+.pro-compass-data span{font-size:9px;color:#a6bfc7;line-height:1.35}
+.pro-compass-data strong{font-size:17px;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:#c7f2e3}
+.compass-card.compass-proplus .compass-status{font-size:11px;line-height:1.45;min-height:0;background:#0a2838a8;border:1px solid #41636d;border-radius:9px;padding:8px;margin-top:12px}
+@media(max-width:410px){
+ .compass-card.compass-proplus{grid-template-columns:42% 1fr;gap:14px;padding:19px 12px;min-height:200px}
+ .premium-dial.pro-dial{max-width:190px}
+ .pro-compass-caption{letter-spacing:2px;font-size:9px}
+ .pro-accuracy-tag{font-size:8px;padding:6px 7px;letter-spacing:.5px}
+ .pro-compass-data{gap:5px}
+ .pro-compass-data span{font-size:8px}
+ .pro-compass-data strong{font-size:14px}
+}
+@media(max-width:342px){.compass-card.compass-proplus{grid-template-columns:1fr;gap:20px}.premium-dial.pro-dial{max-width:210px}}
+
+/* v0.14 Royal Qibla: one live needle, raised engraved solid-gold rim. */
+.compass-card.compass-proplus.compass-royal,
+.compass-card.compass-proplus:has(.ornate-compass-dial){
+ border:2px solid #d0a157;
+ border-radius:29px;
+ background:radial-gradient(ellipse at 50% -18%,#aa743c26,transparent 47%),
+ radial-gradient(ellipse at 11% 16%,#2781833d,transparent 58%),
+ linear-gradient(145deg,#081c27,#0d2831 47%,#071821 100%);
+ box-shadow:inset 0 2px 0 #fff3c16c,inset 0 -2px 0 #54330a,
+ 0 0 0 3px #0a1720,0 15px 35px #0009,0 4px 26px #c6963320;
+ overflow:visible;
+ padding:25px;
+}
+.compass-card.compass-proplus:has(.ornate-compass-dial):before{
+ inset:7px;border:1px solid #b48d4b90;border-radius:22px;
+ box-shadow:inset 0 1px #fff2b337;
+}
+.pro-compass-shell:has(.ornate-compass-dial){gap:9px}
+.premium-dial.pro-dial.ornate-compass-dial{
+ max-width:370px;width:100%;height:auto;aspect-ratio:1;border:none;
+ isolation:isolate;position:relative;border-radius:50%;overflow:visible;
+ background:radial-gradient(circle at 43% 30%,#215961 0%,#0d303a 48%,#04151f 76%,#061b25 100%);
+ box-shadow:0 0 0 1px #e9bc72,0 0 0 3px #744518,
+ 0 5px 12px #000a,0 18px 46px #0008,0 0 52px #d5a6521c;
+}
+.ornate-compass-dial .ornate-compass-frame{
+ position:absolute;inset:0;width:100%;height:100%;
+ border-radius:50%;z-index:2;object-fit:contain;
+ pointer-events:none;user-select:none;
+ filter:drop-shadow(0 3px 3px #000b) drop-shadow(0 -1px 1px #ffe2a24f);
+}
+.ornate-compass-silk{
+ position:absolute;inset:19%;z-index:1;border-radius:50%;
+ background:repeating-conic-gradient(from 22.5deg,#e7ba6230 0deg 2deg,transparent 3deg 44deg),
+ radial-gradient(circle,transparent 55%,#f1ce6c0b 56%,transparent 62%);
+ border:1px solid #d5ab523d;opacity:.46;pointer-events:none;
+}
+.ornate-compass-rose{
+ position:absolute;inset:31%;z-index:1;border-radius:50%;
+ background:repeating-conic-gradient(from 0deg,#c9974f44 0deg 13deg,transparent 14deg 44deg);
+ -webkit-mask:radial-gradient(circle,transparent 0 25%,#000 27% 86%,transparent 90%);
+ mask:radial-gradient(circle,transparent 0 25%,#000 27% 86%,transparent 90%);
+ opacity:.63;pointer-events:none;
+}
+.ornate-compass-dial .tick{
+ position:absolute;z-index:4!important;font-family:Georgia,'Times New Roman',serif;
+ color:#ffe9ad!important;text-shadow:0 1px 2px #271200,0 0 7px #efc05e66;
+ font-size:clamp(17px,4vw,25px)!important;letter-spacing:.3px;
+}
+.ornate-compass-dial .tick.n{top:17.5%!important;left:50%;transform:translateX(-50%)}
+.ornate-compass-dial .tick.s{bottom:17%!important;left:50%;transform:translateX(-50%)}
+.ornate-compass-dial .tick.e{right:17%!important;top:50%;transform:translateY(-50%)}
+.ornate-compass-dial .tick.w{left:17%!important;top:50%;transform:translateY(-50%)}
+.premium-dial.pro-dial .needle-wrap.ornate-single-needle{
+ position:absolute;inset:22.5%;z-index:5;
+ filter:drop-shadow(0 4px 3px #000d) drop-shadow(0 0 6px #fff2b953);
+ transition:transform .38s cubic-bezier(.22,.7,.2,1);
+ transform-origin:50% 50%;
+}
+.ornate-single-needle svg{display:block;width:100%;height:100%;overflow:visible}
+.pro-compass-center.ornate-compass-center{
+ z-index:7;width:32px;height:32px;border:2px solid #f1cc7e;
+ background:radial-gradient(circle at 34% 22%,#895621,#25190e 66%);
+ box-shadow:0 0 0 4px #050f18,0 0 0 5px #ad8039,0 3px 8px #000b,0 0 16px #ffd27966;
+}
+.pro-compass-center.ornate-compass-center svg{width:25px;height:25px}
+.pro-compass-caption{font-family:Georgia,serif;font-weight:900;letter-spacing:4px;font-size:12px;
+ color:#eac87e;text-shadow:0 2px 7px #b67d3b70}
+.pro-compass-readout .pro-accuracy-tag{
+ border-color:#c49a5a99;background:linear-gradient(140deg,#1d3e3e,#0e3039);color:#f6dc9f
+}
+.compass-card.compass-proplus:has(.ornate-compass-dial) .qval{
+ background:linear-gradient(160deg,#fff7d9,#fbd686 45%,#b7802d 85%);
+ background-clip:text;-webkit-background-clip:text;color:transparent;
+ filter:drop-shadow(0 2px 9px #c5974b40);
+}
+@media (max-width:759px){
+ .compass-card.compass-proplus:has(.ornate-compass-dial){
+  display:flex;flex-direction:column;align-items:stretch;
+  gap:19px;padding:23px 18px 21px;
+ }
+ .pro-compass-shell:has(.ornate-compass-dial){width:100%;gap:12px}
+ .premium-dial.pro-dial.ornate-compass-dial{
+  width:min(100%,330px);max-width:330px;margin:2px auto 0;
+ }
+ .compass-card.compass-proplus:has(.ornate-compass-dial) .pro-compass-readout{
+  width:100%;text-align:center;padding:0 7px;
+ }
+ .pro-accuracy-tag{justify-content:center}
+ .pro-compass-data{text-align:left;justify-content:stretch}
+ .pro-compass-caption{letter-spacing:3px}
+}
+@media (max-width:380px){
+ .compass-card.compass-proplus:has(.ornate-compass-dial){padding:20px 12px 19px}
+ .premium-dial.pro-dial.ornate-compass-dial{width:min(100%,300px)}
+ .ornate-compass-dial .tick{font-size:17px!important}
+}
+@media (prefers-reduced-motion:reduce){.ornate-single-needle{transition:none!important}}
+/* Compass truthfulness: never display a confident Qibla needle from uncalibrated heading. */
+.ornate-single-needle.compass-unreliable,
+.needle-wrap.compass-unreliable{opacity:0!important;pointer-events:none!important;transition:opacity .22s ease}
+.ornate-single-needle:not(.compass-unreliable){opacity:1;transition:transform .38s cubic-bezier(.22,.7,.2,1),opacity .2s ease}
+.compass-quality{margin:8px 0 10px;font-size:12px;line-height:1.5;color:#efdcad;border:1px solid #94784b;background:#271f178c;border-radius:10px;padding:9px 10px}
+#compass-calibrate{border:1px solid #b28a52;color:#f1da9b;background:linear-gradient(145deg,#24434b,#122835);font-weight:750;margin:5px auto;display:inline-block}
+.compass-calibration-guide{border:1px solid #a88452;background:linear-gradient(155deg,#15393b,#1a252e);border-radius:13px;padding:12px 14px;margin:9px 0 0;font-size:12px;line-height:1.65;color:#f3e9c8}
+.compass-calibration-guide[hidden]{display:none!important}
+
+/* v0.16 diagnostic panel: compare devices without collecting precise location */
+.compass-diagnostics{
+ text-align:left;margin:13px 0 0;border:1px solid #9a7c4d;border-radius:14px;
+ background:linear-gradient(145deg,#142c35,#10232f);padding:11px 12px;
+ box-shadow:inset 0 1px 0 #ffe5ad25;
+}
+.compass-diagnostics summary{cursor:pointer;color:#f5d695;font-size:13px;font-weight:800;line-height:1.6}
+.compass-debug-data{margin:12px 0 10px;display:grid;gap:5px}
+.compass-debug-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+ font-size:12px;border-bottom:1px solid #55707943;padding:4px 0;color:#b9cfd5}
+.compass-debug-row strong{color:#f5e7c2;white-space:nowrap;font-size:12px;
+ font-variant-numeric:tabular-nums}
+.compass-debug-warning{color:#f8c485;font-size:12px;line-height:1.5;border:1px solid #d6a06966;
+ background:#543a234e;border-radius:9px;padding:9px;margin:5px 0}
+#compass-diagnostics-copy{border:1px solid #b28a52;border-radius:10px;
+ color:#f5deb1;background:#1c363d;font-size:12px;padding:10px;margin:3px 0 0}
+#compass-diagnostics-copy-status{color:#94cfad;margin:5px 0}
+
+/* v0.16 tap a day -> prominent inline editor; records save as toggled. */
+.nz-cal-tap-hint{margin:-5px 0 13px;color:#e6cea0;font-size:12px;line-height:1.5;text-align:center}
+.nz-cal-day{cursor:pointer;transition:border-color .16s ease,transform .16s ease,background .16s ease}
+.nz-cal-day:not(:disabled):active{transform:scale(.96)}
+.nz-cal-day:not(:disabled):hover{border-color:#f0d083;background:#23464c}
+.nz-cal-day.is-selected{border-color:#fff1b9;box-shadow:0 0 0 2px #eac27799,0 0 20px #cfaa4e38}
+.nz-cal-detail.nz-cal-editor{margin-top:15px;padding:14px;border:1px solid #d5aa65;border-radius:15px;
+ background:radial-gradient(ellipse at 5% 2%,#417c7335,transparent 70%),linear-gradient(145deg,#153c45,#0c2835);
+ box-shadow:inset 0 1px 0 #ffeaba40,0 8px 20px #0003}
+.nz-cal-editor-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.nz-cal-editor-titles{min-width:0;flex:1}
+.nz-cal-editor-label{color:#f5d69d;font-size:14px;font-weight:800}
+.nz-cal-detail.nz-cal-editor .nz-cal-detail-heading{color:#d8ebdc;margin:4px 0 0;font-size:12px}
+.nz-cal-editor-close{display:inline-grid;place-items:center;width:36px;height:36px;min-width:36px;
+ background:#223f48;border:1px solid #ab8f61;border-radius:10px;font-size:23px;color:#f5e3bd}
+.nz-cal-instruction{color:#b2d0c8;font-size:12px;line-height:1.55;margin:0 0 14px}
+.nz-cal-editor .nz-cal-detail-item{padding:14px 3px;min-height:75px;border-color:#60908e;
+ background:linear-gradient(145deg,#17434a,#0c313b);font-size:11px;line-height:1.3}
+.nz-cal-editor .nz-cal-detail-item:has(input:checked){background:linear-gradient(145deg,#24644e,#0d463e);
+ border-color:#9adeb2;color:#e3fff1}
+.nz-cal-editor .nz-cal-detail-item input{width:22px;height:22px}
+.nz-cal-editor .nz-cal-detail-item.locked{opacity:.37;border-style:dashed;cursor:not-allowed}
+.nz-cal-editor-count{text-align:center;font-size:15px;font-variant-numeric:tabular-nums;font-weight:850;
+ color:#f2d99d;margin:12px 0 6px}
+.nz-cal-editor-saved{text-align:center;font-size:11px;color:#96d9b5;margin:2px 0 4px}
+@media(max-width:410px){.nz-cal-detail.nz-cal-editor{padding:13px 7px}.nz-cal-editor .nz-cal-detail-item{font-size:10px;padding:10px 2px;min-height:68px}}
+
+
+/* v0.18: visible offline location fallback before the long prayer sections. */
+.location-rescue{margin:12px 0 15px;padding:15px;border-radius:17px;
+ border:1px solid #d0a368;background:linear-gradient(155deg,#2e302a,#172f37 65%,#102838);
+ box-shadow:inset 0 1px 0 #e9be6855,0 10px 26px #0003}
+.location-rescue[hidden],.location-rescue-actions button[hidden]{display:none!important}
+.location-rescue strong{display:block;color:#ffdfac;font-size:15px;margin-bottom:7px}
+.location-rescue p{font-size:12px;line-height:1.55;color:#d8e4dd;margin:0 0 12px}
+.location-rescue-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.location-rescue-actions button{white-space:normal;line-height:1.3;min-height:43px;font-size:12px;padding:9px 7px}
+.location-rescue-actions button:first-child{border-color:#d7ae6e;background:#3b4f45;color:#fff0ca}
+#manual-location-details[open]{scroll-margin:20px}
+@media(max-width:350px){.location-rescue-actions{grid-template-columns:1fr}}
+
+/* v0.19 — safe solar-shadow alternative, independent of magnetic heading */
+.sun-shadow-method{margin:14px 0 8px;padding:13px;border:1px solid #b79653;background:
+ linear-gradient(135deg,#30423d,#152e37 55%,#112631);border-radius:15px;box-shadow:inset 0 1px 0 #fff1bd33}
+.sun-shadow-method summary{font-size:13px;line-height:1.5;font-weight:850;color:#ffe4aa;cursor:pointer}
+.sun-shadow-method p{font-size:12px;line-height:1.6;color:#d6e7de;margin:9px 0}
+.sun-shadow-status{margin:10px 0;padding:9px 10px;border-radius:10px;
+ border:1px solid #6997818a;background:#0b2826;color:#d6f1cb;font-size:12px;line-height:1.55}
+.sun-shadow-actions{display:flex;flex-wrap:wrap;gap:8px}
+.sun-shadow-actions button{flex:1 1 125px;min-width:0;border-color:#d8b46b;
+ background:linear-gradient(145deg,#8b602d,#614926);color:#fff4cf;
+ font-weight:800;font-size:12px;line-height:1.4;white-space:normal}
+.sun-shadow-actions button.secondary{border-color:#627c74;background:#1b3743;color:#d9f1ed}
+.sun-shadow-actions button:disabled{opacity:.4;cursor:not-allowed}
+#sun-shadow-caution{color:#f3d7b5;font-size:11px}
+
+/* v0.19 independent, offline reference methods; explicitly user aligned */
+.manual-reference-methods{margin:13px 0 9px;border:1px solid #8f9e87;border-radius:15px;padding:13px;background:
+ linear-gradient(145deg,#173f40,#112c36 70%,#162b2c);box-shadow:inset 0 1px 0 #d5e8ac32}
+.manual-reference-methods>summary{color:#cdeabc;font-size:14px;font-weight:850;line-height:1.5;cursor:pointer}
+.manual-reference-methods p{font-size:12px;line-height:1.6;color:#d3e4de;margin:7px 0 10px}
+.manual-reference-choice{padding:12px;border:1px solid #55756e;border-radius:12px;background:#0e2934b3;margin:10px 0}
+.manual-reference-choice strong{font-size:13px;color:#f5dba5}
+.manual-reference-choice button{display:block;border:1px solid #b3a272;border-radius:10px;
+ background:linear-gradient(140deg,#456655,#26484b);color:#fff2cc;padding:10px 12px;
+ font-weight:750;line-height:1.3;white-space:normal;width:100%;font-size:12px}
+.manual-reference-field{display:flex;flex-direction:column;gap:6px;margin:8px 0 10px}
+.manual-reference-field span,.manual-reference-coords span{font-size:11px;color:#b8d0c5}
+.manual-reference-field input,.manual-reference-coords input{width:100%;max-width:100%;
+ box-sizing:border-box;background:#102e35;color:#ecf5da;border:1px solid #66867a;
+ padding:9px 10px;border-radius:8px;font-size:14px}
+.manual-reference-coords{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}
+.manual-reference-coords label{min-width:0;display:flex;flex-direction:column;gap:6px}
+.manual-reference-confirm{display:flex;gap:10px;align-items:flex-start;line-height:1.5;
+ font-size:12px;color:#ffe2b1;border:1px solid #c9a46977;padding:11px;border-radius:10px;background:#42341f42}
+.manual-reference-confirm input{height:20px;width:20px;flex:none;margin:0;accent-color:#c9c374}
+.manual-reference-message{font-size:12px;line-height:1.55;color:#fff0bf;min-height:12px}
+#manual-reference-reset{padding:9px 11px;border:1px solid #81927b;background:#193943;
+ border-radius:10px;font-size:12px;color:#dee7d2;line-height:1.3}
+#manual-reference-reset:disabled{opacity:.45}
+@media(max-width:340px){.manual-reference-coords{grid-template-columns:1fr}}
+
+/* v0.19 – bandwidth-controlled, on-demand online Qibla bearing verification */
+.qibla-online-verify{margin:13px 0 9px;padding:13px;border:1px solid #8bb6b0;
+ background:linear-gradient(145deg,#12383c,#102532 70%,#193732);border-radius:15px;
+ box-shadow:inset 0 1px 0 #d2eaba40}
+.qibla-online-verify summary{font-size:13px;color:#baf0e0;font-weight:850;cursor:pointer}
+.qibla-online-verify p{font-size:12px;color:#cddfda;line-height:1.6;margin:9px 0}
+#qibla-online-button{border:1px solid #b8dca9;background:linear-gradient(145deg,#2f6153,#1b4b4b);
+ color:#efffd6;font-weight:800;font-size:12px;line-height:1.4;padding:12px;width:100%;white-space:normal}
+#qibla-online-button:disabled{opacity:.45}
+.qibla-online-status{margin-top:10px;border:1px solid #657f87;background:#0a242b;padding:10px;
+ color:#e8f0d5;border-radius:10px;font-size:12px;line-height:1.5}
+.qibla-online-status.verified{border-color:#68d1a9;color:#d3ffe8;background:#174139}
+.qibla-online-status.warning{border-color:#cda365;color:#f7ddb1;background:#373022}
+.qibla-online-results{display:grid;gap:4px;margin-top:8px}
+.qibla-online-row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #5c8b7c44;
+ font-size:12px;padding:5px 2px;color:#cfe3d5}
+.qibla-online-row strong{color:#ffe9bd;font-variant-numeric:tabular-nums}
+
+/* v0.20 actual Android location status and single-tap GPS+network recovery */
+.nz-location-diagnostic-panel{margin:13px 0 17px;border-radius:17px;border:1px solid #b89960;
+ padding:14px 14px 12px;background:linear-gradient(155deg,#1b3940,#0d2836 60%,#1a302c);
+ box-shadow:inset 0 1px 0 #fff0af38,0 10px 25px #0004}
+.nz-location-diagnostic-panel summary{font-size:15px;font-weight:850;color:#ffe0a4;line-height:1.4}
+.nz-location-diagnostic-panel p{font-size:12px;line-height:1.55;color:#c4dedc;margin:11px 0}
+.nz-location-diagnostic-panel button{font-size:12px;font-weight:750;line-height:1.35;min-height:42px;
+ padding:9px 10px;width:100%;white-space:normal;margin:5px 0;border-radius:11px}
+#nz-location-smart{background:linear-gradient(145deg,#247967,#155a59);
+ border:1px solid #a8e0bd;color:#fbffde}
+#nz-location-diagnostic-refresh,#nz-location-diagnostic-copy{
+ background:#203f46;border:1px solid #698979;color:#dcf4e8}
+#nz-location-diagnostic-results{margin:10px 0;display:grid;gap:4px}
+.nz-location-diag-row{display:flex;align-items:center;justify-content:space-between;gap:11px;
+ padding:6px 3px;border-bottom:1px solid #55757370;font-size:12px;color:#abcac5}
+.nz-location-diag-row strong{color:#f5e6bb;font-variant-numeric:tabular-nums;
+ text-align:right;max-width:55%;overflow-wrap:anywhere}
+#nz-location-diagnostic-hint{color:#f9cf9a;border:1px solid #d2a65e70;border-radius:9px;
+ padding:10px;background:#5641273d}
+#nz-location-diagnostic-copy-status{display:block;color:#a9e0bc;font-size:11px}

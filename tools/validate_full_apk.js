@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert');
+const root=path.resolve(__dirname,'..');
+const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
+const workflow=fs.readFileSync(path.join(root,'.github/workflows/v026-daily-test.yml'),'utf8');
+const manifest=fs.readFileSync(path.join(root,'app/src/main/AndroidManifest.xml'),'utf8');
+assert(gradle.includes("applicationId 'com.geminamaz.app'"));
+assert(gradle.includes("fullPreview {")&&gradle.includes("initWith release")&&gradle.includes('signingConfig signingConfigs.debug'));
+assert(gradle.includes("applicationIdSuffix '.dailytest26'"));
+assert(manifest.includes('android:label="Namaz Zamanı"'));
+assert(workflow.includes(':app:assembleFullPreview'));
+assert(workflow.includes('app/build/outputs/apk/fullPreview/app-fullPreview.apk'));
+assert(workflow.includes("name='com.geminamaz.app'"));
+console.log('PASS: full APK build type uses main app ID and name; separate debug diagnostic still available; CI verifies package ID.');

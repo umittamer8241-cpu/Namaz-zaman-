@@ -1,0 +1,12 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert');
+const root=path.resolve(__dirname,'..');
+const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
+const release=fs.readFileSync(path.join(root,'app/src/main/AndroidManifest.xml'),'utf8');
+const debug=fs.readFileSync(path.join(root,'app/src/debug/AndroidManifest.xml'),'utf8');
+assert(gradle.includes("applicationId 'com.geminamaz.app'"));
+assert(gradle.includes("applicationIdSuffix '.dailytest26'"));
+assert(gradle.includes("versionNameSuffix '-side-by-side'"));
+assert(release.includes('android:label="Namaz Zamanı"'));
+assert(debug.includes('android:label="Namaz Zamanı Günlük İçerik Test v0.26"'));
+console.log('PASS: debug installs beside main app; release package unchanged; clearly labeled test app.');
