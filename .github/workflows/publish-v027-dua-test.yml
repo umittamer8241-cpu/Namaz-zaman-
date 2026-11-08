@@ -1,0 +1,40 @@
+name: Namaz Zamani v0.27 Turkish Dua Pronunciation APK Direct Release
+
+on:
+  push:
+    tags:
+      - 'v0.27.0-turkish-dua-test'
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish-test-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Fetch verified v026 Android test APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifact
+          gh run download 42485239060 \
+            --repo "${{ github.repository }}" \
+            --name Namaz-Zamani-v027-Turkish-Dua-Test-APK \
+            --dir artifact
+          test -s artifact/app-debug.apk
+          mv artifact/app-debug.apk artifact/Namaz-Zamani-v027-Turkce-Dua-Okunus-Test.apk
+          sha256sum artifact/Namaz-Zamani-v027-Turkce-Dua-Okunus-Test.apk
+
+      - name: Publish GitHub pre-release with direct APK link
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            artifact/Namaz-Zamani-v027-Turkce-Dua-Okunus-Test.apk \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Namaz Zamani v0.27 - Turkce Dua Okunus Test APK" \
+            --prerelease \
+            --notes "Test-only package com.geminamaz.app.readingtest27, installs separately from the main Namaz Zamani app. The 702 dua readings retain their order; 76 clear Turkish-transliteration issues were normalized. Arabic/meaning unchanged. Dua audio remains off. 18 surahs still rotate daily. Keeps the v0.25 Qibla compass version and automatic location bridge. Not a Google Play release."
