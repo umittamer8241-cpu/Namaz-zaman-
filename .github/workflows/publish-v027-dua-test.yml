@@ -3,7 +3,7 @@ name: Namaz Zamani v0.27 Turkish Dua Pronunciation APK Direct Release
 on:
   push:
     tags:
-      - 'v0.27.0-turkish-dua-test'
+      - 'v0.27.1-turkish-dua-test'
 
 permissions:
   actions: read
@@ -14,14 +14,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Fetch verified v026 Android test APK
+      - name: Fetch verified v027 Android test APK
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p artifact
           gh run download 42485239060 \
             --repo "${{ github.repository }}" \
-            --name Namaz-Zamani-v027-Turkish-Dua-Test-APK \
+            --name Namaz-Zamani-v027-Turkce-Dua-Test-APK \
             --dir artifact
           test -s artifact/app-debug.apk
           mv artifact/app-debug.apk artifact/Namaz-Zamani-v027-Turkce-Dua-Okunus-Test.apk
