@@ -278,6 +278,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 <script src="location_diagnostics.js"></script>
 <script src="location_hub.js"></script>
 <script src="daily_dua_library.js"></script>
+<script src="surah_extended.js"></script>
 <script src="learning_content.js"></script>
 <script src="esma_i18n.js"></script>
 <script src="learning_ui.js"></script>
@@ -969,7 +970,7 @@ function renderCompassDiagnostics(){
  const disagreement=fused&&android?
      Math.abs(wrap(fused.heading-android.heading+180,360)-180):null;
  const rows=[
-   ['App','Namaz Zamanı v0.25'],
+   ['App','Namaz Zamanı v0.26'],
    [q.target,diagnosticValue(target)],
    [q.fused,diagnosticValue(fused?.heading)],
    [q.android,diagnosticValue(android?.heading)],

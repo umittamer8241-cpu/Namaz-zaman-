@@ -44,3 +44,12 @@ Her iki dosya da ilgili Commons sayfasında yükleyenin kendi çalışması olar
 - Aylık takvimde her gün 0–5 ilerleme görünür; geçmiş günler elle düzeltilebilir, gelecek günler seçilemez. Kayıt anahtarı `nz_prayer_check_v09` korunur; önceki günler silinmez.
 - Pusulanın derece halkaları, altın–turkuaz iğnesi, Kâbe madalyonu, yön açısı ve hedef farkı tasarımı yenilendi. Sensör ve kıble hesaplaması mevcut kodu kullanır; ekran görüntüsü kalibrasyon veya navigasyon doğruluğunu garanti etmez.
 - Ezan ses kaynakları ve native arka plan servisi kaldırıldı. Yalnızca Fâtiha/İhlâs/Felak/Nâs tilavet sesleri ve dua TTS sistemi kaldı.
+
+
+## v0.26 kaynak ve kullanım güncellemesi (son durum)
+
+- Arapça ve çeviriyazı içeren 20 yeni sure: 92–111, 163 ayet. Sürüm: AlQuran.cloud quran-uthmani ve tr.transliteration; 8 Kasım 2026 tarihinde alındı. Kaynak koşulları: https://alquran.cloud/terms-and-conditions . Arapça kaynakları Tanzil/GlobalQuran; çeviriyazı Çeviriyazı (Türkçe) edisyonu. Yeni içerik surah_extended.js içinde yerel saklanır.
+- Yeni surelerin kısa Türkçe/İngilizce anlam açıklamaları özgün editoryal özetlerdir; doğrudan ayet meali değildir. Latin okunuşlar ve Arapça ayetler uzman kontrolü gerektirir.
+- Dua Arapça TTS ve tüm dinle/durdur düğmeleri v0.26'da kaldırılmıştır; önceki sürüm belgelerinde bunların bulunduğu bilgisi yalnız eski sürümlere aittir.
+- Fâtiha, İhlâs, Felak ve Nâs'ın dört CC0 ses kaydı ve ezberleme işaretleri korunur. Yeni sureler için onaylanmamış ses dosyası kullanılmaz.
+- Günlük rota takvim başlangıcı 2026-11-07 sabittir. 702 dua, 24 sure, 99 Esma birer gün döner; kullanıcı telefonu değiştirip uygulamayı yeniden kursa bile sıra ilk güne dönmez.

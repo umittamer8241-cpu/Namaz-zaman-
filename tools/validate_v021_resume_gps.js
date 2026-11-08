@@ -4,8 +4,8 @@ const root=path.resolve(__dirname,'..');
 const java=fs.readFileSync(path.join(root,'app/src/main/java/com/geminamaz/app/MainActivity.java'),'utf8');
 const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
 const html=fs.readFileSync(path.join(root,'app/src/main/assets/index.html'),'utf8');
-assert(gradle.includes('versionCode 26'));
-assert(gradle.includes('0.25-embedded-auto-qibla-preview'));
+assert(gradle.includes('versionCode 27'));
+assert(gradle.includes('0.26-daily-dua-surah-rotation-preview'));
 const pause=java.slice(java.indexOf('@Override protected void onPause(){'),java.indexOf('@Override protected void onActivityResult(',java.indexOf('@Override protected void onPause(){')));
 assert(pause.indexOf('resumePendingGpsSearch=working&&!freshFix')<pause.indexOf('stopSources();'),
  'Resume flag must be saved before stopSources clears working.');

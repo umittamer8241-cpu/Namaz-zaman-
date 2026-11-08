@@ -163,3 +163,13 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Konum bilgisi yokken, eskiyken, elle girildiğinde veya hata payı fazla olduğunda otomatik API isteği gönderilmez. İnternet doğrulaması hiçbir zaman telefonun fiziksel yönünü veya gemi baş yönünü tasdik etmiş gibi gösterilmez.
 - Gizli tanılama DOM ağacı sensör güncellemelerinde gereksiz yere çizilmez. 12 dil, dualar, namaz vakitleri, sureler, Esma ve aylık takvim korunur.
 - İmza sertifikası ve paket kimlikleri v0.24 ile sabittir; v0.24 com.geminamaz.app.qiblatest yan yana test sürümünün üzerine kurulabilmelidir. Google Play yayını yapılmaz.
+
+
+## v0.26 — Günlük dua ve sure rotasyonunun düzeltilmesi
+
+- 702 dua: sıra 2026-11-07 sabit takvim başlangıcına bağlıdır. Her gün yalnızca sıradaki dua görüntülenir; 702 gün sonra başa döner. Uygulamanın silinip kurulması sıra başlangıcını sıfırlamaz.
+- 24 sure: Fâtiha (1) ve 92–114 numaralı 23 kısa sure. Bir sure her gün otomatik seçilir; aynı gün isteğe bağlı seçim korunur, ertesi gün sıradaki sureye geçilir.
+- Yeni 20 sure için 163 Arapça ayet ve Latin çeviriyazı AlQuran.cloud servisinden geliştirme sırasında alınmıştır; APK içine çevrimdışı eklenmiştir. Kısa anlam özetleri özgün editoryal yazıdır, resmî meal değildir; yayın öncesi uzman kontrolü gerekir.
+- Dua seslendirme butonları ve Android Arapça TTS servisi tamamen kaldırıldı. Surelerin önceki dört lisanslı MP3 ses dosyası aynen kaldı; yeni 20 surenin henüz doğrulanmış MP3 kaydı yok.
+- Uygulama açıkken 15 saniyede bir, kilit ekranından dönüşte Android native onResume ve sayfa görünürlüğü olaylarında gün yenilenir; yeni internet isteği yoktur.
+- Sürüm: 0.26, versionCode 27. Sabit test imzası ve com.geminamaz.app.qiblatest paket adı korunur; Google Play yayını yok.

@@ -6,7 +6,7 @@ const html=fs.readFileSync(path.join(assets,'index.html'),'utf8');
 const css=fs.readFileSync(path.join(assets,'learning_styles.css'),'utf8');
 const frame=fs.readFileSync(path.join(assets,'compass_ornate_frame.svg'),'utf8');
 const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
-assert(gradle.includes('versionCode 26')&&gradle.includes('0.25-embedded-auto-qibla-preview'));
+assert(gradle.includes('versionCode 27')&&gradle.includes('0.26-daily-dua-surah-rotation-preview'));
 assert((html.match(/id="needle"/g)||[]).length===1,'single needle container');
 assert((html.match(/class="premium-needle"/g)||[]).length===1,'single animated arrow visual');
 assert(html.includes('class="needle-wrap ornate-single-needle"'),'Single arrow class missing');

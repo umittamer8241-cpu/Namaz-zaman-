@@ -5,7 +5,7 @@ const DATA = window.NamazLearningContent;
 if (!DATA) return;
 const $ = id => document.getElementById(id);
 const LABELS = {
-tr:{surah:"Namaz Sureleri — Sesli Ezber",dua:"Günün Duası",esma:"Esmaül Hüsna — 99 İsim",intro:"Arapça metin · okunuş · anlam özeti · dinleyerek tekrar",
+tr:{surah:"Günün Suresi — Her Gün Sıradaki Sure",dua:"Günün Duası",esma:"Esmaül Hüsna — 99 İsim",intro:"Arapça metin · okunuş · anlam özeti · dinleyerek tekrar",
 memorized:"Ezberledim",forget:"Ezber işaretini kaldır",listen:"Dinle",stop:"Durdur",repeat:"Tekrar",audioWait:"Bu sure için lisanslı ses henüz eklenmedi.",
 reading:"Türkçe okunuş",meaning:"Anlam özeti (resmî meal değildir)",showReading:"Okunuşu göster",
 source:"Metni ve açıklamayı kaynaktan incele",sound:"Ses: CC0 lisanslı tilavet",
@@ -14,7 +14,7 @@ search:"İsim veya anlam ara",titleMore:"Kısa Türkçe anlam",newDay:"Dua her g
 practice:"Ezber için okunuşu gizleyebilir ve sureyi 1, 3 veya 5 kez dinleyebilirsiniz.",
 translit:"Okunuş yaklaşık bir yardımcıdır. Doğru telaffuz için ehil öğreticiden destek alın.",
 noAudio:"Sesli tilavet henüz mevcut değil",none:"Sonuç bulunamadı",onlyTr:"İsimlerin anlamları şu an Türkçedir.",end:"Daha fazla göster",ready:"Dinleme hazır.",playing:"Dinleniyor...",failed:"Ses oynatılamadı."},
-en:{surah:"Prayer Surahs — Audio Memorization",dua:"Daily Supplication",esma:"Beautiful Names — 99 Names",intro:"Arabic · pronunciation aid · meaning summary · audio practice",
+en:{surah:"Surah of the Day — Sequential Rotation",dua:"Daily Supplication",esma:"Beautiful Names — 99 Names",intro:"Arabic · pronunciation aid · meaning summary · audio practice",
 memorized:"Mark memorized",forget:"Unmark memorized",listen:"Play recitation",stop:"Stop",repeat:"Repetitions",audioWait:"Approved audio not yet available for this surah.",
 reading:"Pronunciation aid (Turkish)",meaning:"Meaning summary (not a formal translation)",showReading:"Show pronunciation aid",
 source:"Check source text and commentary",sound:"Audio: CC0 licensed recitation",
@@ -24,7 +24,7 @@ practice:"Hide pronunciation while memorizing, and play the surah 1, 3 or 5 time
 translit:"Transliteration is an approximation, not a substitute for accurate instruction.",
 noAudio:"No approved recitation yet",none:"No results",onlyTr:"Meanings of names are currently in Turkish.",end:"Show more",ready:"Ready to listen.",playing:"Playing...",failed:"Audio could not be played."}
 };
-let chosenSurah = "fatiha", showTranslit = true;
+let chosenSurah = null, lastSurahDay = "", showTranslit = true;
 let lastEsmaDay = "";
 let playing = null, remaining = 0;
 let savedSurahs = readObject("nz_surah_memorized_v09");
@@ -47,13 +47,13 @@ function dayOrdinal(key){
  const dt=new Date(millis);
  return dt.getUTCFullYear()===parts[0]&&dt.getUTCMonth()===parts[1]-1&&dt.getUTCDate()===parts[2] ? Math.floor(millis/86400000) : NaN;
 }
+// Fixed calendar anchor prevents a repeated "first day" after uninstall,
+// reinstall, app update, permission changes or a different offline device.
+// Day 1 is 2026-11-07, the original daily-catalog release.
+const SEQUENCE_ANCHOR="2026-11-07";
 function dailyIndex(day,n,sequenceKey="nz_dua_sequence_start_v09"){
  if(!Number.isInteger(n)||n<1)return 0;
- const current=dayOrdinal(day),key=sequenceKey;
- let first=null;
- try{first=localStorage.getItem(key);}catch(_){}
- if(!Number.isFinite(dayOrdinal(first))){first=day;try{localStorage.setItem(key,first);}catch(_){}}
- const start=dayOrdinal(first);
+ const current=dayOrdinal(day),start=dayOrdinal(SEQUENCE_ANCHOR);
  if(!Number.isFinite(current)||!Number.isFinite(start))return 0;
  return Math.max(0,current-start)%n;
 }
@@ -89,14 +89,24 @@ function buildSectionTitle(host,name,subtitle){
  host.appendChild(el("div",name,"small-label"));
  if(subtitle)host.appendChild(el("p",subtitle,"loc-sub"));
 }
-function renderSurah(){
+function renderSurah(force=false){
  const host=$("nz-surah-learning");if(!host)return;
+ const day=currentDay();
+ if(!force&&lastSurahDay===day)return;
+ if(lastSurahDay!==day||chosenSurah===null){
+   chosenSurah=DATA.surahs[dailyIndex(day,DATA.surahs.length,"nz_surah_daily_anchor_v026")]?.id||DATA.surahs[0].id;
+ }
+ lastSurahDay=day;
  stopAudio();
  buildSectionTitle(host,t("surah"),t("intro"));
+ host.appendChild(el("p",
+   (lang()==="tr"?"Bugünün suresi":"Surah of the day")+
+   " · "+day+" · "+(dailyIndex(day,DATA.surahs.length)+1)+"/"+DATA.surahs.length,
+   "nz-progress nz-surah-daily-progress"));
  const nav=el("div",null,"nz-learn-row");
  const picker=el("select");picker.id="nz-surah-select";picker.setAttribute("aria-label",t("surah"));
  DATA.surahs.forEach(x=>{const o=el("option",x.number+". "+(lang()==="tr"?x.tr:x.en));o.value=x.id;picker.appendChild(o);});
- picker.value=chosenSurah;picker.addEventListener("change",()=>{chosenSurah=picker.value;renderSurah();});
+ picker.value=chosenSurah;picker.addEventListener("change",()=>{chosenSurah=picker.value;renderSurah(true);});
  nav.appendChild(picker);
  const progress=el("strong",Object.values(savedSurahs).filter(Boolean).length+"/"+DATA.surahs.length,"nz-progress");
  nav.appendChild(progress);host.appendChild(nav);
@@ -115,9 +125,9 @@ function renderSurah(){
  host.appendChild(el("p",lang()==="tr"?surah.meaningTr:surah.meaningEn,"nz-meaning"));
  const controls=el("div",null,"nz-learn-controls");
  const read=el("label",null,"nz-check-label");
- const check=document.createElement("input");check.type="checkbox";check.checked=showTranslit;check.addEventListener("change",()=>{showTranslit=check.checked;renderSurah();});
+ const check=document.createElement("input");check.type="checkbox";check.checked=showTranslit;check.addEventListener("change",()=>{showTranslit=check.checked;renderSurah(true);});
  read.appendChild(check);read.appendChild(el("span",t("showReading")));controls.appendChild(read);
- const mastered=button(savedSurahs[surah.id]?t("forget"):t("memorized"),()=>{savedSurahs[surah.id]=!savedSurahs[surah.id];save("nz_surah_memorized_v09",savedSurahs);renderSurah();});
+ const mastered=button(savedSurahs[surah.id]?t("forget"):t("memorized"),()=>{savedSurahs[surah.id]=!savedSurahs[surah.id];save("nz_surah_memorized_v09",savedSurahs);renderSurah(true);});
  mastered.className=savedSurahs[surah.id]?"nz-done":"secondary";controls.appendChild(mastered);
  host.appendChild(controls);
  const audioRow=el("div",null,"nz-learn-controls");
@@ -135,40 +145,18 @@ function renderSurah(){
  const source=el("div",null,"nz-source");source.appendChild(makeLink(surah.link,t("source")));
  host.appendChild(source);
 }
-function listenToDua(dua){
- const status=$("nz-dua-audio-status");
- if(window.GemiNative&&typeof window.GemiNative.speakArabic==="function"){
-   window.GemiNative.speakArabic(dua.ar);
-   if(status)status.textContent=lang()==="tr"?"Telefonun Arapça seslendirmesi kullanılıyor (tilavet kaydı değildir). Ses paketi gerekebilir.":"Using Android Arabic text-to-speech, not a recorded recitation. An Arabic voice pack may be required.";
-   return;
- }
- if("speechSynthesis" in window&&"SpeechSynthesisUtterance" in window){
-   window.speechSynthesis.cancel();
-   const item=new SpeechSynthesisUtterance(dua.ar);item.lang="ar";item.rate=0.8;window.speechSynthesis.speak(item);
-   if(status)status.textContent=lang()==="tr"?"Cihazın Arapça konuşma sesi kullanılıyor (tilavet değildir).":"Using device Arabic TTS (not recitation).";
- }else if(status)status.textContent=lang()==="tr"?"Bu cihazda Arapça konuşma motoru bulunamadı.":"Arabic speech engine is unavailable on this device.";
-}
-function stopDuaSpeech(){
- if(window.GemiNative&&typeof window.GemiNative.stopArabic==="function")window.GemiNative.stopArabic();
- if("speechSynthesis" in window)window.speechSynthesis.cancel();
- const status=$("nz-dua-audio-status");if(status)status.textContent="";
-}
 function renderDua(force){
  const host=$("nz-dua-learning");if(!host)return;
  const day=currentDay();if(!force&&day===lastDuaDay)return;lastDuaDay=day;
  const position=dailyIndex(day,DATA.duas.length);
  const dua=DATA.duas[position];
  buildSectionTitle(host,t("dua"),t("newDay"));
- const counter=lang()==="tr" ? "Dua "+(position+1)+" / "+DATA.duas.length+" · Her gün sıradaki dua" : "Dua "+(position+1)+" / "+DATA.duas.length+" · One per day, in order";
+ const counter=(lang()==="tr"?"Dua ":"Dua ")+(position+1)+" / "+DATA.duas.length+
+   " · "+day+" · "+(lang()==="tr"?"Her gün sıradaki dua":"One per day, in order");
  host.appendChild(el("p",counter,"nz-progress nz-dua-progress"));
  if(dua.title)host.appendChild(el("h3",dua.title,"nz-dua-title"));
  const ar=el("p",dua.ar,"nz-arabic nz-dua-arabic");ar.lang="ar";ar.dir="rtl";host.appendChild(ar);
  host.appendChild(el("p",dua.latin,"nz-phonetic"));
- const speaking=el("div",null,"nz-learn-controls");
- speaking.appendChild(button(lang()==="tr"?"▶ Okunuşu dinle (cihaz sesi)":"▶ Listen (device voice)",()=>listenToDua(dua)));
- speaking.appendChild(button(t("stop"),stopDuaSpeech));
- host.appendChild(speaking);
- host.appendChild(el("p","", "loc-sub")).id="nz-dua-audio-status";
  host.appendChild(el("div",t("meaning"),"nz-mini-label"));
  host.appendChild(el("p",lang()==="tr"?dua.tr:dua.en,"nz-meaning"));
  host.appendChild(makeLink(dua.url,dua.ref+" · "+t("source")));
@@ -206,7 +194,7 @@ function renderNames(force=true){
  host.appendChild(makeLink("https://www.diyanet.gov.tr/icerik/10462",localized("source")));
 }
 function refresh(){
- renderDua(true);renderSurah();renderNames();
+ renderDua(true);renderSurah(true);renderNames();
  const foot=$("nz-developer-note");
  if(foot)foot.textContent=lang()==="tr"?
   "Namaz Zamanı, Ümit Tamer tarafından ibadet vakitlerinin takibine ve dinî öğrenmeye yardımcı olmak amacıyla hazırlanmıştır. Ücretsiz ve kâr amacı güdülmeden sunulur. Resmî bir dinî kurumun uygulaması değildir; hesaplanan vakitler yerel takvimden farklı olabilir.":
@@ -215,9 +203,21 @@ function refresh(){
 function init(){
  refresh();
  const langSel=$("app-language");if(langSel)langSel.addEventListener("change",()=>{setTimeout(refresh,0);});
- ["timezone-mode","utc-offset"].forEach(id=>{const x=$(id);if(x)x.addEventListener("change",()=>renderDua(true));});
- setInterval(()=>{renderDua(false);renderNames(false);},60000);
- document.addEventListener("visibilitychange",()=>{if(document.hidden){stopAudio();stopDuaSpeech();}else{renderDua(false);renderNames(false);}});
+ const checkDay=()=>{renderDua(false);renderSurah(false);renderNames(false);};
+ ["timezone-mode","utc-offset"].forEach(id=>{
+  const field=$(id);
+  if(field)field.addEventListener("change",()=>{checkDay();renderDua(true);renderSurah(true);renderNames(true);});
+ });
+ // A date change is checked even while the app stays on screen at midnight.
+ setInterval(checkDay,15000);
+ // Android WebView timers can be paused when the phone is locked. Recheck on
+ // return to foreground, and when a saved web view is shown again.
+ document.addEventListener("visibilitychange",()=>{
+  if(document.hidden)stopAudio();else checkDay();
+ });
+ window.addEventListener("pageshow",checkDay);
+ window.addEventListener("focus",checkDay);
+ window.NamazLearning=Object.freeze({checkDay,currentDay,dailyIndex});
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();

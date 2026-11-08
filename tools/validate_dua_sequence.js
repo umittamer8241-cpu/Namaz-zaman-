@@ -25,5 +25,12 @@ assert(ix(dayAfter(n-1),n)===n-1,'Last dua reached before reset');
 assert(ix(dayAfter(n),n)===0,'Restart only after whole catalog');
 assert(ix(dayAfter(n+1),n)===1,'New cycle day two');
 assert(ix(dayAfter(-1),n)===0,'Phone clock before first day must not select negative index');
-assert(storage.get('nz_dua_sequence_start_v09')===start,'Start day persisted once');
-console.log('PASS: 1 dua/day, same day is stable, source order maintained, 702-day cycle, zero 7-day repetition');
+assert(!storage.has('nz_dua_sequence_start_v09'),'Daily sequence cannot depend on installation storage');
+storage.set('nz_dua_sequence_start_v09','2026-11-08');
+assert(ix(dayAfter(1),n)===1,'Legacy start value must not reset daily sequence');
+storage.clear();
+assert(ix(dayAfter(1),n)===1,'Uninstall/new installation must not restart daily sequence');
+assert(ix(dayAfter(1),24)===1,'New daily surah must advance in order');
+assert(ix(dayAfter(24),24)===0,'24-surah catalog loops only after its final surah');
+
+console.log('PASS: 702 dua sequential calendar days; reinstall cannot restart; 24 surahs advance daily; 99 Esma follow same fixed calendar.');

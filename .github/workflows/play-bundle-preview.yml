@@ -36,12 +36,14 @@ jobs:
         run: node tools/validate_localization.js
       - name: Dinî öğrenme, aylık namaz çizelgesi ve 12 dil kontrolü
         run: |
+          node --check app/src/main/assets/surah_extended.js
           node --check app/src/main/assets/learning_content.js
           node --check app/src/main/assets/learning_ui.js
           node --check app/src/main/assets/prayer_tracker.js
           node --check app/src/main/assets/esma_i18n.js
           node tools/validate_learning.js
           node tools/validate_dua_sequence.js
+          node tools/validate_v026_daily_learning.js
           node tools/validate_esma_i18n.js
           node tools/validate_prayer_calendar.js
           node tools/validate_royal_compass.js
@@ -88,7 +90,7 @@ jobs:
       - name: Mevcut uygulamayı silmeden kurulabilen pusula test APK
         uses: actions/upload-artifact@v4
         with:
-          name: Namaz-Zamani-v0.25-Gomulu-Otomatik-Kible-Test-APK
+          name: Namaz-Zamani-v0.26-Gunluk-Dua-Sure-Test-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
       - name: Normal Namaz Zamanı APK paket kimliğini doğrula
@@ -97,7 +99,7 @@ jobs:
       - name: Normal uygulama adıyla tam Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: Namaz-Zamani-v0.25-Gomulu-Otomatik-Kible-Tam-APK
+          name: Namaz-Zamani-v0.26-Gunluk-Dua-Sure-Tam-APK
           path: app/build/outputs/apk/fullPreview/app-fullPreview.apk
           if-no-files-found: error
       - name: İmzasız AAB önizleme

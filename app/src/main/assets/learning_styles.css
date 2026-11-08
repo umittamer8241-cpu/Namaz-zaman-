@@ -417,3 +417,12 @@
 #nz-location-diagnostic-hint{color:#f9cf9a;border:1px solid #d2a65e70;border-radius:9px;
  padding:10px;background:#5641273d}
 #nz-location-diagnostic-copy-status{display:block;color:#a9e0bc;font-size:11px}
+
+/* v0.26: pure visual prayer card; rolling daily surah */
+#nz-dua-learning{position:relative;overflow:hidden}
+#nz-dua-learning::after{content:"✦";position:absolute;right:15px;top:12px;
+ color:#b9914980;font-size:28px;pointer-events:none}
+.nz-dua-progress,.nz-surah-daily-progress{display:block;margin:9px 0 12px;
+ border:1px solid #8c77555e;background:linear-gradient(120deg,#1b4641,#123544);
+ padding:9px 11px;border-radius:11px;white-space:normal;font-size:12px;line-height:1.4}
+#nz-dua-learning .nz-dua-arabic{text-shadow:0 2px 20px #f1c37528}

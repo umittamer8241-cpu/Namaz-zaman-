@@ -7,8 +7,8 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 26
-        versionName '0.25-embedded-auto-qibla-preview'
+        versionCode 27
+        versionName '0.26-daily-dua-surah-rotation-preview'
     }
     signingConfigs {
         stablePreview {

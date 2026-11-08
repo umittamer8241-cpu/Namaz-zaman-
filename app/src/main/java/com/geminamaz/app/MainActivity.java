@@ -28,7 +28,6 @@ import android.content.IntentSender;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
 import android.net.Uri;
-import android.speech.tts.TextToSpeech;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -66,9 +65,6 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private static final float LOCATION_MAX_ACCURACY_M = 20000f;
     private static final long FIRST_FALLBACK_MS = 18000L;
     private WebView webView;
-    private TextToSpeech arabicTts;
-    private boolean arabicTtsReady = false;
-    private String queuedArabic;
     private LocationManager locationManager;
     private SensorManager sensors;
     private Sensor rotation;
@@ -290,12 +286,6 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 }
             });
         }
-        @JavascriptInterface public void speakArabic(String text){
-            runOnUiThread(()-> startArabicSpeech(text));
-        }
-        @JavascriptInterface public void stopArabic(){
-            runOnUiThread(()-> {if(arabicTts!=null)arabicTts.stop();});
-        }
         @JavascriptInterface public void openLocationSettings(){runOnUiThread(()->{
             try{startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));}
             catch(Exception ignored){sendError("Konum ayarları açılamadı. Telefon Ayarlar > Konum bölümünü aç.");}
@@ -359,29 +349,6 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         }catch(Exception ignored){}
         return true;
     }
-    private void startArabicSpeech(String raw){
-        String text=raw==null?"":raw.trim();
-        if(text.length()==0)return;
-        if(text.length()>4000)text=text.substring(0,4000);
-        queuedArabic=text;
-        if(arabicTts==null){
-            arabicTts=new TextToSpeech(this,status->{
-                arabicTtsReady=status==TextToSpeech.SUCCESS;
-                if(arabicTtsReady&&arabicTts!=null){
-                    int available=arabicTts.setLanguage(new Locale("ar"));
-                    if(available==TextToSpeech.LANG_MISSING_DATA||available==TextToSpeech.LANG_NOT_SUPPORTED){
-                        arabicTtsReady=false;
-                    }else{
-                        arabicTts.setSpeechRate(0.82f);
-                        if(queuedArabic!=null)arabicTts.speak(queuedArabic,TextToSpeech.QUEUE_FLUSH,null,"dua_ar");
-                    }
-                }
-            });
-        }else if(arabicTtsReady){
-            arabicTts.speak(text,TextToSpeech.QUEUE_FLUSH,null,"dua_ar");
-        }
-    }
-
     private void js(String script){
         if(nativeReady&&webView!=null)webView.evaluateJavascript(script,null);
     }
@@ -900,10 +867,15 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     @Override protected void onResume(){
         super.onResume();
         startOrientationTracking();
-        if(webView!=null)webView.onResume();
+        if(webView!=null){
+            webView.onResume();
+            // WebView JavaScript timers may be suspended when the screen locks.
+            // Refresh daily Dua, Surah and Esma immediately after returning.
+            webView.evaluateJavascript("window.NamazLearning&&window.NamazLearning.checkDay&&window.NamazLearning.checkDay()",null);
+        }
         // onPause() unsubscribes from GPS. If that interrupted an unfinished
-        // search, restart the satellite-only provider after screen wake.
-        // This never launches a Google/network request or asks for permission.
+        // search, restart the full smart location search after screen wake.
+        // This only resumes a previously user-authorized unfinished search.
         if(resumePendingGpsSearch){
             resumePendingGpsSearch=false;
             if(hasAnyPermission()&&locationEnabled()){
@@ -967,7 +939,6 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     }
     @Override protected void onDestroy(){
         stopSources();
-        if(arabicTts!=null){arabicTts.stop();arabicTts.shutdown();arabicTts=null;}
         if(webView!=null)webView.destroy();
         super.onDestroy();
     }

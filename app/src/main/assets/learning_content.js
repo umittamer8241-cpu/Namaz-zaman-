@@ -170,5 +170,9 @@ const NAMES = RAW_NAMES.map((line, index) => {
   const [name, ar, meaningTr] = line.split("|");
   return {number:index+1, name, ar, meaningTr};
 });
-window.NamazLearningContent = Object.freeze({surahs:SURAH,duas:DUAS.concat(window.NamazDuaLibrary||[]),names:NAMES});
+// Keep the original 4 complete, licensed-audio short surahs; insert
+// 20 additional verified offline short surahs in Qur'anic number order.
+const EXTENDED=Array.isArray(window.NamazSurahExtension)?window.NamazSurahExtension:[];
+const ALL_SURAH=[SURAH[0],...EXTENDED,...SURAH.slice(1)];
+window.NamazLearningContent = Object.freeze({surahs:ALL_SURAH,duas:DUAS.concat(window.NamazDuaLibrary||[]),names:NAMES});
 })();
