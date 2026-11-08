@@ -7,8 +7,8 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 24
-        versionName '0.23-auto-blue-location-stable-preview'
+        versionCode 25
+        versionName '0.24-compass-fallback-stable-preview'
     }
     signingConfigs {
         stablePreview {
@@ -26,9 +26,11 @@ android {
     }
     buildTypes {
         debug {
-            // Standalone QA app: never overwrite the user's existing prayer records.
-            applicationIdSuffix '.pusulatest'
+            // New stable test-app ID avoids prior temporary debug key
+            // collisions and remains unchanged in future updates.
+            applicationIdSuffix '.qiblatest'
             versionNameSuffix '-side-by-side'
+            signingConfig signingConfigs.stablePreview
         }
         fullPreview {
             // Complete installable APK under the normal Namaz Zamani package ID.

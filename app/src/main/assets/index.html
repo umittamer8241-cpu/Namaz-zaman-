@@ -782,6 +782,45 @@ function alignToShadow(){
  shadowAlignment.relative=position.relative;shadowAlignment.shadowAz=position.shadowAzimuth;
  renderSunShadow();updateNeedle();return true;
 }
+const COMPASS_FALLBACK_TEXT={
+ tr:['Yaklaşık sensör yönü • kesin kıble olarak kullanma. Metal/mıknatıstan uzaklaş, kalibrasyonu tekrarla.',
+     'İki yön sensörü uyuşmuyor! Oku kıble için kullanma. Sensör raporunu kontrol et.',
+     'Kuzeye göre SABİT kıble açısı • telefonun baktığı yön bilinmiyor. Telefonu bu okla hizalama.'],
+ en:['Approximate sensor heading. Do not rely on this for Qibla. Move away from magnets and calibrate.',
+     'Two direction sensors disagree. Do not use this arrow for Qibla.',
+     'Fixed Qibla bearing relative to NORTH. Phone orientation unknown; do not align using this arrow.'],
+ ms:['Arah sensor anggaran. Jangan guna sebagai kiblat tepat; kalibrasi jauh dari logam.',
+     'Dua sensor tidak sepadan. Jangan guna anak panah untuk kiblat.',
+     'Sudut kiblat tetap dari UTARA. Arah telefon tidak diketahui.'],
+ id:['Arah sensor perkiraan. Jangan gunakan sebagai kiblat pasti; kalibrasi ulang.',
+     'Dua sensor berbeda. Jangan gunakan panah ini untuk kiblat.',
+     'Sudut kiblat tetap dari UTARA. Arah ponsel belum diketahui.'],
+ ar:['اتجاه تقريبي من الحساس؛ لا تستخدمه لتحديد القبلة دون تحقق.',
+     'حساسا الاتجاه مختلفان. لا تعتمد على السهم لتحديد القبلة.',
+     'زاوية القبلة بالنسبة إلى الشمال فقط؛ اتجاه الهاتف غير معروف.'],
+ ru:['Приблизительный курс датчика. Не используйте как точную киблу; откалибруйте.',
+     'Датчики направления расходятся. Не полагайтесь на стрелку.',
+     'Фиксированный азимут киблы от СЕВЕРА. Направление телефона неизвестно.'],
+ fr:['Direction approximative du capteur. Ne pas suivre comme qibla précise; recalibrez.',
+     'Les capteurs divergent. Ne vous fiez pas à la flèche.',
+     'Azimut fixe de qibla par rapport au NORD. Orientation du téléphone inconnue.'],
+ de:['Ungefähre Sensorrichtung. Nicht als genaue Qibla nutzen; neu kalibrieren.',
+     'Richtungssensoren widersprechen sich. Pfeil nicht für Qibla nutzen.',
+     'Fester Qibla-Winkel relativ zu NORD. Ausrichtung des Handys unbekannt.'],
+ es:['Orientación aproximada. No la uses como qibla exacta; calibra el sensor.',
+     'Los sensores no coinciden. No sigas la flecha para la qibla.',
+     'Rumbo fijo de qibla desde el NORTE. Orientación del móvil desconocida.'],
+ pt:['Rumo aproximado. Não o uses como qibla certa; calibra o sensor.',
+     'Os sensores discordam. Não uses a seta como qibla.',
+     'Rumo fixo da qibla desde NORTE. Orientação do telefone desconhecida.'],
+ az:['Təxmini sensor istiqaməti. Qiblə üçün dəqiq sayma; yenidən kalibr et.',
+     'İstiqamət sensorları fərqlidir. Bu oxla qibləyə yönəlmə.',
+     'ŞİMALA görə sabit qiblə bucağı; telefonun istiqaməti bilinmir.'],
+ ur:['سینسر کی تقریبی سمت؛ اسے قطعی قبلہ نہ سمجھیں۔ دوبارہ درست کریں۔',
+     'دونوں سینسر مختلف ہیں۔ تیر کو قبلہ کے لیے استعمال نہ کریں۔',
+     'شمال سے قبلہ کا مقررہ زاویہ؛ فون کا رخ نامعلوم ہے۔']
+};
+function compassFallbackWords(){return COMPASS_FALLBACK_TEXT[window.NamazI18n?.getLanguage?.()||'tr']||COMPASS_FALLBACK_TEXT.en;}
 function updateNeedle(){
  updateCompassLanguage();
  const q=compassQualityText();
@@ -795,8 +834,17 @@ function updateNeedle(){
  const trusted=hasLocation&&fresh&&state.headingTrusted&&Number.isFinite(h)&&!mismatch;
  const byShadow=shadowActive();
  const byManual=manualReferenceActive()&&!byShadow;
+ const approximate=hasLocation&&fresh&&Number.isFinite(h)&&!trusted&&!byShadow&&!byManual;
+ // Never erase the premium compass on a valid position. The north-reference
+ // arrow is STATIC and explicitly labelled, NOT a live phone orientation.
+ const northReference=hasLocation&&!fresh&&!byShadow&&!byManual;
  const needle=$('needle');
- if(needle)needle.classList.toggle('compass-unreliable',!trusted&&!byShadow&&!byManual);
+ if(needle){
+   needle.classList.toggle('compass-unreliable',!hasLocation);
+   needle.classList.toggle('compass-approximate',approximate);
+   needle.classList.toggle('compass-conflict',approximate&&mismatch);
+   needle.classList.toggle('compass-north-reference',northReference);
+ }
  if(!hasLocation){
    $('compass-status').textContent=tr('qiblaWaiting');
    $('bearing-note').textContent=tr('qiblaWaiting');
@@ -806,7 +854,10 @@ function updateNeedle(){
  const bearing=qibla(state.lat,state.lon);
  if(byShadow&&needle)needle.style.transform='rotate('+shadowAlignment.relative+'deg)';
  else if(byManual&&needle)needle.style.transform='rotate('+manualReference.relative+'deg)';
- else if(needle)needle.style.transform='rotate('+(trusted?wrap(bearing-h,360):0)+'deg)';
+ else if(needle){
+   const relative=fresh&&Number.isFinite(h)?wrap(bearing-h,360):bearing;
+   needle.style.transform='rotate('+relative+'deg)';
+ }
  $('bearing-note').textContent=tr('qiblaNorth');
  const displayHeading=$('pro-compass-heading'),difference=$('pro-compass-difference');
  if(byManual){
@@ -830,16 +881,18 @@ function updateNeedle(){
    return;
  }
  if(displayHeading)displayHeading.textContent=fresh&&Number.isFinite(h)?Math.round(h)+'°':'—';
- if(difference)difference.textContent=trusted?Math.round(Math.abs(wrap(bearing-h+180,360)-180))+'°':'—';
+ if(difference)difference.textContent=fresh&&Number.isFinite(h)?
+   (trusted?'':'≈')+Math.round(Math.abs(wrap(bearing-h+180,360)-180))+'°':'—';
  if(!fresh||!Number.isFinite(h)){
    $('compass-status').textContent=q.waiting;
-   if(quality)quality.textContent=q.notReady;
+   if(quality)quality.textContent=compassFallbackWords()[2];
    return;
  }
  const source=state.headingSource==='fused'?q.fused:q.fallback;
  if(!trusted){
    $('compass-status').textContent=mismatch?diagText().warning:q.calibrate;
-   if(quality)quality.textContent=source+' · '+q.notReady;
+   if(quality)quality.textContent=source+' · '+
+     (mismatch?compassFallbackWords()[1]:compassFallbackWords()[0]);
    return;
  }
  const diff=Math.abs(wrap(bearing-h+180,360)-180);
@@ -877,7 +930,7 @@ function renderCompassDiagnostics(){
  const disagreement=fused&&android?
      Math.abs(wrap(fused.heading-android.heading+180,360)-180):null;
  const rows=[
-   ['App','Namaz Zamanı v0.19'],
+   ['App','Namaz Zamanı v0.24'],
    [q.target,diagnosticValue(target)],
    [q.fused,diagnosticValue(fused?.heading)],
    [q.android,diagnosticValue(android?.heading)],
@@ -888,7 +941,11 @@ function renderCompassDiagnostics(){
    [q.roll,diagnosticValue(android?.roll)],
    [q.declination,diagnosticValue(android?.declination)],
    [q.active,state.headingSource||q.stale],
-   [q.status,!$('needle')?.classList.contains('compass-unreliable')?q.visible:q.hidden]
+   [q.status,
+    $('needle')?.classList.contains('compass-conflict')?'Çelişki (güvenilmez)':
+    $('needle')?.classList.contains('compass-approximate')?'Yaklaşık (güvenilmez)':
+    $('needle')?.classList.contains('compass-north-reference')?'Kuzey referansı (sabit)':
+    !$('needle')?.classList.contains('compass-unreliable')?q.visible:q.hidden]
  ];
  panel.replaceChildren();
  for(const [key,value] of rows){

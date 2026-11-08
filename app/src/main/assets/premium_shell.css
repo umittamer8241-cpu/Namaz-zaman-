@@ -179,3 +179,15 @@ button,summary{touch-action:manipulation}
  .nz-location-live-dot[data-status=waiting]{animation:nz-pulse 1.8s ease-in-out infinite}
  @keyframes nz-pulse{50%{box-shadow:0 0 0 9px #a0b1c724}}
 }
+
+/* v0.24 compass: visible reference/estimated arrow, never claim verified
+   physical Qibla when heading sensors are unreliable or disagree. */
+.premium-dial.pro-dial .ornate-single-needle.compass-approximate{
+ opacity:.66!important;filter:sepia(.45) saturate(.9) drop-shadow(0 1px 5px #ffba5570);
+}
+.premium-dial.pro-dial .ornate-single-needle.compass-conflict{
+ opacity:.45!important;filter:sepia(.9) saturate(1.8) hue-rotate(-24deg);
+}
+.premium-dial.pro-dial .ornate-single-needle.compass-north-reference{
+ opacity:.4!important;filter:grayscale(.6) drop-shadow(0 2px 3px #ffffaa33);
+}

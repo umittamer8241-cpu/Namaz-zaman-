@@ -28,7 +28,7 @@ assert(html.includes('function locationFresh(')&&html.includes('function validLo
 assert(html.includes('function shadowActive()')&&html.includes('function alignToShadow()'));
 assert(html.includes('window.NamazSunQibla.alignment('));
 assert(html.includes('locationIsStale()'));
-assert(html.includes("trusted?wrap(bearing-h,360):0"));
+assert(html.includes('const relative=fresh&&Number.isFinite(h)?wrap(bearing-h,360):bearing;'));
 assert(html.includes("window.GemiNative.requestSatelliteLocation()"));
 assert(html.includes("window.GemiNative.requestLocation()"));
 assert(html.includes("document.addEventListener('visibilitychange'"));

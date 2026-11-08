@@ -143,3 +143,12 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - GitHub Actions artık normal kurulum APK'sını **kalıcı imza sertifikasıyla** üretir. PKCS12 dosyası ve parola GitHub'ın şifrelenmiş repository secrets alanında tutulur; kaynak depoya yüklenmez. Sertifika SHA-256: 66D05BC5D1A05C70AAA703B041A599DCDDA446F50F3D7B8811EFDAD094C8A323.
 - v0.22 ve daha eski test APK'ları başka sertifikayla imzalandığından yeni sürüm bunların üzerine kurulamayabilir. Önceki kayıtları kaybettirmemek için eski uygulama otomatik kaldırılmaz. Yeni sabit sertifikalı sürüme geçildikten sonraki yükseltmeler aynı imzayı kullanır.
 - Bunlar Android test derlemeleridir. Google Play'e hiçbir yayın yapılmaz. Gerçek cihazda GPS konum testi tamamlanmadan sorunun yüzde yüz çözüldüğü ileri sürülmez.
+
+## v0.24 — Google/Android pusula çatışması ve okun kaybolması düzeltmesi
+
+- Fused Orientation Provider sensör ölçümünün konservatif yön hatası yüksekken (örn. 180°) Android dönüş sensörünü haksız yere susturması düzeltildi. Artık yalnızca güvenilir Google yönü platform alternatifine öncelik kazanır.
+- Android dönüş vektörünün sağladığı açı hatası (radyan) değerlendirilir; Android 13+ cihazlarda varsa gerçek kuzeyi veren TYPE_HEADING sensörü de kullanılır.
+- Premium Plus'ın tek altın oku korunur. Güvenilir ölçümde altın ok, belirsiz ölçümde soluk uyarılı ok, sensör çatışmasında uyarılı ok gösterilir. Hiç yön ölçümü yoksa kuzeye göre kıble açısı yalnız SABİT referans olarak sunulur; telefonun fiziksel baktığı yönün bilinmediği açıkça belirtilir. Belirsiz/sabit ok kesin kıble yerine geçmez.
+- v0.23 otomatik mavi konum, dualar, namaz vakitleri, kayıtlar, premium tasarım ve 12 dil korunur.
+- Geçici debug imzasıyla kurulmuş v0.23 pusula test sürümünden ayrılmak için yeni sabit test kimliği com.geminamaz.app.qiblatest belirlenmiştir. Hem normal APK hem yeni yan-yana test APK kalıcı preview imza sertifikasıyla üretilecektir.
+- Gerçek Android telefon / gemi üzerinde manyetik sensör doğruluğu halen saha testi gerektirir. Google Play'e herhangi bir yayın yapılmadı.

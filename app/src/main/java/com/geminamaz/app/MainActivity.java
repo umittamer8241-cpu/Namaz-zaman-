@@ -72,9 +72,14 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private LocationManager locationManager;
     private SensorManager sensors;
     private Sensor rotation;
+    private Sensor headingSensor; // Android 13+ true-heading sensor, optional
     private FusedOrientationProviderClient fusedOrientationClient;
     private DeviceOrientationListener fusedOrientationListener;
     private long lastFusedOrientationMs;
+    // Never let inaccurate FOP callbacks block a usable Android heading.
+    private long lastUsableFusedOrientationMs;
+    private long lastUsablePlatformHeadingMs;
+    private long lastNativeHeadingSensorMs;
     private boolean orientationRunning;
     private int fallbackSensorAccuracy = SensorManager.SENSOR_STATUS_UNRELIABLE;
     private double compassLat = Double.NaN;
@@ -118,6 +123,8 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         sensors=(SensorManager)getSystemService(Context.SENSOR_SERVICE);
         rotation=sensors==null?null:sensors.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         if(rotation==null&&sensors!=null)rotation=sensors.getDefaultSensor(Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR);
+        headingSensor=(Build.VERSION.SDK_INT>=33 && sensors!=null)
+            ?sensors.getDefaultSensor(Sensor.TYPE_HEADING):null;
         webView=new WebView(this);
         webView.setBackgroundColor(Color.rgb(6,21,36));
         webView.getSettings().setJavaScriptEnabled(true);
@@ -748,9 +755,15 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     private void startOrientationTracking(){
         orientationRunning=true;
         lastFusedOrientationMs=0;
+        lastUsableFusedOrientationMs=0;
+        lastUsablePlatformHeadingMs=0;
+        lastNativeHeadingSensorMs=0;
         fallbackSensorAccuracy=SensorManager.SENSOR_STATUS_UNRELIABLE;
-        if(sensors!=null&&rotation!=null){
-            sensors.registerListener(this,rotation,SensorManager.SENSOR_DELAY_UI);
+        if(sensors!=null){
+            if(rotation!=null)
+                sensors.registerListener(this,rotation,SensorManager.SENSOR_DELAY_UI);
+            if(headingSensor!=null)
+                sensors.registerListener(this,headingSensor,SensorManager.SENSOR_DELAY_UI);
         }
         boolean googleReady=false;
         try{
@@ -763,12 +776,21 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             fusedOrientationListener=(DeviceOrientation orientation)->{
                 if(!orientationRunning)return;
                 double heading=orientation.getHeadingDegrees();
+                // Conservative FOP error can remain 180 until enough physical
+                // calibration movement. This must NOT starve the fallback.
                 double error=orientation.hasConservativeHeadingErrorDegrees()
                     ?orientation.getConservativeHeadingErrorDegrees()
                     :orientation.getHeadingErrorDegrees();
-                lastFusedOrientationMs=SystemClock.elapsedRealtime();
-                sendCompassHeading(heading,error,"fused",Double.isFinite(error)&&error<=25d);
+                boolean trusted=Double.isFinite(error)&&error<=25d;
+                long now=SystemClock.elapsedRealtime();
+                lastFusedOrientationMs=now;
+                if(trusted)lastUsableFusedOrientationMs=now;
                 sendCompassDiagnostic(heading,error,"fused",Double.NaN,Double.NaN,lastDeclination);
+                if(trusted||now-lastUsablePlatformHeadingMs>=5000L){
+                    // In the uncertain case JavaScript displays a marked
+                    // approximate arrow, never a verified Qibla direction.
+                    sendCompassHeading(heading,error,"fused",trusted);
+                }
             };
             DeviceOrientationRequest request=new DeviceOrientationRequest.Builder(100000L).build();
             fusedOrientationClient.requestOrientationUpdates(request,(Runnable command)->{handler.post(command);},fusedOrientationListener)
@@ -787,11 +809,32 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         }
         fusedOrientationListener=null;
         lastFusedOrientationMs=0;
+        lastUsableFusedOrientationMs=0;
+        lastUsablePlatformHeadingMs=0;
+        lastNativeHeadingSensorMs=0;
     }
     @Override public void onSensorChanged(SensorEvent event){
         if(!orientationRunning)return;
-        if(event.sensor.getType()!=Sensor.TYPE_ROTATION_VECTOR &&
-           event.sensor.getType()!=Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)return;
+        final int type=event.sensor.getType();
+        // If available this optional Android 13 heading sensor directly
+        // supplies true-north bearing and its estimated angular error.
+        if(Build.VERSION.SDK_INT>=33 && type==Sensor.TYPE_HEADING){
+            if(event.values.length<2 || !Float.isFinite(event.values[0]))return;
+            double measuredError=event.values[1];
+            if(!Double.isFinite(measuredError)||measuredError<0||measuredError>180)
+                measuredError=180;
+            long now=SystemClock.elapsedRealtime();
+            boolean trusted=measuredError<=25d;
+            lastNativeHeadingSensorMs=now;
+            if(trusted)lastUsablePlatformHeadingMs=now;
+            sendCompassDiagnostic(event.values[0],measuredError,"android",
+                Double.NaN,Double.NaN,Double.NaN);
+            if(now-lastUsableFusedOrientationMs>=5000L)
+                sendCompassHeading(event.values[0],measuredError,"android",trusted);
+            return;
+        }
+        if(type!=Sensor.TYPE_ROTATION_VECTOR &&
+           type!=Sensor.TYPE_GEOMAGNETIC_ROTATION_VECTOR)return;
         float[] matrix=new float[9],screenMatrix=new float[9],orientation=new float[3];
         SensorManager.getRotationMatrixFromVector(matrix,event.values);
         // Unlike Google FOP, the platform rotation-vector is tied to the
@@ -826,18 +869,30 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             lastDeclination=declination;
             heading+=declination;
         }
-        // Rotation-vector accuracy quality is vendor-dependent: display the
-        // source as a fallback and require HIGH before permitting an arrow.
+        // Rotation-vector values[4] is estimated magnetic heading error
+        // in RADIANS, if the sensor reports it. Event accuracy alone is
+        // often UNKNOWN even while the sensor supplies valid orientation.
         int accuracy=event.accuracy;
         if(accuracy<0||accuracy>SensorManager.SENSOR_STATUS_ACCURACY_HIGH)
             accuracy=fallbackSensorAccuracy;
-        boolean trusted=accuracy==SensorManager.SENSOR_STATUS_ACCURACY_HIGH;
-        sendCompassDiagnostic(heading,trusted?25d:180d,"android",pitch,roll,declination);
-        // Allow the fallback to drive the arrow only when FOP is unavailable
-        // or has not sent usable updates for at least five seconds.
-        if(lastFusedOrientationMs>0 &&
-           SystemClock.elapsedRealtime()-lastFusedOrientationMs<5000L)return;
-        sendCompassHeading(heading,trusted?25d:180d,"android",trusted);
+        double error=accuracy==SensorManager.SENSOR_STATUS_ACCURACY_HIGH?25d:
+            accuracy==SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM?45d:180d;
+        if(event.values.length>4 && Float.isFinite(event.values[4])
+            && event.values[4]>=0){
+            double angularError=Math.toDegrees(event.values[4]);
+            if(Double.isFinite(angularError))
+                error=Math.min(180d,Math.max(angularError,accuracy==SensorManager.SENSOR_STATUS_UNRELIABLE?35d:0d));
+        }
+        boolean trusted=error<=25d && accuracy!=SensorManager.SENSOR_STATUS_UNRELIABLE;
+        long now=SystemClock.elapsedRealtime();
+        if(trusted)lastUsablePlatformHeadingMs=now;
+        sendCompassDiagnostic(heading,error,"android",pitch,roll,declination);
+        // Block fallback only for RECENT TRUSTED Google readings, not simply
+        // because FOP has emitted unusable 180-degree errors.
+        if(now-lastUsableFusedOrientationMs<5000L)return;
+        // On devices offering TYPE_HEADING prefer its newer sample.
+        if(headingSensor!=null&&now-lastNativeHeadingSensorMs<3500L)return;
+        sendCompassHeading(heading,error,"android",trusted);
     }
     @Override public void onAccuracyChanged(Sensor sensor,int accuracy){
         if(sensor==rotation)fallbackSensorAccuracy=accuracy;

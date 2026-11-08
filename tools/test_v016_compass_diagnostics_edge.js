@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    const good=!arrow.classList.contains('compass-unreliable');
    const readable=document.getElementById('compass-diagnostics-data').textContent;
    nativeCompassDiagnostic(145,25,'android',12,-3,4,1);
-   const mismatchHidden=arrow.classList.contains('compass-unreliable');
+   const mismatchCaution=arrow.classList.contains('compass-conflict')&&!arrow.classList.contains('compass-unreliable');
    const mismatchText=document.getElementById('compass-diagnostics-data').textContent;
    const count=document.querySelectorAll('.compass-debug-row').length;
    window.GemiNative={copyCompassReport:s=>window.copiedReport=s};
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded',()=>{
    nativeCompassDiagnostic(101,25,'android',12,-3,4,0);
    const recovered=!arrow.classList.contains('compass-unreliable');
    const output=document.createElement('output');output.id='diag-output';
-   output.textContent='DIAG_V016_'+JSON.stringify({good,mismatchHidden,recovered,count,hasBoth:readable.includes('100.0')&&readable.includes('104.0'),
+   output.textContent='DIAG_V016_'+JSON.stringify({good,mismatchCaution,recovered,count,hasBoth:readable.includes('100.0')&&readable.includes('104.0'),
    showsGap:mismatchText.includes('45.0'),copied:copied.includes('Google')&&copied.includes('Android'),noExactCoords:!copied.includes('40.97')&&!copied.includes('29.1'),
    heading:document.getElementById('pro-compass-heading').textContent,source:document.getElementById('compass-quality').textContent});
    document.body.appendChild(output);
@@ -37,7 +37,7 @@ try{
  const dom=run.stdout||'',m=/DIAG_V016_(\{.*?\})<\/output>/.exec(dom);
  if(!m)throw Error('No output '+(dom.match(/data-diag-error="([^"]+)"/)||[])[1]+' '+(run.stderr||'').slice(-400));
  const d=JSON.parse(m[1].replaceAll('&quot;','"').replaceAll('&amp;','&'));
- for(const k of ['good','mismatchHidden','recovered','hasBoth','showsGap','copied','noExactCoords'])if(!d[k])throw Error('Missing '+k+' '+JSON.stringify(d));
+ for(const k of ['good','mismatchCaution','recovered','hasBoth','showsGap','copied','noExactCoords'])if(!d[k])throw Error('Missing '+k+' '+JSON.stringify(d));
  if(d.count<11)throw Error('Missing diagnostics '+JSON.stringify(d));
- console.log('PASS: good sensor agrees, 45° disagreement hides needle, re-alignment recovers, copying diagnostics omits exact location.');
+ console.log('PASS: trusted compass, conflicting sensors flagged as unsafe, re-alignment recovers, diagnostic copy omits coordinates.');
 }catch(e){console.error(e.stack);process.exitCode=1;}finally{if(fs.existsSync(temp))fs.unlinkSync(temp);}
