@@ -10,19 +10,17 @@ document.addEventListener('DOMContentLoaded',()=>{
    nativeCompassDiagnostic(104,25,'android',12,-3,4,0);
    const arrow=document.getElementById('needle');
    const good=!arrow.classList.contains('compass-unreliable');
-   const readable=document.getElementById('compass-diagnostics-data').textContent;
+   const fusedSaved=compassDebug.fused?.heading===100;
    nativeCompassDiagnostic(145,25,'android',12,-3,4,1);
    const mismatchCaution=arrow.classList.contains('compass-conflict')&&!arrow.classList.contains('compass-unreliable');
-   const mismatchText=document.getElementById('compass-diagnostics-data').textContent;
-   const count=document.querySelectorAll('.compass-debug-row').length;
-   window.GemiNative={copyCompassReport:s=>window.copiedReport=s};
-   document.getElementById('compass-diagnostics-copy').click();
-   const copied=window.copiedReport||'';
+   const disagreement=compassHeadingDisagreement();
+   const retiredPanelHidden=document.getElementById('nz-compass-tools').hidden;
+   const noVisibleDiagnostics=document.querySelectorAll('.compass-debug-row').length===0;
    nativeCompassDiagnostic(101,25,'android',12,-3,4,0);
-   const recovered=!arrow.classList.contains('compass-unreliable');
+   const recovered=!arrow.classList.contains('compass-conflict')&&!compassHeadingDisagreement();
    const output=document.createElement('output');output.id='diag-output';
-   output.textContent='DIAG_V016_'+JSON.stringify({good,mismatchCaution,recovered,count,hasBoth:readable.includes('100.0')&&readable.includes('104.0'),
-   showsGap:mismatchText.includes('45.0'),copied:copied.includes('Google')&&copied.includes('Android'),noExactCoords:!copied.includes('40.97')&&!copied.includes('29.1'),
+   output.textContent='DIAG_V016_'+JSON.stringify({good,mismatchCaution,recovered,retiredPanelHidden,noVisibleDiagnostics,fusedSaved,disagreement,
+   noExactCoords:!document.getElementById('compass-diagnostics-data').textContent.includes('40.97')&&!document.getElementById('compass-diagnostics-data').textContent.includes('29.1'),
    heading:document.getElementById('pro-compass-heading').textContent,source:document.getElementById('compass-quality').textContent});
    document.body.appendChild(output);
  }catch(err){document.body.setAttribute('data-diag-error',String(err.stack||err));}
@@ -37,7 +35,6 @@ try{
  const dom=run.stdout||'',m=/DIAG_V016_(\{.*?\})<\/output>/.exec(dom);
  if(!m)throw Error('No output '+(dom.match(/data-diag-error="([^"]+)"/)||[])[1]+' '+(run.stderr||'').slice(-400));
  const d=JSON.parse(m[1].replaceAll('&quot;','"').replaceAll('&amp;','&'));
- for(const k of ['good','mismatchCaution','recovered','hasBoth','showsGap','copied','noExactCoords'])if(!d[k])throw Error('Missing '+k+' '+JSON.stringify(d));
- if(d.count<11)throw Error('Missing diagnostics '+JSON.stringify(d));
- console.log('PASS: trusted compass, conflicting sensors flagged as unsafe, re-alignment recovers, diagnostic copy omits coordinates.');
+ for(const k of ['good','mismatchCaution','recovered','retiredPanelHidden','noVisibleDiagnostics','fusedSaved','disagreement','noExactCoords'])if(!d[k])throw Error('Missing '+k+' '+JSON.stringify(d));
+ console.log('PASS: internal dual-sensor comparisons continue without rendering retired Qibla diagnostic panel, conflict and recovery states work.');
 }catch(e){console.error(e.stack);process.exitCode=1;}finally{if(fs.existsSync(temp))fs.unlinkSync(temp);}

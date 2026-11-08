@@ -152,3 +152,14 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - v0.23 otomatik mavi konum, dualar, namaz vakitleri, kayıtlar, premium tasarım ve 12 dil korunur.
 - Geçici debug imzasıyla kurulmuş v0.23 pusula test sürümünden ayrılmak için yeni sabit test kimliği com.geminamaz.app.qiblatest belirlenmiştir. Hem normal APK hem yeni yan-yana test APK kalıcı preview imza sertifikasıyla üretilecektir.
 - Gerçek Android telefon / gemi üzerinde manyetik sensör doğruluğu halen saha testi gerektirir. Google Play'e herhangi bir yayın yapılmadı.
+
+
+## v0.25 — Gömülü ve otomatik kıble kontrolü, manuel sekme yok
+
+- Ana ekrandaki "Kıble doğrulama ve alternatif yöntemler" sekmesi, gölge/hizalama/görünür işaret/manuel yön panelleri ve çevrim içi doğrulama düğmesi kullanıcıya tamamen gizlenir (hidden, inert, CSS). Tek premium pusula ve güven seviyesi görünür kalır.
+- Google Fused ve Android yön sensörü her yeni veriyle otomatik karşılaştırılmaya devam eder; manyetik sapma Android tarafında otomatik uygulanır. Cihazın kıble açısı internetsiz ikinci, bağımsız 3B vektör formülüyle kontrol edilir. Hesaplar uyuşmazsa pusula güvenilir olduğunu iddia etmez.
+- Güneş konumu cihazın fiziksel baktığı yönü tek başına vermez. Eski gölge, doğrulanmış kuzey, görülen işaret ve harici gemi gerçek-heading işlemleri kullanıcı hizalaması gerektirir; kendi kendine hizalandı sayılmaz ve okun yönü bu kaynaklarla otomatik değiştirilmez.
+- İnternetli otomatik karşılaştırma varsayılan olarak kapalıdır. Konum Merkezi içinde bir defalık, anlaşılır onay verilirse güncel ve hassas GPS koordinatları AlAdhan/MyQuran servislerine gönderilerek kıble açısı otomatik karşılaştırılır. Zaman/konum kotası: normalde 24 saatte 1 istek çifti, en az 50 km hareket sonrası minimum 3 saatte 1; izin kaldırıldığında başka istek gönderilmez. Gizlilik politikasında sağlayıcılar ve veri paylaşımı açıklanır.
+- Konum bilgisi yokken, eskiyken, elle girildiğinde veya hata payı fazla olduğunda otomatik API isteği gönderilmez. İnternet doğrulaması hiçbir zaman telefonun fiziksel yönünü veya gemi baş yönünü tasdik etmiş gibi gösterilmez.
+- Gizli tanılama DOM ağacı sensör güncellemelerinde gereksiz yere çizilmez. 12 dil, dualar, namaz vakitleri, sureler, Esma ve aylık takvim korunur.
+- İmza sertifikası ve paket kimlikleri v0.24 ile sabittir; v0.24 com.geminamaz.app.qiblatest yan yana test sürümünün üzerine kurulabilmelidir. Google Play yayını yapılmaz.

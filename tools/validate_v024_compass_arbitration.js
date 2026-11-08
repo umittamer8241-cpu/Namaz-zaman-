@@ -16,7 +16,7 @@ const fallback=java.slice(java.indexOf('if(type!=Sensor.TYPE_ROTATION_VECTOR'),j
 assert(!fallback.includes('SystemClock.elapsedRealtime()-lastFusedOrientationMs<5000L'),
  'Raw untrusted FOP callbacks must not starve platform readings');
 for(const token of ["needle.classList.toggle('compass-approximate',approximate)",
-"needle.classList.toggle('compass-conflict',approximate&&mismatch)",
+"needle.classList.toggle('compass-conflict',approximate&&(mismatch||autoConflict))",
 "needle.classList.toggle('compass-north-reference',northReference)",
 "const relative=fresh&&Number.isFinite(h)?wrap(bearing-h,360):bearing",
 "compassFallbackWords()[1]","compassFallbackWords()[0]","compassFallbackWords()[2]"]){

@@ -191,3 +191,14 @@ button,summary{touch-action:manipulation}
 .premium-dial.pro-dial .ornate-single-needle.compass-north-reference{
  opacity:.4!important;filter:grayscale(.6) drop-shadow(0 2px 3px #ffffaa33);
 }
+
+/* v0.25: fully embedded Qibla methods, none of their manual panels are visible. */
+#nz-compass-tools[hidden],#nz-compass-tools{display:none!important}
+.nz-auto-qibla-privacy{margin:12px 0 7px;border:1px solid #a38b606f;
+ border-radius:15px;background:linear-gradient(142deg,#123942,#102b35);
+ padding:12px 13px;color:#e5e9d7}
+.nz-auto-qibla-label{display:flex;align-items:center;gap:10px;line-height:1.4}
+.nz-auto-qibla-label input{flex:none;accent-color:#6ed4bc;width:19px;height:19px}
+.nz-auto-qibla-label strong{font-size:13px;color:#f9dfad}
+.nz-auto-qibla-privacy p{color:#bdd8d0;font-size:11px;line-height:1.5;margin:10px 0 7px}
+.nz-auto-qibla-privacy small{display:block;color:#8ac5bd;font-size:10px;line-height:1.45}

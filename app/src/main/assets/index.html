@@ -129,7 +129,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
       <div class="compass-quality" id="compass-quality" aria-live="polite">Sensör doğruluğu kontrol ediliyor…</div>
       <button id="compass-permission" class="secondary" style="display:none;margin-top:7px">Pusulayı etkinleştir</button>
     </div>
-      <details id="nz-compass-tools" class="nz-compass-tools">
+      <details id="nz-compass-tools" class="nz-compass-tools" hidden inert aria-hidden="true">
         <summary id="nz-compass-tools-label">◈ Kıble doğrulama ve alternatif yöntemler</summary>
         <p id="nz-compass-tools-hint">Pusula şüpheliyse gölge, gerçek kuzey veya bağımsız çevrim içi kontrolü kullan.</p>
       <details id="sun-shadow-method" class="sun-shadow-method">
@@ -202,6 +202,14 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
         <button type="button" id="nz-location-hub-close" class="nz-location-hub-close" aria-label="Konum Merkezini kapat">×</button>
       </div>
       <div class="nz-location-hub-body">
+        <section class="nz-auto-qibla-privacy" aria-label="Automatic online Qibla verification consent">
+          <label class="nz-auto-qibla-label">
+            <input type="checkbox" id="nz-auto-qibla-online-consent"/>
+            <strong id="nz-auto-qibla-online-title">Otomatik internetli kıble denetimi</strong>
+          </label>
+          <p id="nz-auto-qibla-online-disclosure">Bu özellik açıkken güncel enlem ve boylamın AlAdhan ve MyQuran'a gönderilir.</p>
+          <small id="nz-auto-qibla-local-note">İnternetsiz doğrulama her zaman otomatik çalışır.</small>
+        </section>
         <div id="nz-location-live-indicator" class="nz-location-live-indicator" role="status" aria-live="polite">
           <span class="nz-location-live-dot" id="nz-location-live-dot" data-status="waiting" aria-hidden="true"></span>
           <span id="nz-location-live-text">Konum ölçümü bekleniyor...</span>
@@ -276,6 +284,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
 <script src="prayer_tracker.js"></script>
 <script src="sun_qibla.js"></script>
 <script src="manual_qibla.js"></script>
+<script src="auto_qibla.js"></script>
 <script>
 'use strict';
 // This file intentionally has NO network calls, external imports, or remote dependencies.
@@ -413,6 +422,7 @@ function setLocation(lat,lon,accuracy,source,stamp=Date.now(),live=true,provider
   // Prayer times depend on local coordinates and time only, never on the
   // availability of network/GPS updates after a fix.
   state.calcKey='';renderAll();
+  maybeAutoVerifyQibla();
 }
 
 function updateHeroLocation(){
@@ -631,12 +641,28 @@ function requestOnlineQibla(){
  renderQiblaOnline();
  window.GemiNative.verifyQiblaOnline(lat,lon);
 }
+function maybeAutoVerifyQibla(){
+ const auto=window.NamazAutoQibla;
+ // No sharing on first install, no sharing without a live accurate GPS fix.
+ // These HTTPS calls run while app is visible, not as an OS background task.
+ if(!auto?.permitted?.()||document.hidden||!window.GemiNative?.verifyQiblaOnline||
+    !locationFresh()||state.manual||!Number.isFinite(state.accuracy)||
+    state.accuracy<=0||state.accuracy>2500||qiblaOnlineState.waiting)return false;
+ const geometry=auto.audit(state.lat,state.lon,qibla(state.lat,state.lon));
+ if(!geometry.passed||!auto.due(state.lat,state.lon))return false;
+ // Save the attempt BEFORE the requests to prevent repeated app-start requests
+ // when the ship has limited mobile data or an endpoint times out.
+ auto.markAttempt(state.lat,state.lon);
+ requestOnlineQibla();
+ return true;
+}
 function nativeQiblaOnlineResult(complete,a,b,message,latitude,longitude){
  qiblaOnlineState.waiting=false;
  const normalized=x=>Number.isFinite(x)&&x>=0&&x<360?x:null;
  qiblaOnlineState.checked={a:normalized(a),b:normalized(b),message:String(message||''),
   lat:latitude,lon:longitude,time:Date.now(),complete:complete===true};
  renderQiblaOnline();
+ updateNeedle(); // online disagreement changes the arrow's confidence, not its bearing
 }
 // Sources: official AlAdhan Qibla API, and MyQuran Qibla v3.
 // Independent calculations check geodesic bearing only, NOT device heading.
@@ -831,7 +857,17 @@ function updateNeedle(){
  const h=state.heading;
  const fresh=state.headingUpdatedAt>0&&Date.now()-state.headingUpdatedAt<7500;
  const mismatch=compassHeadingDisagreement();
- const trusted=hasLocation&&fresh&&state.headingTrusted&&Number.isFinite(h)&&!mismatch;
+ const geometry=hasLocation&&window.NamazAutoQibla?
+   window.NamazAutoQibla.audit(state.lat,state.lon,qibla(state.lat,state.lon)):null;
+ const geometryConflict=!!(geometry&&geometry.available&&!geometry.passed);
+ const online=qiblaOnlineState.checked;
+ const onlineComplete=online&&qiblaOnlineCoordinatesMatch(online)&&online.a!==null&&online.b!==null;
+ const onlineGap=onlineComplete?Math.abs(wrap(online.a-online.b+180,360)-180):null;
+ const onlineMismatch=!!(onlineComplete&&(onlineGap>1.0||
+   Math.abs(wrap(online.a-qibla(state.lat,state.lon)+180,360)-180)>1.5||
+   Math.abs(wrap(online.b-qibla(state.lat,state.lon)+180,360)-180)>1.5));
+ const autoConflict=geometryConflict||onlineMismatch;
+ const trusted=hasLocation&&fresh&&state.headingTrusted&&Number.isFinite(h)&&!mismatch&&!autoConflict;
  const byShadow=shadowActive();
  const byManual=manualReferenceActive()&&!byShadow;
  const approximate=hasLocation&&fresh&&Number.isFinite(h)&&!trusted&&!byShadow&&!byManual;
@@ -842,7 +878,7 @@ function updateNeedle(){
  if(needle){
    needle.classList.toggle('compass-unreliable',!hasLocation);
    needle.classList.toggle('compass-approximate',approximate);
-   needle.classList.toggle('compass-conflict',approximate&&mismatch);
+   needle.classList.toggle('compass-conflict',approximate&&(mismatch||autoConflict));
    needle.classList.toggle('compass-north-reference',northReference);
  }
  if(!hasLocation){
@@ -890,9 +926,9 @@ function updateNeedle(){
  }
  const source=state.headingSource==='fused'?q.fused:q.fallback;
  if(!trusted){
-   $('compass-status').textContent=mismatch?diagText().warning:q.calibrate;
+   $('compass-status').textContent=(mismatch||autoConflict)?diagText().warning:q.calibrate;
    if(quality)quality.textContent=source+' · '+
-     (mismatch?compassFallbackWords()[1]:compassFallbackWords()[0]);
+     ((mismatch||autoConflict)?compassFallbackWords()[1]:compassFallbackWords()[0]);
    return;
  }
  const diff=Math.abs(wrap(bearing-h+180,360)-180);
@@ -917,7 +953,10 @@ function diagnosticValue(v,unit='°'){
  return Number.isFinite(v)?Number(v).toFixed(1)+unit:'—';
 }
 function renderCompassDiagnostics(){
- const panel=$('compass-diagnostics-data');if(!panel)return;
+ const panel=$('compass-diagnostics-data');
+ // Sensor comparisons still run on every update, but never repaint the
+ // retired diagnostic panel while it is embedded and invisible.
+ if(!panel||$('nz-compass-tools')?.hidden)return;
  const q=diagText(),title=$('compass-diagnostics-title'),copy=$('compass-diagnostics-copy');
  if(title)title.textContent=q.title;
  if(copy)copy.textContent=q.copy;
@@ -930,7 +969,7 @@ function renderCompassDiagnostics(){
  const disagreement=fused&&android?
      Math.abs(wrap(fused.heading-android.heading+180,360)-180):null;
  const rows=[
-   ['App','Namaz Zamanı v0.24'],
+   ['App','Namaz Zamanı v0.25'],
    [q.target,diagnosticValue(target)],
    [q.fused,diagnosticValue(fused?.heading)],
    [q.android,diagnosticValue(android?.heading)],
@@ -1043,6 +1082,7 @@ function startCompass(){
 function renderAll(){refreshCalculations(new Date());updateLocationPanel();renderClock();updateNeedle();renderSunShadow();renderManualReference();renderQiblaOnline();}
 window.NamazApp={
  activeDayKey:function(){return localDateKey(displayDateParts(new Date()));},
+ runAutoQiblaCheck:maybeAutoVerifyQibla,
  locationHubStatus:function(){
    return {
      available:validLocation(),stale:locationIsStale(),
@@ -1153,6 +1193,9 @@ function init(){
   // Same high-accuracy Google + GPS + network acquisition as map navigation.
   // Runs automatically on launch if the user has no fresh GPS location.
   // A user-fixed manual coordinate is never overridden without consent.
+  // Restore permission; optional online check never runs without a fresh
+  // accepted GPS fix and affirmative consent.
+  window.NamazAutoQibla?.render?.();
   if(state.source!=='manual'&&(!hasCached||locationIsStale())){
     state.gpsMessage='@googleSearching';updateLocationPanel();
     if(window.GemiNative?.requestAutoLocation){
@@ -1164,12 +1207,12 @@ function init(){
   renderClock();setInterval(renderClock,1000);
   // Always refresh confidence/alignment expiry, including devices with no sensor.\n  setInterval(()=>{updateNeedle();renderCompassDiagnostics();},2000);
   renderSunShadow();renderManualReference();renderQiblaOnline();
-  setInterval(()=>{renderSunShadow();renderManualReference();updateNeedle();},30000);
+  setInterval(()=>{updateNeedle();maybeAutoVerifyQibla();},30000);
   setInterval(updateLocationPanel,30000);
   document.addEventListener('visibilitychange',()=>{
-    if(!document.hidden){renderAll();renderCompassDiagnostics();window.NamazPrayerTracker?.render?.();}
+    if(!document.hidden){renderAll();renderCompassDiagnostics();window.NamazPrayerTracker?.render?.();maybeAutoVerifyQibla();}
   });
-  window.addEventListener('pageshow',()=>renderAll());
+  window.addEventListener('pageshow',()=>{renderAll();maybeAutoVerifyQibla();});
 }
 init();
 </script>
