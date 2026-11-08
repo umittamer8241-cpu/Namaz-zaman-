@@ -1,0 +1,40 @@
+name: Namaz Zamani v0.26 Test APK Direct Release
+
+on:
+  push:
+    tags:
+      - 'v0.26.0-daily-test'
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish-test-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Fetch verified v026 Android test APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p artifact
+          gh run download 42459493487 \
+            --repo "${{ github.repository }}" \
+            --name Namaz-Zamani-v026-Daily-Test-APK \
+            --dir artifact
+          test -s artifact/app-debug.apk
+          mv artifact/app-debug.apk artifact/Namaz-Zamani-v026-Gunluk-Icerik-Test.apk
+          sha256sum artifact/Namaz-Zamani-v026-Gunluk-Icerik-Test.apk
+
+      - name: Publish GitHub pre-release with direct APK link
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            artifact/Namaz-Zamani-v026-Gunluk-Icerik-Test.apk \
+            --repo "${{ github.repository }}" \
+            --target "${{ github.sha }}" \
+            --title "Namaz Zamani v0.26 - Gunluk Icerik Test APK" \
+            --prerelease \
+            --notes "Test-only package com.geminamaz.app.dailytest26, installs separately from the main Namaz Zamani app. Daily dua refresh, dua speech removed, 18 offline surahs rotate by calendar date. Keeps the v0.25 Qibla compass version and automatic location bridge. Not a Google Play release."
