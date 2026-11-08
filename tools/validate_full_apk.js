@@ -5,7 +5,7 @@ const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
 const workflow=fs.readFileSync(path.join(root,'.github/workflows/play-bundle-preview.yml'),'utf8');
 const manifest=fs.readFileSync(path.join(root,'app/src/main/AndroidManifest.xml'),'utf8');
 assert(gradle.includes("applicationId 'com.geminamaz.app'"));
-assert(gradle.includes("fullPreview {")&&gradle.includes("initWith release")&&gradle.includes('signingConfig signingConfigs.debug'));
+assert(gradle.includes("fullPreview {")&&gradle.includes("initWith release")&&gradle.includes('signingConfig signingConfigs.stablePreview'));
 assert(gradle.includes("applicationIdSuffix '.pusulatest'"));
 assert(manifest.includes('android:label="Namaz Zamanı"'));
 assert(workflow.includes(':app:assembleFullPreview'));

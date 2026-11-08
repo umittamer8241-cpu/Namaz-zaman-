@@ -103,6 +103,12 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     // Resume ONLY satellite GPS, never automatically resume network/Google traffic.
     private boolean resumePendingGpsSearch;
     private long lastOnlineQiblaRequestMs=0L;
+    private int candidateCount=0;
+    private int rejectedCount=0;
+    private String lastCandidateStatus="none";
+    private String lastCandidateProvider="";
+    private Boolean googleLocationAccuracyEnabled=null;
+    private boolean autoLocationAttempted=false;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,6 +158,29 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 waitingSatellitePermission=false;
                 beginLocation();
                 sendLocationDiagnostics();
+            });
+        }
+        @JavascriptInterface public void requestAutoLocation(){
+            runOnUiThread(()->{
+                // Auto begin only while screen is visible. No background service.
+                if(autoLocationAttempted||isFinishing())return;
+                autoLocationAttempted=true;
+                if(!hasAnyPermission()){
+                    boolean requested=getPreferences(MODE_PRIVATE)
+                        .getBoolean("autoLocationPermissionPrompted",false);
+                    if(!requested){
+                        getPreferences(MODE_PRIVATE).edit()
+                            .putBoolean("autoLocationPermissionPrompted",true).apply();
+                        sendStatus("Konum için Android izni isteniyor...");
+                        requestPermissions(new String[]{
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION},REQ_LOCATION);
+                    }else{
+                        sendError("Konum izni gerekiyor. Konum Merkezi > Kesin konum izni.");
+                    }
+                }else{
+                    beginLocation();
+                }
             });
         }
         @JavascriptInterface public void retryOfflineGpsWhenPermitted(){
@@ -380,6 +409,12 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
             result.put("accuracyMeters",latest!=null&&latest.hasAccuracy()
                 ?Math.round(latest.getAccuracy()):-1);
             result.put("latestValid",recent(latest));
+            result.put("candidateCount",candidateCount);
+            result.put("rejectedCount",rejectedCount);
+            result.put("lastCandidateStatus",lastCandidateStatus);
+            result.put("lastCandidateProvider",lastCandidateProvider);
+            result.put("googleLocationAccuracyEnabled",
+                googleLocationAccuracyEnabled==null?JSONObject.NULL:googleLocationAccuracyEnabled);
             // Never include latitude, longitude or other precise location.
             js("window.nativeLocationDiagnostics("+result.toString()+");");
         }catch(Exception ignored){}
@@ -411,13 +446,28 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
     }
 
     private void accept(Location location,boolean cached,String source){
-        if(location==null)return;
+        if(location==null){
+            lastCandidateStatus="null_callback";lastCandidateProvider=source;
+            sendLocationDiagnostics();
+            return;
+        }
+        candidateCount++;
+        lastCandidateProvider=source;
         if(!recent(location)){
+            rejectedCount++;
+            long age=System.currentTimeMillis()-location.getTime();
+            lastCandidateStatus=age>LOCATION_MAX_AGE_MS?"stale_fix":
+                age< -60000L?"future_timestamp":
+                location.hasAccuracy()&&location.getAccuracy()>LOCATION_MAX_ACCURACY_M
+                ?"poor_accuracy":"invalid_coordinates";
+            sendLocationDiagnostics();
             if(location.hasAccuracy()&&location.getAccuracy()>LOCATION_MAX_ACCURACY_M) {
-                sendStatus("Google konum bilgisi çok yaklaşık (±"+Math.round(location.getAccuracy()/1000f)+" km). Daha hassas sonuç için GPS aranıyor.");
+                sendStatus("Yaklaşık konum geldi (±"+Math.round(location.getAccuracy()/1000f)+" km); daha hassas GPS aranıyor.");
             }
             return;
         }
+        lastCandidateStatus=cached?"accepted_cache":"accepted_live";
+        sendLocationDiagnostics();
         if(latest!=null&&recent(latest)){
             long age=System.currentTimeMillis()-latest.getTime();
             if(location.getTime()+15000L<latest.getTime())return;
@@ -482,7 +532,10 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         }
         stopSources();
         working=true;freshFix=false;
-        sendStatus("Akıllı arama: Google, ağ ve izin varsa uydu GPS deneniyor...");
+        candidateCount=0;rejectedCount=0;
+        lastCandidateStatus="searching";lastCandidateProvider="";
+        googleLocationAccuracyEnabled=null;
+        sendStatus("Otomatik hassas konum: Google + uydu GPS + ağ birlikte aranıyor...");
         sendLocationDiagnostics();
         // On a ship, Wi-Fi may not reveal a geolocation. Start GNSS
         // immediately instead of waiting 28 seconds for Google to fail.
@@ -514,11 +567,20 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         if(googleReady){
             try{
                 fusedClient=LocationServices.getFusedLocationProviderClient(this);
+                LocationServices.getSettingsClient(this).isGoogleLocationAccuracyEnabled()
+                    .addOnSuccessListener(enabled->{
+                        googleLocationAccuracyEnabled=enabled;
+                        sendLocationDiagnostics();
+                        if(!enabled&&!freshFix)
+                            sendStatus("Google Konum Doğruluğu kapalı: Wi-Fi/ağ konumu kısıtlı. GPS aranıyor.");
+                    })
+                    .addOnFailureListener(failure->sendLocationDiagnostics());
                 // Ask Android to enable the same high-accuracy location settings used by map navigation.
                 // A system-owned confirmation dialog is shown only if a setting must change.
                 if(hasFine() && !settingsPromptShown){
-                    LocationRequest desired=new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY,8000L)
-                        .setMinUpdateIntervalMillis(4000L).build();
+                    LocationRequest desired=new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY,4000L)
+                        .setMinUpdateIntervalMillis(1500L)
+                        .setWaitForAccurateLocation(false).build();
                     LocationSettingsRequest needs=new LocationSettingsRequest.Builder()
                         .addLocationRequest(desired).setAlwaysShow(true).build();
                     LocationServices.getSettingsClient(this).checkLocationSettings(needs)
@@ -540,20 +602,25 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                 CurrentLocationRequest req=new CurrentLocationRequest.Builder()
                     .setPriority(hasFine()?Priority.PRIORITY_HIGH_ACCURACY:Priority.PRIORITY_BALANCED_POWER_ACCURACY)
                     .setGranularity(Granularity.GRANULARITY_PERMISSION_LEVEL)
-                    .setMaxUpdateAgeMillis(15000L)
-                    .setDurationMillis(35000L)
+                    .setMaxUpdateAgeMillis(30000L)
+                    .setDurationMillis(60000L)
                     .build();
                 currentToken=new CancellationTokenSource();
                 fusedClient.getCurrentLocation(req,currentToken.getToken())
                     .addOnSuccessListener(loc->{
                         if(loc!=null)accept(loc,false,"google");
-                        else if(!freshFix)sendStatus("Google henüz konum bulamadı; ağ ve GPS yedeği deneniyor.");
+                        else{
+                            lastCandidateStatus="google_no_fix";
+                            lastCandidateProvider="google";
+                            sendLocationDiagnostics();
+                            if(!freshFix)sendStatus("Google henüz ölçüm döndürmedi; GPS ve ağ araması sürüyor.");
+                        }
                     })
                     .addOnFailureListener(ex->{
                         if(!freshFix)sendStatus("Google konum yanıt vermedi. Android ağ konumu deneniyor.");
                     });
-                LocationRequest updates=new LocationRequest.Builder(hasFine()?Priority.PRIORITY_HIGH_ACCURACY:Priority.PRIORITY_BALANCED_POWER_ACCURACY,8000L)
-                    .setMinUpdateIntervalMillis(4000L)
+                LocationRequest updates=new LocationRequest.Builder(hasFine()?Priority.PRIORITY_HIGH_ACCURACY:Priority.PRIORITY_BALANCED_POWER_ACCURACY,4000L)
+                    .setMinUpdateIntervalMillis(1500L)
                     .setWaitForAccurateLocation(false)
                     .build();
                 fusedCallback=new LocationCallback(){
@@ -562,7 +629,13 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
                             accept(res.getLastLocation(),false,"google");
                     }
                 };
-                fusedClient.requestLocationUpdates(updates,fusedCallback,Looper.getMainLooper());
+                fusedClient.requestLocationUpdates(updates,fusedCallback,Looper.getMainLooper())
+                    .addOnFailureListener(failure->{
+                        lastCandidateStatus="google_updates_failed";
+                        lastCandidateProvider="google";
+                        sendLocationDiagnostics();
+                        if(!freshFix)sendStatus("Google konum aboneliği başlatılamadı; uydu GPS sürüyor.");
+                    });
             }catch(Exception ex){
                 sendStatus("Google Play konum servisi çalışmadı. Android ağ konumuyla devam ediliyor.");
                 fusedClient=null;
@@ -595,7 +668,8 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         }
         try{
             accept(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER),true,"gps");
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,7000L,10f,this);
+            // Request first fix even while stationary.
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,2000L,0f,this);
             gpsSubscribed=true;
             if(Build.VERSION.SDK_INT>=30)locationManager.getCurrentLocation(
                 LocationManager.GPS_PROVIDER,(CancellationSignal)null,getMainExecutor(),
@@ -777,12 +851,13 @@ public class MainActivity extends Activity implements LocationListener, SensorEv
         // This never launches a Google/network request or asks for permission.
         if(resumePendingGpsSearch){
             resumePendingGpsSearch=false;
-            if(hasFine()&&locationEnabled()&&providerAvailable(LocationManager.GPS_PROVIDER)){
-                startSatelliteOnly();
+            if(hasAnyPermission()&&locationEnabled()){
+                // Resume the complete high-accuracy search on returning to UI.
+                beginLocation();
             }else{
-                sendError(hasFine()
-                    ?"Uydu GPS kapalı. Telefonun Konum ayarını aç ve yeniden dene."
-                    :"Kesin Konum izni gerekli. İzni açıp Akıllı Konum Bul'a dokun.");
+                sendError(hasAnyPermission()
+                    ?"Telefon konumu kapalı. Ayarlardan açıp tekrar dene."
+                    :"Konum izni gerekli. Konum Merkezi'nden izin ver.");
             }
         }
         sendLocationDiagnostics();

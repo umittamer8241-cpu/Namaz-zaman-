@@ -5,7 +5,7 @@ const native=fs.readFileSync(path.join(root,'app/src/main/java/com/geminamaz/app
 const html=fs.readFileSync(path.join(root,'app/src/main/assets/index.html'),'utf8');
 const css=fs.readFileSync(path.join(root,'app/src/main/assets/learning_styles.css'),'utf8');
 const gradle=fs.readFileSync(path.join(root,'app/build.gradle'),'utf8');
-assert(gradle.includes('versionCode 23'));
+assert(gradle.includes('versionCode 24'));
 assert(gradle.includes('com.geminamaz.app.pusulatest')===false); // built via suffix; main is unchanged
 for(const token of ['SensorManager.remapCoordinateSystem','Surface.ROTATION_90','Surface.ROTATION_180','Surface.ROTATION_270','SensorManager.AXIS_MINUS_X','SensorManager.AXIS_MINUS_Y','currentScreenRotation()']){
  assert(native.includes(token),'Missing screen-specific orientation correction '+token);

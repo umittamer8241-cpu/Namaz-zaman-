@@ -134,3 +134,12 @@ Uygulama açık olduğu sürece telefonun konum servisini (Google Play Hizmetler
 - Aylık namaz takvimi dokunularak açılan, geçmiş namazları düzenleme olanağı taşıyan bir karta; sureler ve Esmaül Hüsna da tek açılır öğrenme bölümüne dönüştürülür. Günlük dua, günlük namaz vakitleri ve ayet/hadis kartları ana ekranda yerinde kalır.
 - Yalnızca CSS/SVG tabanlı premium safir-altın görsellik kullanılır; harici font/görsel indirilmez, arka plan internet sorgusu eklenmez. 12 uygulama dili desteklenir.
 - Android test APK normal com.geminamaz.app paket kimliğindedir. fullPreview test anahtarıyla imzalanır; Google Play yayını yapılmaz. Test anahtarları GitHub Actions oturumları arasında değişebileceğinden daha eski debug APK'larla güncelleme imzası uyuşmayabilir: kayıtlı verileri korumadan uygulamayı silmeyin.
+
+## v0.23 — Otomatik gerçek konum (Google Fused + GPS) ve mavi konum göstergesi
+
+- Uygulama açıldığında hiç konum yoksa veya kayıtlı GPS konumu güncel değilse, mevcut konum izniyle **Google Fused Location (yüksek doğruluk), Android ağ konumu ve uydu GPS** otomatik başlatılır. Google Haritalar'ı önceden açmak gerekmez. Kullanıcının elle sabitlediği koordinatlar otomatik değiştirilmez.
+- Yerini bulmadan mavi nokta gösterilmez. Konum beklenirken gri, hassas güncel ölçümde mavi, yaklaşık konumda sarı, elle girilende yeşil, eski veride gri gösterilir. Bu, Google Haritalar SDK'sındaki harita katmanı değildir; uygulamanın kendi konum durum göstergesidir.
+- Google Konum Doğruluğu ayarı, konum sağlayıcılarından gelen ölçüm sayısı, reddedilen ölçüm sayısı ve ret nedenleri tanı ekranında görüntülenir; koordinatlar tanı raporuna dahil edilmez.
+- GitHub Actions artık normal kurulum APK'sını **kalıcı imza sertifikasıyla** üretir. PKCS12 dosyası ve parola GitHub'ın şifrelenmiş repository secrets alanında tutulur; kaynak depoya yüklenmez. Sertifika SHA-256: 66D05BC5D1A05C70AAA703B041A599DCDDA446F50F3D7B8811EFDAD094C8A323.
+- v0.22 ve daha eski test APK'ları başka sertifikayla imzalandığından yeni sürüm bunların üzerine kurulamayabilir. Önceki kayıtları kaybettirmemek için eski uygulama otomatik kaldırılmaz. Yeni sabit sertifikalı sürüme geçildikten sonraki yükseltmeler aynı imzayı kullanır.
+- Bunlar Android test derlemeleridir. Google Play'e hiçbir yayın yapılmaz. Gerçek cihazda GPS konum testi tamamlanmadan sorunun yüzde yüz çözüldüğü ileri sürülmez.

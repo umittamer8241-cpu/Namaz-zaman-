@@ -11,7 +11,7 @@ for(const id of ['nz-location-diagnostic-panel','nz-location-smart','nz-location
  assert(html.includes('id="'+id+'"'),'Missing '+id);
 }
 assert(html.includes('location_diagnostics.js'));
-assert(html.includes('retryOfflineGpsWhenPermitted()'));
+assert(html.includes('requestAutoLocation();'));
 assert(!html.includes('initialGpsAttempted'));
 for(const name of ['@JavascriptInterface public void requestSmartLocation()','@JavascriptInterface public void retryOfflineGpsWhenPermitted()',
  '@JavascriptInterface public void getLocationDiagnostics()','@JavascriptInterface public void copyLocationReport(String report)',

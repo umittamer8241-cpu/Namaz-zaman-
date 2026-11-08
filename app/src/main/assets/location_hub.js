@@ -30,6 +30,20 @@ pt:['Calendário mensal de orações','Abrir para editar dias'],
 az:['Aylıq Namaz Təqvimi','Günləri dəyişmək üçün aç'],
 ur:['ماہانہ نماز کا کیلنڈر','دنوں کی ترمیم کے لیے کھولیں']
 };
+const liveLabels={
+ tr:['Canlı GPS bulundu','Yaklaşık konum bulundu','Kaydedilmiş konum; güncel değil','Konum aranıyor','Manuel koordinat kullanılıyor','m doğruluk'],
+ en:['Live location found','Approximate location found','Saved location; not current','Locating device','Manually entered coordinates','m accuracy'],
+ ms:['Lokasi langsung diperoleh','Lokasi anggaran','Lokasi tersimpan; bukan semasa','Mencari lokasi','Koordinat manual','m ketepatan'],
+ id:['Lokasi langsung ditemukan','Perkiraan lokasi','Lokasi tersimpan; bukan terkini','Mencari lokasi','Koordinat manual','m akurasi'],
+ ar:['تم تحديد الموقع الحالي','موقع تقريبي','موقع محفوظ وغير حالي','جار تحديد الموقع','إحداثيات يدوية','م دقة'],
+ ru:['Текущая позиция найдена','Приблизительная позиция','Сохранённая позиция устарела','Поиск позиции','Ручные координаты','м точность'],
+ fr:['Position actuelle trouvée','Position approximative','Position enregistrée et ancienne','Recherche de position','Coordonnées manuelles','m de précision'],
+ de:['Aktueller Standort gefunden','Ungefährer Standort','Gespeicherter Standort ist alt','Suche Standort','Manuelle Koordinaten','m Genauigkeit'],
+ es:['Posición actual encontrada','Ubicación aproximada','Posición guardada antigua','Buscando ubicación','Coordenadas manuales','m precisión'],
+ pt:['Localização atual encontrada','Localização aproximada','Localização guardada antiga','A procurar localização','Coordenadas manuais','m precisão'],
+ az:['Canlı məkan tapıldı','Təxmini məkan','Saxlanan məkan köhnədir','Məkan axtarılır','Əllə koordinat','m dəqiqlik'],
+ ur:['موجودہ مقام مل گیا','تقریبی مقام','محفوظ مقام پرانا ہے','مقام تلاش کیا جا رہا ہے','دستی نقاط','میٹر درستگی']
+};
 let open=false,previousFocus=null;
 function t(){return labels[window.NamazI18n?.getLanguage?.()||'tr']||labels.en;}
 function hub(){return $('nz-location-hub');}
@@ -60,6 +74,21 @@ function refresh(){
  if(status?.available)index=status.manual?9:status.stale?10:status.source==='native'||status.source==='gps'?7:8;
  $('nz-location-hub-caption').textContent=w[index];
  button.classList.toggle('nz-location-needs-attention',!status?.available||!!status?.stale);
+ const live=liveLabels[window.NamazI18n?.getLanguage?.()||'tr']||liveLabels.en;
+ let state='waiting',message=live[3];
+ if(status?.available){
+  if(status.manual){state='manual';message=live[4];}
+  else if(status.stale||!status.fresh){state='stale';message=live[2];}
+  else if(!Number.isFinite(status.accuracy)||status.accuracy>2500){
+   state='approx';message=live[1];
+  }else{state='precise';message=live[0];}
+  if(Number.isFinite(status.accuracy)&&status.accuracy>0)
+   message+=' · ±'+Math.round(status.accuracy)+' '+live[5];
+ }
+ const dot=$('nz-location-blue-dot'),big=$('nz-location-live-dot'),msg=$('nz-location-live-text');
+ if(dot)dot.dataset.status=state;
+ if(big)big.dataset.status=state;
+ if(msg)msg.textContent=message;
  button.setAttribute('aria-expanded',String(isOpen()));
 }
 function openHub(){

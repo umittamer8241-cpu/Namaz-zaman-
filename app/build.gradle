@@ -7,8 +7,22 @@ android {
         applicationId 'com.geminamaz.app'
         minSdk 24
         targetSdk 36
-        versionCode 23
-        versionName '0.22-premium-plus-location-center-preview'
+        versionCode 24
+        versionName '0.23-auto-blue-location-stable-preview'
+    }
+    signingConfigs {
+        stablePreview {
+            // Private signing material lives only in GitHub Actions Secrets.
+            def keyPath = System.getenv('NAMAZ_PREVIEW_KEYSTORE_FILE')
+            def secret = System.getenv('NAMAZ_PREVIEW_STORE_PASSWORD')
+            if (keyPath != null && secret != null) {
+                storeFile file(keyPath)
+                storePassword secret
+                keyAlias 'namaz-preview'
+                keyPassword secret
+                storeType 'pkcs12'
+            }
+        }
     }
     buildTypes {
         debug {
@@ -18,9 +32,10 @@ android {
         }
         fullPreview {
             // Complete installable APK under the normal Namaz Zamani package ID.
-            // Debug-signed for internal testing only; NOT a Play Store release.
+            // Stable PKCS12 certificate from private GitHub Actions secrets.
+            // This is a preview key and is NOT a Google Play signing key.
             initWith release
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.stablePreview
         }
     }
     compileOptions {

@@ -18,6 +18,27 @@ pt:['Diagnóstico de localização','Verifica permissões sem internet automáti
 az:['Məkan diaqnostikası','İcazələri internetsiz yoxla.','Ağıllı məkan axtar','Məkan vəziyyəti','Hesabatı köçür','Məkan icazəsi','Dəqiq','Təxmini','Bağlı','Telefon məkanı','Açıq','Peyk GPS','Şəbəkə','Google','Axtarış','Son ölçüm','Mənbə','Dəqiqlik','Yox','Gözlənilir…','Oflayn GPS dəqiq icazə tələb edir.','Məkanı aç.','GPS yoxdur.','Ağıllı axtar.','Axtarılır…',' saniyə əvvəl',' metr','Hesabat köçürüldü.','Brauzerdə mövcud deyil.','Ekran görüntüsü göndər.'],
 ur:['مقام کی جانچ','اجازت اور GPS کی جانچ؛ خودکار انٹرنیٹ نہیں۔','سمارٹ مقام تلاش','حالت چیک کریں','رپورٹ نقل','اجازت','درست','تقریبی','بند','فون کا مقام','کھلا','GPS','نیٹ ورک','گوگل','تلاش','آخری مقام','ذریعہ','درستگی','نہیں','انتظار…','آف لائن GPS کے لیے درست مقام کی اجازت چاہیے۔','مقام آن کریں۔','GPS موجود نہیں۔','سمارٹ تلاش کریں۔','تلاش…',' سیکنڈ پہلے',' میٹر','رپورٹ نقل ہوگئی۔','براؤزر میں دستیاب نہیں۔','اسکرین شاٹ بھیجیں۔']
 };
+const autoDiagWords={
+ tr:['Google Konum Doğruluğu','Ulaşan ölçüm sayısı','Reddedilen ölçüm','Son ölçüm sonucu','Son ölçüm sağlayıcısı','Henüz ölçüm yok','Güncel konum kabul edildi','Eski kaydedilmiş konum','Eski ölçüm reddedildi','Hassasiyeti düşük ölçüm reddedildi','Google henüz konum döndürmedi','Google konum aboneliği başarısız','Konum araması başladı','Telefon saati/koordinat hatalı','Kontrol ediliyor','Google Konum Doğruluğu kapalı. Ayarlardan açınca ağ konumu daha iyi çalışabilir.'],
+ en:['Google Location Accuracy','Fixes received','Fixes rejected','Last fix result','Last provider','No fix yet','Live location accepted','Saved fix used','Stale fix rejected','Very inaccurate fix rejected','Google returned no fix','Google location updates failed','Location search started','Invalid time/coordinates','Checking','Google Location Accuracy is disabled. Enable it for Wi-Fi/cell positioning.'],
+ ms:['Ketepatan Lokasi Google','Bilangan ukuran','Ukuran ditolak','Keputusan terakhir','Sumber terakhir','Belum ada ukuran','Lokasi diterima','Lokasi tersimpan','Ukuran lama ditolak','Ketepatan rendah ditolak','Google belum memperoleh lokasi','Kemas kini Google gagal','Carian bermula','Masa atau koordinat tidak sah','Memeriksa','Ketepatan Lokasi Google dimatikan.'],
+ id:['Akurasi Lokasi Google','Jumlah pengukuran','Pengukuran ditolak','Hasil terbaru','Sumber terbaru','Belum ada pengukuran','Lokasi diterima','Lokasi tersimpan','Data lama ditolak','Akurasi rendah ditolak','Google belum menemukan lokasi','Pembaruan Google gagal','Pencarian dimulai','Waktu atau koordinat salah','Memeriksa','Akurasi Lokasi Google nonaktif.'],
+ ar:['دقة الموقع من Google','عدد القياسات','القياسات المرفوضة','نتيجة آخر قياس','آخر مزود','لا يوجد قياس','تم قبول الموقع','موقع محفوظ','قياس قديم مرفوض','دقة منخفضة','لم يحدد Google الموقع','فشلت تحديثات Google','بدأ البحث','وقت أو إحداثيات غير صحيحة','جار التحقق','دقة الموقع من Google معطلة.'],
+ ru:['Точность геолокации Google','Получено измерений','Отклонено измерений','Последний результат','Последний источник','Нет измерений','Текущая позиция принята','Сохранённая позиция','Старая позиция отклонена','Низкая точность','Google не определил позицию','Ошибка обновлений Google','Поиск запущен','Неверное время/координаты','Проверка','Точность Google отключена.'],
+ fr:['Précision Google','Mesures reçues','Mesures rejetées','Dernier résultat','Dernière source','Aucune mesure','Position actuelle acceptée','Position enregistrée','Mesure ancienne rejetée','Précision insuffisante','Pas de position Google','Mises à jour Google échouées','Recherche démarrée','Heure/coordonnées invalides','Vérification','La précision Google est désactivée.'],
+ de:['Google-Standortgenauigkeit','Messungen empfangen','Messungen abgelehnt','Letztes Ergebnis','Letzte Quelle','Noch keine Messung','Aktueller Standort akzeptiert','Standort gespeichert','Alter Fix abgelehnt','Unpräziser Fix abgelehnt','Google ohne Fix','Google-Aktualisierungen fehlgeschlagen','Suche gestartet','Ungültige Zeit/Koordinaten','Prüfung','Google-Standortgenauigkeit deaktiviert.'],
+ es:['Precisión de Google','Mediciones recibidas','Mediciones rechazadas','Último resultado','Última fuente','Sin mediciones','Ubicación actual aceptada','Ubicación guardada','Medición antigua','Poca precisión','Google no obtuvo posición','Error de Google','Búsqueda iniciada','Hora/coordenadas inválidas','Verificando','Precisión de Google desactivada.'],
+ pt:['Precisão do Google','Medições recebidas','Medições rejeitadas','Último resultado','Última fonte','Sem medições','Localização atual aceite','Localização guardada','Medição antiga','Precisão insuficiente','Google sem posição','Atualizações Google falharam','Procura iniciada','Hora/coordenadas inválidas','A verificar','Precisão do Google desligada.'],
+ az:['Google Məkan Dəqiqliyi','Gələn ölçüm','Rədd edilən ölçüm','Son nəticə','Son mənbə','Hələ ölçüm yoxdur','Canlı məkan qəbul edildi','Saxlanan məkan','Köhnə ölçüm','Qeyri-dəqiq ölçüm','Google məkan tapmadı','Google yeniləmə xətası','Axtarış başlandı','Vaxt/koordinat səhvi','Yoxlanılır','Google Məkan Dəqiqliyi bağlıdır.'],
+ ur:['گوگل مقام کی درستگی','موصول پیمائش','رد شدہ پیمائش','آخری نتیجہ','آخری ذریعہ','ابھی پیمائش نہیں','مقام قبول ہوا','محفوظ مقام','پرانی پیمائش','غیر درست پیمائش','گوگل سے مقام نہیں ملا','گوگل اپ ڈیٹ ناکام','تلاش شروع','وقت یا نقاط غلط','جانچ جاری','گوگل کی مقام کی درستگی بند ہے۔']
+};
+function extra(i){return (autoDiagWords[lang()]||autoDiagWords.en)[i]||autoDiagWords.en[i];}
+function candidateText(status){
+ const entries={none:5,accepted_live:6,accepted_cache:7,stale_fix:8,
+ poor_accuracy:9,google_no_fix:10,google_updates_failed:11,
+ searching:12,future_timestamp:13,invalid_coordinates:13,null_callback:5};
+ return extra(entries[status]??5);
+}
 function lang(){return window.NamazI18n?.getLanguage?.()||'tr';}
 function t(i){return (translations[lang()]||translations.en)[i]||translations.en[i];}
 let snapshot=null, report='',lastUpdate=0;
@@ -41,12 +62,18 @@ const list=[
 [t(5),permitted],[t(9),positive(p.systemEnabled)],[t(11),positive(p.gpsEnabled)],
 [t(12),positive(p.networkEnabled)],[t(13),positive(p.googleReady)],
 [t(14),p.mode||'idle'],[t(15),lastFix],[t(16),p.source||t(18)],
-[t(17),p.accuracyMeters>=0?p.accuracyMeters+t(26):t(18)]
+[t(17),p.accuracyMeters>=0?p.accuracyMeters+t(26):t(18)],
+[extra(0),p.googleLocationAccuracyEnabled===null||p.googleLocationAccuracyEnabled===undefined?extra(14):positive(p.googleLocationAccuracyEnabled)],
+[extra(1),String(p.candidateCount??0)],
+[extra(2),String(p.rejectedCount??0)],
+[extra(3),candidateText(p.lastCandidateStatus)],
+[extra(4),p.lastCandidateProvider||t(18)]
 ];
 for(const [key,value] of list)panel.appendChild(row(key,value));
-const warning=!p.systemEnabled?t(21):!p.fine?t(20):!p.gpsEnabled?t(22):p.searching?t(24):t(23);
+const warning=!p.systemEnabled?t(21):!p.fine?t(20):!p.gpsEnabled?t(22):
+ p.googleLocationAccuracyEnabled===false?extra(15):p.searching?t(24):t(23);
 hint.textContent=warning;
-report='Namaz Zamani v0.20 - Location diagnostics\n'+
+report='Namaz Zamani v0.23 - Location diagnostics\n'+
  list.map(([k,v])=>k+': '+v).join('\n')+
  '\nStatus: '+warning+
  '\nNo latitude/longitude included.';

@@ -58,8 +58,26 @@ jobs:
           node tools/validate_v021_resume_gps.js
           node --check app/src/main/assets/location_hub.js
           node tools/validate_v022_premium_hub.js
+          node tools/validate_v023_auto_location.js
+          node --check app/src/main/assets/location_diagnostics.js
+          node --check app/src/main/assets/location_hub.js
+      - name: Sabit imza anahtarını güvenli kur
+        env:
+          NAMAZ_PREVIEW_KEYSTORE_B64: ${{ secrets.NAMAZ_PREVIEW_KEYSTORE_B64 }}
+          NAMAZ_PREVIEW_STORE_PASSWORD: ${{ secrets.NAMAZ_PREVIEW_STORE_PASSWORD }}
+        run: |
+          test -n "$NAMAZ_PREVIEW_KEYSTORE_B64"
+          test -n "$NAMAZ_PREVIEW_STORE_PASSWORD"
+          printf '%s' "$NAMAZ_PREVIEW_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/namaz-preview.p12"
+          chmod 600 "$RUNNER_TEMP/namaz-preview.p12"
+          echo "NAMAZ_PREVIEW_KEYSTORE_FILE=$RUNNER_TEMP/namaz-preview.p12" >> "$GITHUB_ENV"
       - name: Play önizleme APK ve AAB derle
+        env:
+          NAMAZ_PREVIEW_STORE_PASSWORD: ${{ secrets.NAMAZ_PREVIEW_STORE_PASSWORD }}
         run: gradle --no-daemon --stacktrace :app:assembleDebug :app:assembleFullPreview :app:bundleRelease
+      - name: Sabit APK imza sertifikasını doğrula
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs app/build/outputs/apk/fullPreview/app-fullPreview.apk | grep -qi '66d05bc5d1a05c70aaa703b041a599dcdda446f50f3d7b8811efdad094c8a323'
       - name: Debug APK test paket adını doğrula
         run: |
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep -q "name='com.geminamaz.app.pusulatest'"
@@ -75,7 +93,7 @@ jobs:
       - name: Normal uygulama adıyla tam Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: Namaz-Zamani-v0.22-Premium-Plus-Tam-APK
+          name: Namaz-Zamani-v0.23-Otomatik-Mavi-Konum-Sabit-Imza-APK
           path: app/build/outputs/apk/fullPreview/app-fullPreview.apk
           if-no-files-found: error
       - name: İmzasız AAB önizleme

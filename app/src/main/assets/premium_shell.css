@@ -155,3 +155,27 @@ button,summary{touch-action:manipulation}
 @media(max-width:380px){
  .nz-calendar-drawer>summary span{margin-left:0;flex-basis:100%;padding-left:22px}
 }
+
+/* v0.23: verified location blue dot. Not a map or synthetic coordinate. */
+.nz-location-hub-glyph{position:relative}
+.nz-location-blue-dot,.nz-location-live-dot{display:inline-block;width:13px;height:13px;
+ border-radius:50%;background:#8791a0;border:2px solid #d5ddec;
+ box-shadow:0 0 0 3px #6683a238;transition:background .15s;flex:none}
+.nz-location-blue-dot{position:absolute;bottom:-2px;right:-3px;width:12px;height:12px}
+.nz-location-live-dot{height:15px;width:15px}
+.nz-location-blue-dot[data-status=precise],.nz-location-live-dot[data-status=precise]{
+ background:#2588ff;border-color:#d4e8ff;box-shadow:0 0 0 5px #3c9bff45,0 0 13px #58acff}
+.nz-location-blue-dot[data-status=approx],.nz-location-live-dot[data-status=approx]{
+ background:#e6ae53;border-color:#ffeaca;box-shadow:0 0 0 4px #f5d1924a}
+.nz-location-blue-dot[data-status=manual],.nz-location-live-dot[data-status=manual]{
+ background:#43b69b;border-color:#d4f8eb}
+.nz-location-blue-dot[data-status=waiting],.nz-location-live-dot[data-status=waiting]{
+ background:#7d90a9;border-color:#e2edf7}
+.nz-location-live-indicator{display:flex;gap:12px;align-items:center;
+ color:#e6edf0;font-size:12px;line-height:1.5;margin:11px 0 7px;padding:13px;
+ border:1px solid #76909e80;border-radius:13px;background:#123849;
+ min-height:48px}
+@media(prefers-reduced-motion:no-preference){
+ .nz-location-live-dot[data-status=waiting]{animation:nz-pulse 1.8s ease-in-out infinite}
+ @keyframes nz-pulse{50%{box-shadow:0 0 0 9px #a0b1c724}}
+}

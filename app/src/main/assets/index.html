@@ -54,7 +54,7 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
   <!-- Single premium entry point: every location control lives in the sheet. -->
   <section class="nz-location-entry" aria-label="Konum merkezi">
     <button type="button" id="nz-location-hub-open" class="nz-location-hub-launch" aria-haspopup="dialog" aria-controls="nz-location-hub" aria-expanded="false">
-      <span class="nz-location-hub-glyph" aria-hidden="true">⌖</span>
+      <span class="nz-location-hub-glyph" aria-hidden="true">⌖<span id="nz-location-blue-dot" class="nz-location-blue-dot" data-status="waiting"></span></span>
       <span class="nz-location-hub-launch-copy">
         <strong id="nz-location-hub-button-label">Konum Merkezi</strong>
         <small id="nz-location-hub-caption">Konum ve gemi saati ayarlarını yönet</small>
@@ -202,6 +202,10 @@ details{margin-top:15px;border-top:1px solid #314d5b;padding-top:12px}summary{cu
         <button type="button" id="nz-location-hub-close" class="nz-location-hub-close" aria-label="Konum Merkezini kapat">×</button>
       </div>
       <div class="nz-location-hub-body">
+        <div id="nz-location-live-indicator" class="nz-location-live-indicator" role="status" aria-live="polite">
+          <span class="nz-location-live-dot" id="nz-location-live-dot" data-status="waiting" aria-hidden="true"></span>
+          <span id="nz-location-live-text">Konum ölçümü bekleniyor...</span>
+        </div>
   <section id="location-rescue" class="location-rescue" aria-label="Konum bulma yardımcısı">
     <strong id="location-rescue-title">Konum bulunamadıysa</strong>
     <p id="location-rescue-message">Telefonun konum izinlerini kontrol et veya koordinat gir.</p>
@@ -986,7 +990,7 @@ window.NamazApp={
    return {
      available:validLocation(),stale:locationIsStale(),
      manual:state.source==='manual',source:state.source,
-     accuracy:state.accuracy
+     fresh:locationFresh(),accuracy:state.accuracy
    };
  },
  prepareLocationSearch:function(){
@@ -1089,14 +1093,16 @@ function init(){
     catch(e){$('compass-status').textContent=tr('denied');}
   });
   startCompass();
-  // If no location has ever been saved, reattempt offline satellite GPS
-  // at every app launch when precise permission is already available.
-  // No automatic Google/network requests and no repeated permission popup.
-  if(!hasCached){
-     state.gpsMessage='@noFix';updateLocationPanel();
-     if(window.GemiNative?.retryOfflineGpsWhenPermitted){
-       window.GemiNative.retryOfflineGpsWhenPermitted();
-     }else if(!window.GemiNative)startGPS('satellite');
+  // Same high-accuracy Google + GPS + network acquisition as map navigation.
+  // Runs automatically on launch if the user has no fresh GPS location.
+  // A user-fixed manual coordinate is never overridden without consent.
+  if(state.source!=='manual'&&(!hasCached||locationIsStale())){
+    state.gpsMessage='@googleSearching';updateLocationPanel();
+    if(window.GemiNative?.requestAutoLocation){
+      window.GemiNative.requestAutoLocation();
+    }else if(!window.GemiNative){
+      startGPS('network');
+    }
   }
   renderClock();setInterval(renderClock,1000);
   // Always refresh confidence/alignment expiry, including devices with no sensor.\n  setInterval(()=>{updateNeedle();renderCompassDiagnostics();},2000);
